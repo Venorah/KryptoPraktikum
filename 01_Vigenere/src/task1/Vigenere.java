@@ -27,6 +27,11 @@ import de.tubs.cs.iti.jcrypt.chiffre.Cipher;
 public class Vigenere extends Cipher {
 
   /**
+   * keyword
+   */
+  private int[] keyword;
+
+  /**
    * Analysiert den durch den Reader <code>ciphertext</code> gegebenen Chiffretext, bricht die
    * Chiffre bzw. unterstützt das Brechen der Chiffre (ggf. interaktiv) und schreibt den Klartext
    * mit dem Writer <code>cleartext</code>.
@@ -73,42 +78,67 @@ public class Vigenere extends Cipher {
    * @see #writeKey writeKey
    */
   public void makeKey() {
-
     BufferedReader standardInput = launcher.openStandardInput();
     boolean accepted = false;
 
-    Logger("Geben Sie den Modulus ein: ");
-    try {
-      modulus = Integer.parseInt(standardInput.readLine());
+    // Frage jeweils solange die Eingabe ab, bis diese akzeptiert werden kann.
+    do {
+      Logger("Geben Sie den Modulus ein: ");
+      try {
+        modulus = Integer.parseInt(standardInput.readLine());
 
-      String defaultAlphabet = CharacterMapping.getDefaultAlphabet(modulus);
-      if (!defaultAlphabet.equals("")) {
-        Logger("Vordefiniertes Alphabet: '" + defaultAlphabet + "'\nDieses vordefinierte Alphabet kann durch Angabe einer " + "geeigneten Alphabet-Datei\nersetzt werden. Weitere " + "Informationen finden Sie im Javadoc der Klasse\n'Character" + "Mapping'.");
-        accepted = true;
-      } else {
-        Logger("Warnung: Dem eingegebenen Modulus kann kein Default-" + "Alphabet zugeordnet werden.\nErstellen Sie zusätzlich zu " + "dieser Schlüssel- eine passende Alphabet-Datei.\nWeitere " + "Informationen finden Sie im Javadoc der Klasse 'Character" + "Mapping'.");
-        accepted = true;
+        String defaultAlphabet = CharacterMapping.getDefaultAlphabet(modulus);
+        if (!defaultAlphabet.equals("")) {
+          Logger("Vordefiniertes Alphabet: '" + defaultAlphabet + "'\nDieses vordefinierte Alphabet kann durch Angabe einer " + "geeigneten Alphabet-Datei\nersetzt werden. Weitere " + "Informationen finden Sie im Javadoc der Klasse\n'Character" + "Mapping'.");
+          accepted = true;
+        } else {
+          Logger("Warnung: Dem eingegebenen Modulus kann kein Default-" + "Alphabet zugeordnet werden.\nErstellen Sie zusätzlich zu " + "dieser Schlüssel- eine passende Alphabet-Datei.\nWeitere " + "Informationen finden Sie im Javadoc der Klasse 'Character" + "Mapping'.");
+          accepted = true;
+        }
+      } catch (NumberFormatException e) {
+        System.out.println("Fehler beim Parsen des Modulus. Bitte korrigieren" + " Sie Ihre Eingabe.");
+      } catch (IOException e) {
+        System.err.println("Abbruch: Fehler beim Lesen von der Standardeingabe.");
+        e.printStackTrace();
+        System.exit(1);
       }
-    } catch (NumberFormatException e) {
-      e.printStackTrace();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    } while (!accepted);
+    accepted = false;
+    do {
+      try {
+        // von string nach character array konvertieren
+        String keywordString = standardInput.readLine().toString();
+        char keywordChar[] = keywordString.toCharArray();
 
-    try {
-      int shift = Integer.parseInt(standardInput.readLine());
-      if (shift >= 0 && shift < modulus) {
-        accepted = true;
-      } else {
-        Logger("Diese Verschiebung ist nicht geeignet. Bitte " + "korrigieren Sie Ihre Eingabe.");
+        // länge vom keyword array initialiseren
+        keyword = new int[keywordChar.length];
+
+        // konvertieren in int array
+        int character;
+        for (int i = 0; i < keywordChar.length; i++) {
+          // konvertiere in int
+          character = (int) keywordChar[i];
+          character = charMap.mapChar(character);
+
+          // check
+          if (character >= 0 && character < modulus) {
+            accepted = true;
+          } else {
+            Logger("Diese Verschiebung ist nicht geeignet. Bitte " + "korrigieren Sie Ihre Eingabe.");
+          }
+
+          // character in dem array speichern
+          keyword[i] = character;
+        }
+
+      } catch (NumberFormatException e) {
+        System.out.println("Fehler beim Parsen der Verschiebung. Bitte " + "korrigieren Sie Ihre Eingabe.");
+      } catch (IOException e) {
+        System.err.println("Abbruch: Fehler beim Lesen von der Standardeingabe.");
+        e.printStackTrace();
+        System.exit(1);
       }
-    } catch (NumberFormatException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    } catch (IOException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
+    } while (!accepted);
   }
 
   /**
