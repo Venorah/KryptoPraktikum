@@ -163,6 +163,9 @@ public class Vigenere extends Cipher {
         System.exit(1);
       }
     } while (!accepted);
+    // define mapping for testing later
+    CharacterMapping mapping = new CharacterMapping(modulus);
+    
     accepted = false;
     do {
       try {
@@ -175,15 +178,24 @@ public class Vigenere extends Cipher {
         keyword = new int[keywordChar.length];
         
         // konvertieren in int array
-        int character;
-        for (int i = 0; i < keywordChar.length; i++) {          
+        int character, mappedCharacter;
+        for (int i = 0; i < keywordChar.length; i++) {
           // konvertiere in int
           character = (int) keywordChar[i];
 
           // character in dem array speichern
           keyword[i] = character;
+          
+          mappedCharacter = mapping.mapChar(character);
+
+          if (mappedCharacter >= 0 && mappedCharacter < modulus) {
+            accepted = true;
+          } else {
+            System.out.println("Ein Buchstabe im Schlüssel passt nicht zum Alphabet, das durch den Modulus definiert wurde. "
+                + "korrigieren Sie Ihre Eingabe.");
+            System.exit(1);
+          }
         }
-        accepted = true;
 
       } catch (IOException e) {
         System.err.println("Abbruch: Fehler beim Lesen von der Standardeingabe.");
