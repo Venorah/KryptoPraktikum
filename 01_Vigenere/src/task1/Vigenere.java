@@ -14,6 +14,7 @@ package task1;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.util.StringTokenizer;
 
 import de.tubs.cs.iti.jcrypt.chiffre.CharacterMapping;
 import de.tubs.cs.iti.jcrypt.chiffre.Cipher;
@@ -55,7 +56,33 @@ public class Vigenere extends Cipher {
    *          Der Writer, der den Klartext schreiben soll.
    */
   public void decipher(BufferedReader ciphertext, BufferedWriter cleartext) {
+    // Kommentierung analog 'encipher(cleartext, ciphertext)'.
+    try {
 
+      int character;
+      int d = 0;
+
+      while ((character = ciphertext.read()) != -1) {
+        character = charMap.mapChar(character);
+        if (character != -1) {
+
+          // character = (character - shift + modulus) % modulus;
+          character = (character - (keyword[d++] % keyword.length)) % modulus;
+
+          character = charMap.remapChar(character);
+          cleartext.write(character);
+        } else {
+          // Ein überlesenes Zeichen sollte bei korrekter Chiffretext-Datei
+          // eigentlich nicht auftreten können.
+        }
+      }
+      cleartext.close();
+      ciphertext.close();
+    } catch (IOException e) {
+      System.err.println("Abbruch: Fehler beim Zugriff auf Klar- oder " + "Chiffretextdatei.");
+      e.printStackTrace();
+      System.exit(1);
+    }
   }
 
   /**
@@ -68,7 +95,40 @@ public class Vigenere extends Cipher {
    *          Der Writer, der den Chiffretext schreiben soll.
    */
   public void encipher(BufferedReader cleartext, BufferedWriter ciphertext) {
+    // An dieser Stelle könnte man alle Zeichen, die aus der Klartextdatei
+    // gelesen werden, in Klein- bzw. Großbuchstaben umwandeln lassen:
+    // charMap.setConvertToLowerCase();
+    // charMap.setConvertToUpperCase();
 
+    int c = 0;
+
+    try {
+      int character;
+      boolean characterSkipped = false;
+      while ((character = cleartext.read()) != -1) {
+        character = charMap.mapChar(character);
+        if (character != -1) {
+
+          // character = (character + shift) % modulus;
+          character = (character + (keyword[c++] % keyword.length)) % modulus;
+
+          character = charMap.remapChar(character);
+          ciphertext.write(character);
+        } else {
+          // Das gelesene Zeichen ist im benutzten Alphabet nicht enthalten.
+          characterSkipped = true;
+        }
+      }
+      if (characterSkipped) {
+        System.out.println("Warnung: Mindestens ein Zeichen aus der " + "Klartextdatei ist im Alphabet nicht\nenthalten und wurde " + "überlesen.");
+      }
+      cleartext.close();
+      ciphertext.close();
+    } catch (IOException e) {
+      System.err.println("Abbruch: Fehler beim Zugriff auf Klar- oder " + "Chiffretextdatei.");
+      e.printStackTrace();
+      System.exit(1);
+    }
   }
 
   /**
@@ -150,7 +210,28 @@ public class Vigenere extends Cipher {
    * @see #writeKey writeKey
    */
   public void readKey(BufferedReader key) {
+    try {
+      StringTokenizer st = new StringTokenizer(key.readLine(), " ");
+      modulus = Integer.parseInt(st.nextToken());
+      Logger("Modulus: " + modulus);
 
+      int c = 0;
+
+      while (st.hasMoreTokens()) {
+        keyword[c++] = Integer.parseInt(st.nextToken());
+      }
+      Logger("Schluessel: " + keyword.toString());
+
+      key.close();
+    } catch (IOException e) {
+      System.err.println("Abbruch: Fehler beim Lesen oder Schließen der " + "Schlüsseldatei.");
+      e.printStackTrace();
+      System.exit(1);
+    } catch (NumberFormatException e) {
+      System.err.println("Abbruch: Fehler beim Parsen eines Wertes aus der " + "Schlüsseldatei.");
+      e.printStackTrace();
+      System.exit(1);
+    }
   }
 
   /**
@@ -162,7 +243,23 @@ public class Vigenere extends Cipher {
    * @see #readKey readKey
    */
   public void writeKey(BufferedWriter key) {
+    try {
 
+      String keyString = "";
+
+      for (int i = 0; i < keyword.length; i++) {
+        keyString = keyString + " " + keyword[i];
+      }
+
+      key.write(modulus + keyString);
+
+      key.newLine();
+      key.close();
+    } catch (IOException e) {
+      System.out.println("Abbruch: Fehler beim Schreiben oder Schließen der " + "Schlüsseldatei.");
+      e.printStackTrace();
+      System.exit(1);
+    }
   }
 
   private static void Logger(String event) {
