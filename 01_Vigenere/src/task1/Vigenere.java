@@ -61,13 +61,15 @@ public class Vigenere extends Cipher {
 
       int character;
       int d = 0;
-
+      
       while ((character = ciphertext.read()) != -1) {
         character = charMap.mapChar(character);
         if (character != -1) {
 
-          // character = (character - shift + modulus) % modulus;
-          character = (character - (keyword[d++] % keyword.length)) % modulus;
+          int index = d++ % keyword.length;
+          int keyVal = keyword[index];
+          int val = character - keyVal;
+          character = ( (val%modulus) + modulus) % modulus;
 
           character = charMap.remapChar(character);
           cleartext.write(character);
@@ -110,7 +112,7 @@ public class Vigenere extends Cipher {
         if (character != -1) {
 
           // character = (character + shift) % modulus;
-          character = (character + keyword[c++%keyword.length] ) % modulus;
+          character = (character + keyword[c++ % keyword.length]) % modulus;
 
           character = charMap.remapChar(character);
           ciphertext.write(character);
@@ -165,7 +167,7 @@ public class Vigenere extends Cipher {
     } while (!accepted);
     // define mapping for testing later
     CharacterMapping mapping = new CharacterMapping(modulus);
-    
+
     accepted = false;
     do {
       try {
@@ -176,7 +178,7 @@ public class Vigenere extends Cipher {
 
         // länge vom keyword array initialiseren
         keyword = new int[keywordChar.length];
-        
+
         // konvertieren in int array
         int character, mappedCharacter;
         for (int i = 0; i < keywordChar.length; i++) {
@@ -185,14 +187,13 @@ public class Vigenere extends Cipher {
 
           // character in dem array speichern
           keyword[i] = character;
-          
+
           mappedCharacter = mapping.mapChar(character);
 
           if (mappedCharacter >= 0 && mappedCharacter < modulus) {
             accepted = true;
           } else {
-            System.out.println("Ein Buchstabe im Schlüssel passt nicht zum Alphabet, das durch den Modulus definiert wurde. "
-                + "korrigieren Sie Ihre Eingabe.");
+            System.out.println("Ein Buchstabe im Schlüssel passt nicht zum Alphabet, das durch den Modulus definiert wurde. " + "korrigieren Sie Ihre Eingabe.");
             System.exit(1);
           }
         }
@@ -214,27 +215,19 @@ public class Vigenere extends Cipher {
    * @see #writeKey writeKey
    */
   public void readKey(BufferedReader key) {
-    
+
     try {
       StringTokenizer st = new StringTokenizer(key.readLine(), " ");
-      
+
       modulus = Integer.parseInt(st.nextToken());
       Logger("Modulus: " + modulus);
-      
+
       keyword = new int[st.countTokens()];
 
       int c = 0;
-
       while (st.hasMoreTokens()) {
-        
-//        String tmp = st.nextToken();
-//        int tmp2 = Integer.parseInt(tmp);
-//        keyword[c] = tmp2;
-
         keyword[c++] = Integer.parseInt(st.nextToken());
-//        c++;
       }
-      Logger("Schluessel: " + keyword.toString());
 
       key.close();
     } catch (IOException e) {
