@@ -14,6 +14,8 @@ package task1;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.StringTokenizer;
 
 import de.tubs.cs.iti.jcrypt.chiffre.CharacterMapping;
@@ -61,6 +63,8 @@ public class Vigenere extends Cipher {
 
       int character;
       int d = 0;
+      
+      HashMap<Integer, Integer> map = new HashMap<Integer, Integer>();
       
       while ((character = ciphertext.read()) != -1) {
         character = charMap.mapChar(character);
