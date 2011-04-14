@@ -63,17 +63,18 @@ public class Vigenere extends Cipher {
 
       int character;
       int d = 0;
-      
-      HashMap<Integer, Integer> map = new HashMap<Integer, Integer>();
-      
+
       while ((character = ciphertext.read()) != -1) {
         character = charMap.mapChar(character);
         if (character != -1) {
 
           int index = d++ % keyword.length;
-          int keyVal = keyword[index];
+
+          // int keyVal = keyword[index];
+          int keyVal = charMap.mapChar(keyword[index]);
+
           int val = character - keyVal;
-          character = ( (val%modulus) + modulus) % modulus;
+          character = ((val % modulus) + modulus) % modulus;
 
           character = charMap.remapChar(character);
           cleartext.write(character);
@@ -116,13 +117,17 @@ public class Vigenere extends Cipher {
         if (character != -1) {
 
           // character = (character + shift) % modulus;
-          character = (character + keyword[c++ % keyword.length]) % modulus;
+          int index = c % keyword.length;
+          int keywordMapped = charMap.mapChar(keyword[index]);
+          character = (character + keywordMapped) % modulus;
 
           character = charMap.remapChar(character);
           ciphertext.write(character);
+          c++;
         } else {
           // Das gelesene Zeichen ist im benutzten Alphabet nicht enthalten.
           characterSkipped = true;
+          c++;
         }
       }
       if (characterSkipped) {
