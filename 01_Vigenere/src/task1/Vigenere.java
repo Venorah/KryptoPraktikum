@@ -110,7 +110,7 @@ public class Vigenere extends Cipher {
         if (character != -1) {
 
           // character = (character + shift) % modulus;
-          character = (character + (keyword[c++] % keyword.length)) % modulus;
+          character = (character + keyword[c++%keyword.length] ) % modulus;
 
           character = charMap.remapChar(character);
           ciphertext.write(character);
@@ -202,15 +202,25 @@ public class Vigenere extends Cipher {
    * @see #writeKey writeKey
    */
   public void readKey(BufferedReader key) {
+    
     try {
       StringTokenizer st = new StringTokenizer(key.readLine(), " ");
+      
       modulus = Integer.parseInt(st.nextToken());
       Logger("Modulus: " + modulus);
+      
+      keyword = new int[st.countTokens()];
 
       int c = 0;
 
       while (st.hasMoreTokens()) {
+        
+//        String tmp = st.nextToken();
+//        int tmp2 = Integer.parseInt(tmp);
+//        keyword[c] = tmp2;
+
         keyword[c++] = Integer.parseInt(st.nextToken());
+//        c++;
       }
       Logger("Schluessel: " + keyword.toString());
 
