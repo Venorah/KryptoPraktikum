@@ -135,7 +135,6 @@ public class Vigenere extends Cipher {
 
       int character;
       int d = 0;
-
       while ((character = ciphertext.read()) != -1) {
         character = charMap.mapChar(character);
         if (character != -1) {
