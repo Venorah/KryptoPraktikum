@@ -143,9 +143,9 @@ public class Vigenere extends Cipher {
           int index = d++ % keyword.length;
 
           // int keyVal = keyword[index];
-          int keyVal = charMap.mapChar(keyword[index]);
+//          int keyVal = charMap.mapChar(keyword[index]);
 
-          int val = character - keyVal;
+          int val = character - keyword[index];
           character = ((val % modulus) + modulus) % modulus;
 
           character = charMap.remapChar(character);
@@ -190,8 +190,8 @@ public class Vigenere extends Cipher {
 
           // character = (character + shift) % modulus;
           int index = c % keyword.length;
-          int keywordMapped = charMap.mapChar(keyword[index]);
-          character = (character + keywordMapped) % modulus;
+//          int keywordMapped = charMap.mapChar();
+          character = (character + keyword[index]) % modulus;
 
           character = charMap.remapChar(character);
           ciphertext.write(character);
