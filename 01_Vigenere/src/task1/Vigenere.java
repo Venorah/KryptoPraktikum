@@ -15,6 +15,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.StringTokenizer;
 
@@ -45,7 +46,78 @@ public class Vigenere extends Cipher {
    *          Der Writer, der den Klartext schreiben soll.
    */
   public void breakCipher(BufferedReader ciphertext, BufferedWriter cleartext) {
+    
+    // List mit integer representations der characters bauen
+    LinkedList<Integer> ciphertextList = new LinkedList<Integer>();
+    try {
 
+      int character;
+      while ((character = ciphertext.read()) != -1) {
+        character = charMap.mapChar(character);
+        if (character != -1) {
+          character = charMap.remapChar(character);
+          ciphertextList.add(character);
+        } else {
+          // Ein überlesenes Zeichen sollte bei korrekter Chiffretext-Datei
+          // eigentlich nicht auftreten können.
+        }
+      }
+
+      cleartext.close();
+      ciphertext.close();
+    } catch (IOException e) {
+      System.err.println("Abbruch: Fehler beim Zugriff auf Klar- oder " + "Chiffretextdatei.");
+      e.printStackTrace();
+      System.exit(1);
+    }
+    
+    // häufigkeiten der einzelnen buchstaben als hashmap
+    HashMap<Integer, Integer> quantities = new HashMap<Integer, Integer>();
+    
+    Iterator<Integer> iter = ciphertextList.iterator();
+    int character;
+    while (iter.hasNext()) {
+      character = iter.next();
+      // Erhöhe die Anzahl für dieses Zeichen bzw. lege einen neuen Eintrag
+      // für dieses Zeichen an.
+      if (quantities.containsKey(character)) {
+        quantities.put(character, quantities.get(character) + 1);
+      } else {
+        quantities.put(character, 1);
+      }
+    }
+    
+    Logger("quantities: "+quantities.toString());
+    
+    // IC berechnen
+    Iterator<Integer> iter2 = quantities.keySet().iterator();
+    int character2, quantity, sum=0;
+    while (iter2.hasNext()) {
+      character2 = (int) iter2.next();
+      quantity = quantities.get(character2);
+      sum+=quantity*(quantity-1);
+    }
+    
+    Logger("sum: "+sum);
+    
+    int N = ciphertextList.size();
+    Logger("(N*(N-1): "+(N*(N-1)));
+    
+    float IC = (float) sum/(N*(N-1));
+    
+    Logger(""+IC);
+    
+//    // d berechnen
+//    Iterator<Integer> iter3 = quantities.keySet().iterator();
+//    float character;quantity3, sum3=0;
+//    while (iter3.hasNext()) {
+//      character = (int) iter3.next();
+//      quantity3 = (float) (quantities.get(character)/N);
+//      sum+=quantity*(quantity-1);
+//    }
+    
+    
+    Logger("ende");
   }
 
   /**
@@ -63,7 +135,7 @@ public class Vigenere extends Cipher {
 
       int character;
       int d = 0;
-
+      
       while ((character = ciphertext.read()) != -1) {
         character = charMap.mapChar(character);
         if (character != -1) {
@@ -193,10 +265,7 @@ public class Vigenere extends Cipher {
         for (int i = 0; i < keywordChar.length; i++) {
           // konvertiere in int
           character = (int) keywordChar[i];
-
-          // character in dem array speichern
-          keyword[i] = character;
-
+          // map to our alphabet
           mappedCharacter = mapping.mapChar(character);
 
           if (mappedCharacter >= 0 && mappedCharacter < modulus) {
@@ -205,6 +274,9 @@ public class Vigenere extends Cipher {
             System.out.println("Ein Buchstabe im Schlüssel passt nicht zum Alphabet, das durch den Modulus definiert wurde. " + "korrigieren Sie Ihre Eingabe.");
             System.exit(1);
           }
+          
+          // character in dem array speichern
+          keyword[i] = mappedCharacter;
         }
 
       } catch (IOException e) {
