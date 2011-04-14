@@ -166,33 +166,25 @@ public class Vigenere extends Cipher {
     accepted = false;
     do {
       try {
+        Logger("Schlüssel eingeben:");
         // von string nach character array konvertieren
         String keywordString = standardInput.readLine().toString();
         char keywordChar[] = keywordString.toCharArray();
 
         // länge vom keyword array initialiseren
         keyword = new int[keywordChar.length];
-
+        
         // konvertieren in int array
         int character;
-        for (int i = 0; i < keywordChar.length; i++) {
+        for (int i = 0; i < keywordChar.length; i++) {          
           // konvertiere in int
           character = (int) keywordChar[i];
-          character = charMap.mapChar(character);
-
-          // check
-          if (character >= 0 && character < modulus) {
-            accepted = true;
-          } else {
-            Logger("Diese Verschiebung ist nicht geeignet. Bitte " + "korrigieren Sie Ihre Eingabe.");
-          }
 
           // character in dem array speichern
           keyword[i] = character;
         }
+        accepted = true;
 
-      } catch (NumberFormatException e) {
-        System.out.println("Fehler beim Parsen der Verschiebung. Bitte " + "korrigieren Sie Ihre Eingabe.");
       } catch (IOException e) {
         System.err.println("Abbruch: Fehler beim Lesen von der Standardeingabe.");
         e.printStackTrace();
