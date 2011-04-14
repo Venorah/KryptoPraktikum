@@ -47,22 +47,19 @@ public class Vigenere extends Cipher {
    */
   public void breakCipher(BufferedReader ciphertext, BufferedWriter cleartext) {
     
-    // List mit integer representations der characters bauen
+    // ciphertext als list mit integer representations der characters bauen
     LinkedList<Integer> ciphertextList = new LinkedList<Integer>();
     try {
-
       int character;
       while ((character = ciphertext.read()) != -1) {
         character = charMap.mapChar(character);
         if (character != -1) {
-          character = charMap.remapChar(character);
           ciphertextList.add(character);
         } else {
           // Ein überlesenes Zeichen sollte bei korrekter Chiffretext-Datei
           // eigentlich nicht auftreten können.
         }
       }
-
       cleartext.close();
       ciphertext.close();
     } catch (IOException e) {
