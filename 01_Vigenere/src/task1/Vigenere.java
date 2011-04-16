@@ -75,7 +75,7 @@ public class Vigenere extends Cipher {
 
     HashMap<Integer, Integer> quantities = getQuantities(ciphertextList);
 
-    // Logger("quantities: " + quantities.toString());
+    Logger("quantities: " + quantities.toString());
 
     int N = ciphertextList.size();
 
@@ -111,7 +111,7 @@ public class Vigenere extends Cipher {
     // save as keyword
     keyword = key;
     
-    
+    decipher(ciphertext, cleartext);
 
     Logger("ende");
   }
@@ -123,7 +123,6 @@ public class Vigenere extends Cipher {
    * @return quantities
    */
   private HashMap<Integer, Integer> getQuantities(LinkedList<Integer> list) {
-
     HashMap<Integer, Integer> quantityHashMap = new HashMap<Integer, Integer>();
     Iterator<Integer> it = list.iterator();
 
@@ -140,6 +139,13 @@ public class Vigenere extends Cipher {
     return quantityHashMap;
   }
 
+  /**
+   * Chiffretext in Sublisten teilen
+   * @param list
+   * @param start
+   * @param period
+   * @return
+   */
   private LinkedList<Integer> getSublist(LinkedList<Integer> list, int start, int period) {
     LinkedList<Integer> subList = new LinkedList<Integer>();
 
@@ -150,11 +156,16 @@ public class Vigenere extends Cipher {
     return subList;
   }
 
+  /**
+   * Shift berechnen
+   * @param quantityHashMap
+   * @return
+   */
   int calculateShift(HashMap<Integer, Integer> quantityHashMap) {
     ArrayList<NGram> nGrams = FrequencyTables.getNGramsAsList(1, charMap);
 
     // größten wert aus quantityHashMap bekommen
-    int currKey = -1, currValue = -1, greatest = -1, mostFrequented = -1, greatest2 = -1, mostFrequented2 = -1;
+    int currKey = -1, currValue = -1, greatest = -1, mostFrequented = -1;
     Iterator<Integer> it = quantityHashMap.keySet().iterator();
     while (it.hasNext()) {
       currKey = it.next();
@@ -163,18 +174,13 @@ public class Vigenere extends Cipher {
         greatest = currValue;
         mostFrequented = currKey;
       }
-      if (currValue > greatest2 && currValue < greatest) {
-        greatest2 = currValue;
-        mostFrequented2 = currKey;
-      }
     }
     Logger("mostFreq= " + mostFrequented);
-    Logger("mostFreq2= " + mostFrequented2);
 
     int nGramMostFrequentedMapped = charMap.mapChar(Integer.parseInt(nGrams.get(0).getIntegers()));
     int nGramMostFrequentedMapped2 = charMap.mapChar(Integer.parseInt(nGrams.get(1).getIntegers()));
     
-    int choice = getUserInput("Moechten Sie den Buchstaben " + mostFrequented + " ("+ (char) charMap.remapChar(mostFrequented) + ") der am öftesten vorkommt ,\n auf " + nGramMostFrequentedMapped + " ("+ (char) charMap.remapChar(nGramMostFrequentedMapped) + ")\n oder auf " + nGramMostFrequentedMapped2 + " ("+ (char) charMap.remapChar(nGramMostFrequentedMapped2) + ") mappen? ");
+    int choice = getUserInput("Moechten Sie den Buchstaben " + mostFrequented + " ("+ (char) charMap.remapChar(mostFrequented) + "), der am oeftesten vorkommt,\nauf " + nGramMostFrequentedMapped + " ("+ (char) charMap.remapChar(nGramMostFrequentedMapped) + ") oder auf " + nGramMostFrequentedMapped2 + " ("+ (char) charMap.remapChar(nGramMostFrequentedMapped2) + ") mappen? ");
     
     int computedShift = mostFrequented - choice;
     if (computedShift < 0) {
@@ -184,6 +190,11 @@ public class Vigenere extends Cipher {
     return computedShift;
   }
 
+  /**
+   * Helper Methode für für User Input
+   * @param question
+   * @return data
+   */
   private int getUserInput(String question) {
     BufferedReader standardInput = launcher.openStandardInput();
     int data = 0;
@@ -199,14 +210,15 @@ public class Vigenere extends Cipher {
       e.printStackTrace();
     }
 
-    // try {
-    // standardInput.close();
-    // } catch (IOException e) {
-    // e.printStackTrace();
-    // }
     return data;
   }
 
+  /**
+   * Berechne IC
+   * @param N
+   * @param quantities
+   * @return IC
+   */
   private double IC(int N, HashMap<Integer, Integer> quantities) {
     int currentCharacter, F, sum = 0;
     double IC;
@@ -223,13 +235,16 @@ public class Vigenere extends Cipher {
 
     return IC;
   }
-
+  
+  /**
+   * Berechne Periode d
+   * @param N
+   * @param IC
+   * @return d
+   */
   private int d(int N, double IC) {
-    // Logger("N, IC, modulus " + N + "," + IC + "," + modulus);
     // Summe der relativen Häufigkeiten eines beliebigen zufälligen chiffretextes:
     double sum = sumP();
-
-    // Logger("sum= " + sum);
 
     double enumerator = ((sum - (1 / (double) modulus)) * (double) N);
     double denominator = (((double) N - 1) * IC - (1 / (double) modulus) * (double) N + sum);
@@ -239,6 +254,8 @@ public class Vigenere extends Cipher {
     Logger("d ungerundet= " + d);
 
     int d_round = (int) Math.round(d);
+    
+    Logger("d gerundet= " + d);
 
     return d_round;
   }
@@ -288,9 +305,6 @@ public class Vigenere extends Cipher {
         if (character != -1) {
 
           int index = d++ % keyword.length;
-
-          // int keyVal = keyword[index];
-          // int keyVal = charMap.mapChar(keyword[index]);
 
           int val = character - keyword[index];          
           if (val < 0) {
@@ -445,7 +459,6 @@ public class Vigenere extends Cipher {
    * @see #writeKey writeKey
    */
   public void readKey(BufferedReader key) {
-
     try {
       StringTokenizer st = new StringTokenizer(key.readLine(), " ");
 
