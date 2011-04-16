@@ -14,6 +14,7 @@ package task1;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -21,6 +22,8 @@ import java.util.StringTokenizer;
 
 import de.tubs.cs.iti.jcrypt.chiffre.CharacterMapping;
 import de.tubs.cs.iti.jcrypt.chiffre.Cipher;
+import de.tubs.cs.iti.jcrypt.chiffre.FrequencyTables;
+import de.tubs.cs.iti.jcrypt.chiffre.NGram;
 
 /**
  * Dummy-Klasse für die Vigenère-Chiffre.
@@ -95,10 +98,81 @@ public class Vigenere extends Cipher {
     Logger("IC= " + IC);
 
     float d = d(N, IC, n);
-
     Logger("d= " + d);
 
+    int d_tmp = (int) d;
+    int[] key = new int[d_tmp];
+    
+    for(int i=0; i<d_tmp; i++){
+      LinkedList<Integer> sublist = getSublist(ciphertextList, i, d_tmp);
+      HashMap<Integer, Integer> quantityHashMap = getQuantities(sublist);
+      key[i] = calculateShift(quantityHashMap);
+    }
+    
+    String keyOutput = "";
+    String keyOutputRemaped = "";
+    for(int j=0; j<key.length; j++){
+      int remapedChar = charMap.remapChar(key[j]);
+      keyOutput += key[j] + " ";
+      keyOutputRemaped += remapedChar + " ";
+    }
+    
+    Logger("Key as Integers: " + keyOutput);
+    Logger("Key as ASCII: " + keyOutputRemaped);
+
+    
     Logger("ende");
+  }
+  
+  private LinkedList<Integer> getSublist(LinkedList<Integer> list, int start, int period){
+    LinkedList<Integer> subList = new LinkedList<Integer>();
+    
+    for(int i=start; i<list.size(); i= i+period){
+      subList.add(list.get(i));
+    }
+    
+    return subList;
+  }
+  
+  private HashMap<Integer, Integer> getQuantities(LinkedList<Integer> list){
+    HashMap<Integer, Integer> quantities = new HashMap<Integer, Integer>();
+
+    Iterator<Integer> iter = list.iterator();
+    int character;
+    while (iter.hasNext()) {
+      character = iter.next();
+      if (quantities.containsKey(character)) {
+        quantities.put(character, quantities.get(character) + 1);
+      } else {
+        quantities.put(character, 1);
+      }
+    }
+    
+    return quantities;
+  }
+  
+  int calculateShift(HashMap<Integer, Integer> quantityHashMap){
+    int currKey = -1, currValue = -1, greatest = -1, mostFrequented = -1;
+    ArrayList<NGram> nGrams = FrequencyTables.getNGramsAsList(1, charMap);
+    
+    Iterator<Integer> it = quantityHashMap.keySet().iterator();
+    while (it.hasNext()) {
+      currKey = it.next();
+      currValue = quantityHashMap.get(currKey);
+      if (currValue > greatest) {
+        greatest = currValue;
+        mostFrequented = currKey;
+      }
+    }
+
+    int computedShift = mostFrequented - charMap.mapChar(Integer.parseInt(nGrams.get(0).getIntegers()));
+    if (computedShift < 0) {
+      computedShift += modulus;
+    }
+    int shift = computedShift;
+
+    return shift;
+
   }
 
   private float IC(int N) {
