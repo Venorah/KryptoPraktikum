@@ -97,7 +97,7 @@ public class Vigenere extends Cipher {
       // int:
       keyOutput += key[j] + " ";
       // ascii:
-      int remapedChar = charMap.remapChar(key[j]);
+      int remapedChar = charMap.mapChar(key[j]);
       keyOutputRemaped += remapedChar + " ";
     }
 
