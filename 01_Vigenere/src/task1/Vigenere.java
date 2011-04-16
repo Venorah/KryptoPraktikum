@@ -70,9 +70,9 @@ public class Vigenere extends Cipher {
       e.printStackTrace();
       System.exit(1);
     }
-    
-    //Logger("ciphertextList= "+ciphertextList);
-    
+
+    // Logger("ciphertextList= "+ciphertextList);
+
     HashMap<Integer, Integer> quantities = getQuantities(ciphertextList);
 
     // Logger("quantities: " + quantities.toString());
@@ -89,7 +89,7 @@ public class Vigenere extends Cipher {
 
     for (int i = 0; i < d; i++) {
       LinkedList<Integer> sublist = getSublist(ciphertextList, i, d);
-      //Logger("" + sublist);
+      // Logger("" + sublist);
       HashMap<Integer, Integer> quantityHashMap = getQuantities(sublist);
       Logger("" + quantityHashMap);
       key[i] = calculateShift(quantityHashMap);
@@ -169,6 +169,29 @@ public class Vigenere extends Cipher {
     return computedShift;
   }
 
+  private int getUserInput(String question) {
+    BufferedReader standardInput = launcher.openStandardInput();
+    int data = 0;
+
+    try {
+      Logger(question);
+      data = Integer.parseInt(standardInput.readLine());
+    } catch (NumberFormatException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    } catch (IOException e) {
+      Logger("WTF?");
+      e.printStackTrace();
+    }
+
+    try {
+      standardInput.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    return data;
+  }
+
   private double IC(int N, HashMap<Integer, Integer> quantities) {
     int currentCharacter, F, sum = 0;
     double IC;
@@ -195,10 +218,10 @@ public class Vigenere extends Cipher {
 
     double enumerator = ((sum - (1 / (double) modulus)) * (double) N);
     double denominator = (((double) N - 1) * IC - (1 / (double) modulus) * (double) N + sum);
-    
+
     double d = (enumerator / denominator);
 
-    Logger("d ungerundet= "+d);
+    Logger("d ungerundet= " + d);
 
     int d_round = (int) Math.round(d);
 
