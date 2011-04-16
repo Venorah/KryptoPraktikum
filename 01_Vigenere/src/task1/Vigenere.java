@@ -55,6 +55,7 @@ public class Vigenere extends Cipher {
       int character;
       while ((character = ciphertext.read()) != -1) {
         if (character != -1) {
+          // map ints zu internem alphabet
           character = charMap.mapChar(character);
           ciphertextList.add(character);
         } else {
@@ -69,7 +70,9 @@ public class Vigenere extends Cipher {
       e.printStackTrace();
       System.exit(1);
     }
-
+    
+    //Logger("ciphertextList= "+ciphertextList);
+    
     HashMap<Integer, Integer> quantities = getQuantities(ciphertextList);
 
 //    Logger("quantities: " + quantities.toString());
@@ -86,7 +89,7 @@ public class Vigenere extends Cipher {
 
     for (int i = 0; i < d; i++) {
       LinkedList<Integer> sublist = getSublist(ciphertextList, i, d);
-      Logger("" + sublist);
+      //Logger("" + sublist);
       HashMap<Integer, Integer> quantityHashMap = getQuantities(sublist);
       Logger("" + quantityHashMap);
       key[i] = calculateShift(quantityHashMap);
@@ -163,10 +166,8 @@ public class Vigenere extends Cipher {
     if (computedShift < 0) {
       computedShift += modulus;
     }
-    int shift = computedShift;
 
-    return shift;
-
+    return computedShift;
   }
 
   private double IC(int N, HashMap<Integer, Integer> quantities) {
@@ -195,10 +196,14 @@ public class Vigenere extends Cipher {
 
     double enumerator = ((sum - (1 / (double) modulus)) * (double) N);
     double denominator = (((double) N - 1) * IC - (1 / (double) modulus) * (double) N + sum);
+    
+    double d = (enumerator / denominator);
 
-    int d = (int) Math.round(enumerator / denominator);
+    Logger("d ungerundet= "+d);
 
-    return d;
+    int d_round = (int) Math.round(d);
+
+    return d_round;
   }
 
   /**
