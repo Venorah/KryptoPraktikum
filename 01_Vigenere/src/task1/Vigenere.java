@@ -69,7 +69,7 @@ public class Vigenere extends Cipher {
       System.exit(1);
     }
 
-    HashMap<Integer, Integer> quantities = quantities(ciphertextList);
+    HashMap<Integer, Integer> quantities = getQuantities(ciphertextList);
 
     Logger("quantities: " + quantities.toString());
 
@@ -80,18 +80,39 @@ public class Vigenere extends Cipher {
     Logger("IC= " + IC);
 
     int d = d(N, IC, n);
-
     Logger("d= " + d);
+
+    int[] key = new int[d];
+
+    for (int i = 0; i < d; i++) {
+      LinkedList<Integer> sublist = getSublist(ciphertextList, i, d);
+      Logger("" + sublist);
+      HashMap<Integer, Integer> quantityHashMap = getQuantities(sublist);
+      Logger("" + quantityHashMap);
+      key[i] = calculateShift(quantityHashMap, n);
+    }
+
+    String keyOutput = "";
+    String keyOutputRemaped = "";
+    for (int j = 0; j < key.length; j++) {
+      // int remapedChar = charMap.remapChar(key[j]);
+      keyOutput += key[j] + " ";
+      keyOutputRemaped += key[j] + " ";
+    }
+
+    Logger("Key as Integers: " + keyOutput);
+    Logger("Key as ASCII: " + keyOutputRemaped);
 
     Logger("ende");
   }
-  
+
   /**
    * Generiere HashMap mit allen im Chiffretext vorkommenden Buchstaben und der jeweiligen Anzahl
+   * 
    * @param ciphertextList
    * @return quantities
    */
-  private HashMap<Integer, Integer> quantities(LinkedList<Integer> ciphertextList) {
+  private HashMap<Integer, Integer> getQuantities(LinkedList<Integer> ciphertextList) {
     // häufigkeiten der einzelnen buchstaben als hashmap
     HashMap<Integer, Integer> quantities = new HashMap<Integer, Integer>();
 
@@ -110,6 +131,42 @@ public class Vigenere extends Cipher {
     return quantities;
   }
 
+  private LinkedList<Integer> getSublist(LinkedList<Integer> list, int start, int period) {
+    LinkedList<Integer> subList = new LinkedList<Integer>();
+
+    for (int i = start; i < list.size(); i = i + period) {
+      subList.add(list.get(i));
+    }
+
+    return subList;
+  }
+
+  int calculateShift(HashMap<Integer, Integer> quantityHashMap, int modulus) {
+    int currKey = -1, currValue = -1, greatest = -1, mostFrequented = -1;
+    // character mapping
+    CharacterMapping mapping = new CharacterMapping(modulus);
+    ArrayList<NGram> nGrams = FrequencyTables.getNGramsAsList(1, mapping);
+
+    Iterator<Integer> it = quantityHashMap.keySet().iterator();
+    while (it.hasNext()) {
+      currKey = it.next();
+      currValue = quantityHashMap.get(currKey);
+      if (currValue > greatest) {
+        greatest = currValue;
+        mostFrequented = currKey;
+      }
+    }
+
+    int computedShift = mostFrequented - mapping.mapChar(Integer.parseInt(nGrams.get(0).getIntegers()));
+    if (computedShift < 0) {
+      computedShift += modulus;
+    }
+    int shift = computedShift;
+
+    return shift;
+
+  }
+
   private float IC(int N, HashMap<Integer, Integer> quantities) {
     int currentCharacter, F, sum = 0;
     float IC;
@@ -122,8 +179,8 @@ public class Vigenere extends Cipher {
       sum += F * (F - 1);
     }
 
-//    Logger("sum: " + sum);
-//    Logger("(N*(N-1): " + (N * (N - 1)));
+    // Logger("sum: " + sum);
+    // Logger("(N*(N-1): " + (N * (N - 1)));
 
     IC = (float) sum / (N * (N - 1));
 
@@ -138,15 +195,16 @@ public class Vigenere extends Cipher {
     Logger("sum= " + sum);
 
     double enumerator = ((sum - (1 / (double) n)) * (double) N);
-    double denominator =  (((double) N - 1) * IC - (1 / (double) n) * (double) N + sum);
+    double denominator = (((double) N - 1) * IC - (1 / (double) n) * (double) N + sum);
 
     int d = (int) Math.round(enumerator / denominator);
 
     return d;
   }
-  
+
   /**
    * Berechne summe mit pi's für standard nGram frequency tabellen
+   * 
    * @param modulus
    * @return
    */
@@ -155,18 +213,18 @@ public class Vigenere extends Cipher {
     CharacterMapping mapping = new CharacterMapping(modulus);
     // unigramm frequency tabelle
     ArrayList<NGram> nGrams = FrequencyTables.getNGramsAsList(1, mapping);
-    
+
     NGram currentNGram;
     double p, sum = 0;
     Iterator<NGram> iter = nGrams.iterator();
     while (iter.hasNext()) {
       currentNGram = iter.next();
-      
+
       // get frequency as percentage
-      p = currentNGram.getFrequency()/100;
+      p = currentNGram.getFrequency() / 100;
       sum += p * p;
     }
-    
+
     return sum;
   }
 
