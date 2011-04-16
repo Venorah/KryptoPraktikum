@@ -55,6 +55,7 @@ public class Vigenere extends Cipher {
       int character;
       while ((character = ciphertext.read()) != -1) {
         if (character != -1) {
+          character = charMap.mapChar(character);
           ciphertextList.add(character);
         } else {
           // Ein überlesenes Zeichen sollte bei korrekter Chiffretext-Datei
@@ -85,9 +86,9 @@ public class Vigenere extends Cipher {
 
     for (int i = 0; i < d; i++) {
       LinkedList<Integer> sublist = getSublist(ciphertextList, i, d);
-//      Logger("" + sublist);
+      Logger("" + sublist);
       HashMap<Integer, Integer> quantityHashMap = getQuantities(sublist);
-//      Logger("" + quantityHashMap);
+      Logger("" + quantityHashMap);
       key[i] = calculateShift(quantityHashMap);
     }
 
@@ -97,7 +98,7 @@ public class Vigenere extends Cipher {
       // int:
       keyOutput += key[j] + " ";
       // ascii:
-      int remapedChar = charMap.mapChar(key[j]);
+      int remapedChar = charMap.remapChar(key[j]);
       keyOutputRemaped += remapedChar + " ";
     }
 
@@ -143,9 +144,10 @@ public class Vigenere extends Cipher {
   }
 
   int calculateShift(HashMap<Integer, Integer> quantityHashMap) {
-    int currKey = -1, currValue = -1, greatest = -1, mostFrequented = -1;
     ArrayList<NGram> nGrams = FrequencyTables.getNGramsAsList(1, charMap);
 
+    // größten wert aus quantityHashMap bekommen
+    int currKey = -1, currValue = -1, greatest = -1, mostFrequented = -1;
     Iterator<Integer> it = quantityHashMap.keySet().iterator();
     while (it.hasNext()) {
       currKey = it.next();
@@ -155,8 +157,9 @@ public class Vigenere extends Cipher {
         mostFrequented = currKey;
       }
     }
-
-    int computedShift = mostFrequented - charMap.mapChar(Integer.parseInt(nGrams.get(0).getIntegers()));
+    
+    int nGramMostFrequentedMapped = charMap.mapChar(Integer.parseInt(nGrams.get(0).getIntegers()));
+    int computedShift = mostFrequented - nGramMostFrequentedMapped;
     if (computedShift < 0) {
       computedShift += modulus;
     }
