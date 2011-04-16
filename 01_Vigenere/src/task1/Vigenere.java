@@ -149,7 +149,7 @@ public class Vigenere extends Cipher {
     ArrayList<NGram> nGrams = FrequencyTables.getNGramsAsList(1, charMap);
 
     // größten wert aus quantityHashMap bekommen
-    int currKey = -1, currValue = -1, greatest = -1, mostFrequented = -1;
+    int currKey = -1, currValue = -1, greatest = -1, mostFrequented = -1, greatest2 = -1, mostFrequented2 = -1;
     Iterator<Integer> it = quantityHashMap.keySet().iterator();
     while (it.hasNext()) {
       currKey = it.next();
@@ -158,14 +158,21 @@ public class Vigenere extends Cipher {
         greatest = currValue;
         mostFrequented = currKey;
       }
+      if (currValue > greatest2 && currValue < greatest) {
+        greatest2 = currValue;
+        mostFrequented2 = currKey;
+      }
     }
+    Logger("mostFreq= "+mostFrequented);
+    Logger("mostFreq2= "+mostFrequented2);
+
 
     int nGramMostFrequentedMapped = charMap.mapChar(Integer.parseInt(nGrams.get(0).getIntegers()));
     int computedShift = mostFrequented - nGramMostFrequentedMapped;
     if (computedShift < 0) {
       computedShift += modulus;
     }
-
+    
     return computedShift;
   }
 
