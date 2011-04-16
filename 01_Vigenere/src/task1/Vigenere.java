@@ -14,6 +14,7 @@ package task1;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -21,6 +22,8 @@ import java.util.StringTokenizer;
 
 import de.tubs.cs.iti.jcrypt.chiffre.CharacterMapping;
 import de.tubs.cs.iti.jcrypt.chiffre.Cipher;
+import de.tubs.cs.iti.jcrypt.chiffre.FrequencyTables;
+import de.tubs.cs.iti.jcrypt.chiffre.NGram;
 
 /**
  * Dummy-Klasse für die Vigenère-Chiffre.
@@ -34,7 +37,6 @@ public class Vigenere extends Cipher {
    * keyword
    */
   private int[] keyword;
-  private HashMap<Integer, Integer> quantities;
 
   /**
    * Analysiert den durch den Reader <code>ciphertext</code> gegebenen Chiffretext, bricht die
@@ -47,13 +49,11 @@ public class Vigenere extends Cipher {
    *          Der Writer, der den Klartext schreiben soll.
    */
   public void breakCipher(BufferedReader ciphertext, BufferedWriter cleartext) {
-
     // ciphertext als list mit integer representations der characters bauen
     LinkedList<Integer> ciphertextList = new LinkedList<Integer>();
     try {
       int character;
       while ((character = ciphertext.read()) != -1) {
-        character = charMap.mapChar(character);
         if (character != -1) {
           ciphertextList.add(character);
         } else {
@@ -69,9 +69,31 @@ public class Vigenere extends Cipher {
       System.exit(1);
     }
 
+    HashMap<Integer, Integer> quantities = quantities(ciphertextList);
+
+    Logger("quantities: " + quantities.toString());
+
+    int N = ciphertextList.size();
+    int n = quantities.size();
+
+    float IC = IC(N, quantities);
+    Logger("IC= " + IC);
+
+    int d = d(N, IC, n);
+
+    Logger("d= " + d);
+
+    Logger("ende");
+  }
+  
+  /**
+   * Generiere HashMap mit allen im Chiffretext vorkommenden Buchstaben und der jeweiligen Anzahl
+   * @param ciphertextList
+   * @return quantities
+   */
+  private HashMap<Integer, Integer> quantities(LinkedList<Integer> ciphertextList) {
     // häufigkeiten der einzelnen buchstaben als hashmap
-    // HashMap<Integer, Integer> quantities = new HashMap<Integer, Integer>();
-    quantities = new HashMap<Integer, Integer>();
+    HashMap<Integer, Integer> quantities = new HashMap<Integer, Integer>();
 
     Iterator<Integer> iter = ciphertextList.iterator();
     int character;
@@ -85,23 +107,10 @@ public class Vigenere extends Cipher {
         quantities.put(character, 1);
       }
     }
-
-    Logger("quantities: " + quantities.toString());
-
-    int N = ciphertextList.size();
-    int n = quantities.size();
-
-    float IC = IC(N);
-    Logger("IC= " + IC);
-
-    float d = d(N, IC, n);
-
-    Logger("d= " + d);
-
-    Logger("ende");
+    return quantities;
   }
 
-  private float IC(int N) {
+  private float IC(int N, HashMap<Integer, Integer> quantities) {
     int currentCharacter, F, sum = 0;
     float IC;
 
@@ -113,49 +122,52 @@ public class Vigenere extends Cipher {
       sum += F * (F - 1);
     }
 
-    Logger("sum: " + sum);
-    Logger("(N*(N-1): " + (N * (N - 1)));
+//    Logger("sum: " + sum);
+//    Logger("(N*(N-1): " + (N * (N - 1)));
 
     IC = (float) sum / (N * (N - 1));
 
     return IC;
   }
 
-  private float d(int N_in, float IC, int n_in) {
-    // zu float konvertieren
-    float n = (float) n_in;
-    float N = (float) N_in;
-
+  private int d(int N, float IC, int n) {
     Logger("N, IC, n " + N + "," + IC + "," + n);
-
-    int currentCharacter;
-    float d, p, sum = 0;
-
-    Iterator<Integer> iter = quantities.keySet().iterator();
-
-    
-    
-    while (iter.hasNext()) {
-      currentCharacter = (int) iter.next();
-
-      p = ((float) quantities.get(currentCharacter) / N);
-      sum += p * p;
-    }
-    
-    sum = 0.07734285f;
+    // Summe der relativen Häufigkeiten eines beliebigen zufälligen chiffretextes:
+    double sum = sumP(n);
 
     Logger("sum= " + sum);
 
-    float enumerator = ((sum - (1 / n)) * N);
-    float denominator =  ((N - 1) * IC - (1 / n) * N + sum);
-    
-    Logger("enum: "+enumerator);
-    Logger("deno: "+denominator);
+    double enumerator = ((sum - (1 / (double) n)) * (double) N);
+    double denominator =  (((double) N - 1) * IC - (1 / (double) n) * (double) N + sum);
 
-    
-    d = enumerator / denominator;
+    int d = (int) Math.round(enumerator / denominator);
 
     return d;
+  }
+  
+  /**
+   * Berechne summe mit pi's für standard nGram frequency tabellen
+   * @param modulus
+   * @return
+   */
+  private double sumP(int modulus) {
+    // character mapping
+    CharacterMapping mapping = new CharacterMapping(modulus);
+    // unigramm frequency tabelle
+    ArrayList<NGram> nGrams = FrequencyTables.getNGramsAsList(1, mapping);
+    
+    NGram currentNGram;
+    double p, sum = 0;
+    Iterator<NGram> iter = nGrams.iterator();
+    while (iter.hasNext()) {
+      currentNGram = iter.next();
+      
+      // get frequency as percentage
+      p = currentNGram.getFrequency()/100;
+      sum += p * p;
+    }
+    
+    return sum;
   }
 
   /**
