@@ -107,6 +107,11 @@ public class Vigenere extends Cipher {
 
     Logger("Key as Integers: " + keyOutput);
     Logger("Key as ASCII: " + keyOutputRemaped);
+    
+    // save as keyword
+    keyword = key;
+    
+    
 
     Logger("ende");
   }
@@ -166,16 +171,12 @@ public class Vigenere extends Cipher {
     Logger("mostFreq= " + mostFrequented);
     Logger("mostFreq2= " + mostFrequented2);
 
-    int choice = getUserInput("Moechten Sie" + mostFrequented + " oder " + mostFrequented2);
-
     int nGramMostFrequentedMapped = charMap.mapChar(Integer.parseInt(nGrams.get(0).getIntegers()));
     int nGramMostFrequentedMapped2 = charMap.mapChar(Integer.parseInt(nGrams.get(1).getIntegers()));
-
-    int choice2 = getUserInput("Moechten Sie auf " + nGramMostFrequentedMapped + " mappen oder auf " + nGramMostFrequentedMapped2);
-
-    // int computedShift = mostFrequented - nGramMostFrequentedMapped;
-    int computedShift = choice - choice2;
-
+    
+    int choice = getUserInput("Moechten Sie den Buchstaben " + mostFrequented + " ("+ (char) charMap.remapChar(mostFrequented) + ") der am öftesten vorkommt ,\n auf " + nGramMostFrequentedMapped + " ("+ (char) charMap.remapChar(nGramMostFrequentedMapped) + ")\n oder auf " + nGramMostFrequentedMapped2 + " ("+ (char) charMap.remapChar(nGramMostFrequentedMapped2) + ") mappen? ");
+    
+    int computedShift = mostFrequented - choice;
     if (computedShift < 0) {
       computedShift += modulus;
     }
@@ -291,10 +292,12 @@ public class Vigenere extends Cipher {
           // int keyVal = keyword[index];
           // int keyVal = charMap.mapChar(keyword[index]);
 
-          int val = character - keyword[index];
-          character = ((val % modulus) + modulus) % modulus;
+          int val = character - keyword[index];          
+          if (val < 0) {
+            val += modulus;
+          }
 
-          character = charMap.remapChar(character);
+          character = charMap.remapChar(val);
           cleartext.write(character);
         } else {
           // Ein überlesenes Zeichen sollte bei korrekter Chiffretext-Datei
