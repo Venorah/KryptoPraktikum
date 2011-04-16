@@ -199,11 +199,11 @@ public class Vigenere extends Cipher {
       e.printStackTrace();
     }
 
-//    try {
-//      standardInput.close();
-//    } catch (IOException e) {
-//      e.printStackTrace();
-//    }
+    // try {
+    // standardInput.close();
+    // } catch (IOException e) {
+    // e.printStackTrace();
+    // }
     return data;
   }
 
