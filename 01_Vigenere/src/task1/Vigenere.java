@@ -163,16 +163,23 @@ public class Vigenere extends Cipher {
         mostFrequented2 = currKey;
       }
     }
-    Logger("mostFreq= "+mostFrequented);
-    Logger("mostFreq2= "+mostFrequented2);
+    Logger("mostFreq= " + mostFrequented);
+    Logger("mostFreq2= " + mostFrequented2);
 
+    int choice = getUserInput("Moechten Sie" + mostFrequented + " oder " + mostFrequented2);
 
     int nGramMostFrequentedMapped = charMap.mapChar(Integer.parseInt(nGrams.get(0).getIntegers()));
-    int computedShift = mostFrequented - nGramMostFrequentedMapped;
+    int nGramMostFrequentedMapped2 = charMap.mapChar(Integer.parseInt(nGrams.get(1).getIntegers()));
+
+    int choice2 = getUserInput("Moechten Sie auf " + nGramMostFrequentedMapped + " mappen oder auf " + nGramMostFrequentedMapped2);
+
+    // int computedShift = mostFrequented - nGramMostFrequentedMapped;
+    int computedShift = choice - choice2;
+
     if (computedShift < 0) {
       computedShift += modulus;
     }
-    
+
     return computedShift;
   }
 
@@ -191,11 +198,11 @@ public class Vigenere extends Cipher {
       e.printStackTrace();
     }
 
-    try {
-      standardInput.close();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+//    try {
+//      standardInput.close();
+//    } catch (IOException e) {
+//      e.printStackTrace();
+//    }
     return data;
   }
 
