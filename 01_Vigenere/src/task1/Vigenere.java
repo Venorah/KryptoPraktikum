@@ -74,30 +74,31 @@ public class Vigenere extends Cipher {
     Logger("quantities: " + quantities.toString());
 
     int N = ciphertextList.size();
-    int n = quantities.size();
 
-    float IC = IC(N, quantities);
+    double IC = IC(N, quantities);
     Logger("IC= " + IC);
 
-    int d = d(N, IC, n);
+    int d = d(N, IC);
     Logger("d= " + d);
 
     int[] key = new int[d];
 
     for (int i = 0; i < d; i++) {
       LinkedList<Integer> sublist = getSublist(ciphertextList, i, d);
-      Logger("" + sublist);
+      Logger(""+sublist);
       HashMap<Integer, Integer> quantityHashMap = getQuantities(sublist);
-      Logger("" + quantityHashMap);
-      key[i] = calculateShift(quantityHashMap, n);
+      Logger(""+quantityHashMap);
+      key[i] = calculateShift(quantityHashMap);
     }
 
     String keyOutput = "";
     String keyOutputRemaped = "";
     for (int j = 0; j < key.length; j++) {
-      // int remapedChar = charMap.remapChar(key[j]);
+      // int:
       keyOutput += key[j] + " ";
-      keyOutputRemaped += key[j] + " ";
+      // ascii:
+      int remapedChar = charMap.remapChar(key[j]);
+      keyOutputRemaped += remapedChar + " ";
     }
 
     Logger("Key as Integers: " + keyOutput);
@@ -141,11 +142,9 @@ public class Vigenere extends Cipher {
     return subList;
   }
 
-  int calculateShift(HashMap<Integer, Integer> quantityHashMap, int modulus) {
+  int calculateShift(HashMap<Integer, Integer> quantityHashMap) {
     int currKey = -1, currValue = -1, greatest = -1, mostFrequented = -1;
-    // character mapping
-    CharacterMapping mapping = new CharacterMapping(modulus);
-    ArrayList<NGram> nGrams = FrequencyTables.getNGramsAsList(1, mapping);
+    ArrayList<NGram> nGrams = FrequencyTables.getNGramsAsList(1, charMap);
 
     Iterator<Integer> it = quantityHashMap.keySet().iterator();
     while (it.hasNext()) {
@@ -157,7 +156,7 @@ public class Vigenere extends Cipher {
       }
     }
 
-    int computedShift = mostFrequented - mapping.mapChar(Integer.parseInt(nGrams.get(0).getIntegers()));
+    int computedShift = mostFrequented - charMap.mapChar(Integer.parseInt(nGrams.get(0).getIntegers()));
     if (computedShift < 0) {
       computedShift += modulus;
     }
@@ -167,9 +166,9 @@ public class Vigenere extends Cipher {
 
   }
 
-  private float IC(int N, HashMap<Integer, Integer> quantities) {
+  private double IC(int N, HashMap<Integer, Integer> quantities) {
     int currentCharacter, F, sum = 0;
-    float IC;
+    double IC;
 
     Iterator<Integer> iter = quantities.keySet().iterator();
     while (iter.hasNext()) {
@@ -179,26 +178,23 @@ public class Vigenere extends Cipher {
       sum += F * (F - 1);
     }
 
-    // Logger("sum: " + sum);
-    // Logger("(N*(N-1): " + (N * (N - 1)));
-
-    IC = (float) sum / (N * (N - 1));
+    IC = (double) sum / (N * (N - 1));
 
     return IC;
   }
 
-  private int d(int N, float IC, int n) {
-    Logger("N, IC, n " + N + "," + IC + "," + n);
+  private int d(int N, double IC) {
+    Logger("N, IC, modulus " + N + "," + IC + "," + modulus);
     // Summe der relativen Häufigkeiten eines beliebigen zufälligen chiffretextes:
-    double sum = sumP(n);
-
+    double sum = sumP();
+    
     Logger("sum= " + sum);
-
-    double enumerator = ((sum - (1 / (double) n)) * (double) N);
-    double denominator = (((double) N - 1) * IC - (1 / (double) n) * (double) N + sum);
-
+    
+    double enumerator = ((sum - (1 / (double) modulus)) * (double) N);
+    double denominator = (((double) N - 1) * IC - (1 / (double) modulus) * (double) N + sum);
+    
     int d = (int) Math.round(enumerator / denominator);
-
+    
     return d;
   }
 
@@ -208,11 +204,9 @@ public class Vigenere extends Cipher {
    * @param modulus
    * @return
    */
-  private double sumP(int modulus) {
-    // character mapping
-    CharacterMapping mapping = new CharacterMapping(modulus);
+  private double sumP() {
     // unigramm frequency tabelle
-    ArrayList<NGram> nGrams = FrequencyTables.getNGramsAsList(1, mapping);
+    ArrayList<NGram> nGrams = FrequencyTables.getNGramsAsList(1, charMap);
 
     NGram currentNGram;
     double p, sum = 0;
