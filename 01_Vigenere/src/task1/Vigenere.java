@@ -88,30 +88,14 @@ public class Vigenere extends Cipher {
 
     Logger("quantities: " + quantities.toString());
 
-    // IC berechnen
-    // Iterator<Integer> iter2 = quantities.keySet().iterator();
-    // int character2, quantity, sum = 0;
-    // while (iter2.hasNext()) {
-    // character2 = (int) iter2.next();
-    // quantity = quantities.get(character2);
-    // sum += quantity * (quantity - 1);
-    // }
-    //
-    // Logger("sum: " + sum);
-    //
-    // int N = ciphertextList.size();
-    // Logger("(N*(N-1): " + (N * (N - 1)));
-    //
-    // float IC = (float) sum / (N * (N - 1));
-    //
-    // Logger("" + IC);
-    
     int N = ciphertextList.size();
     int n = quantities.size();
-    
+
     float IC = IC(N);
+    Logger("IC= " + IC);
+
     float d = d(N, IC, n);
-    
+
     Logger("d= " + d);
 
     Logger("ende");
@@ -137,21 +121,39 @@ public class Vigenere extends Cipher {
     return IC;
   }
 
-  private float d(int N, float IC, int n) {
+  private float d(int N_in, float IC, int n_in) {
+    // zu float konvertieren
+    float n = (float) n_in;
+    float N = (float) N_in;
+
+    Logger("N, IC, n " + N + "," + IC + "," + n);
+
     int currentCharacter;
-    float d, p, sum1 = 0, sum2 = 0;
+    float d, p, sum = 0;
 
     Iterator<Integer> iter = quantities.keySet().iterator();
 
+    
+    
     while (iter.hasNext()) {
       currentCharacter = (int) iter.next();
-      p = (float) (quantities.get(currentCharacter) / N);
 
-      sum1 += (p * p) - (1 / n);
-      sum2 += p * p;
+      p = ((float) quantities.get(currentCharacter) / N);
+      sum += p * p;
     }
+    
+    sum = 0.07734285f;
 
-    d = (sum1 * N) / ((N - 1) * IC - (1 / n) * N + sum2);
+    Logger("sum= " + sum);
+
+    float enumerator = ((sum - (1 / n)) * N);
+    float denominator =  ((N - 1) * IC - (1 / n) * N + sum);
+    
+    Logger("enum: "+enumerator);
+    Logger("deno: "+denominator);
+
+    
+    d = enumerator / denominator;
 
     return d;
   }
