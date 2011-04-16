@@ -71,7 +71,7 @@ public class Vigenere extends Cipher {
 
     HashMap<Integer, Integer> quantities = getQuantities(ciphertextList);
 
-    Logger("quantities: " + quantities.toString());
+//    Logger("quantities: " + quantities.toString());
 
     int N = ciphertextList.size();
 
@@ -85,9 +85,9 @@ public class Vigenere extends Cipher {
 
     for (int i = 0; i < d; i++) {
       LinkedList<Integer> sublist = getSublist(ciphertextList, i, d);
-      Logger(""+sublist);
+//      Logger("" + sublist);
       HashMap<Integer, Integer> quantityHashMap = getQuantities(sublist);
-      Logger(""+quantityHashMap);
+//      Logger("" + quantityHashMap);
       key[i] = calculateShift(quantityHashMap);
     }
 
@@ -97,12 +97,12 @@ public class Vigenere extends Cipher {
       // int:
       keyOutput += key[j] + " ";
       // ascii:
-      int remapedChar = charMap.remapChar(key[j]);
-      keyOutputRemaped += remapedChar + " ";
+       int remapedChar = charMap.mapChar(key[j]);
+       keyOutputRemaped += remapedChar + " ";
     }
 
     Logger("Key as Integers: " + keyOutput);
-    Logger("Key as ASCII: " + keyOutputRemaped);
+     Logger("Key as ASCII: " + keyOutputRemaped);
 
     Logger("ende");
   }
@@ -184,17 +184,17 @@ public class Vigenere extends Cipher {
   }
 
   private int d(int N, double IC) {
-    Logger("N, IC, modulus " + N + "," + IC + "," + modulus);
+//    Logger("N, IC, modulus " + N + "," + IC + "," + modulus);
     // Summe der relativen Häufigkeiten eines beliebigen zufälligen chiffretextes:
     double sum = sumP();
-    
-    Logger("sum= " + sum);
-    
+
+//    Logger("sum= " + sum);
+
     double enumerator = ((sum - (1 / (double) modulus)) * (double) N);
     double denominator = (((double) N - 1) * IC - (1 / (double) modulus) * (double) N + sum);
-    
+
     int d = (int) Math.round(enumerator / denominator);
-    
+
     return d;
   }
 
