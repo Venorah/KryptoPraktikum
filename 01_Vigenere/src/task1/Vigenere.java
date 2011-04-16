@@ -173,7 +173,6 @@ public class Vigenere extends Cipher {
 
     int choice2 = getUserInput("Moechten Sie auf " + nGramMostFrequentedMapped + " mappen oder auf " + nGramMostFrequentedMapped2);
 
-    // int computedShift = mostFrequented - nGramMostFrequentedMapped;
     int computedShift = choice - choice2;
 
     if (computedShift < 0) {
@@ -198,11 +197,11 @@ public class Vigenere extends Cipher {
       e.printStackTrace();
     }
 
-//    try {
-//      standardInput.close();
-//    } catch (IOException e) {
-//      e.printStackTrace();
-//    }
+    // try {
+    // standardInput.close();
+    // } catch (IOException e) {
+    // e.printStackTrace();
+    // }
     return data;
   }
 
