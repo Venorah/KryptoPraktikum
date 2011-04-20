@@ -15,9 +15,14 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import de.tubs.cs.iti.jcrypt.chiffre.CharacterMapping;
@@ -71,47 +76,59 @@ public class Vigenere extends Cipher {
       System.exit(1);
     }
 
-    // Logger("ciphertextList= "+ciphertextList);
+    Logger("ciphertextList= " + ciphertextList);
 
-    HashMap<Integer, Integer> quantities = getQuantities(ciphertextList);
+    // ngramme finden
 
-    Logger("quantities: " + quantities.toString());
+    // gcd -> periode d
 
-    int N = ciphertextList.size();
-
-    double IC = IC(N, quantities);
-    Logger("IC= " + IC);
-
-    int d = d(N, IC);
-    Logger("d= " + d);
-
-    int[] key = new int[d];
-
+    // in teiltexte zerlegen
     for (int i = 0; i < d; i++) {
       LinkedList<Integer> sublist = getSublist(ciphertextList, i, d);
-      // Logger("" + sublist);
-      HashMap<Integer, Integer> quantityHashMap = getQuantities(sublist);
-      Logger("" + quantityHashMap);
-      key[i] = calculateShift(quantityHashMap);
+      Logger("" + sublist);
+      // HashMap<Integer, Integer> quantityHashMap = getQuantities(sublist);
+      // Logger("" + quantityHashMap);
+
+      // mit friedman auf periode 1 testen
+      int d_friedman = friedmanTest(sublist);
+
     }
 
-    String keyOutput = "";
-    String keyOutputRemaped = "";
-    for (int j = 0; j < key.length; j++) {
-      // int:
-      keyOutput += key[j] + " ";
-      // ascii:
-      int remapedChar = charMap.remapChar(key[j]);
-      keyOutputRemaped += remapedChar + " ";
-    }
+    // auf teiltexte Caesar anwenden
+    // ----------------------------
+    HashMap<Integer, Integer> quantityHashMap = getQuantities(ciphertextList); // TODO
+    Logger("quantity" + quantityHashMap);
+    int[] caesar = breakCaesar(quantityHashMap); // mögliche shifts für diesen caesar teiltext
+    // ----------------------------
 
-    Logger("Key as Integers: " + keyOutput);
-    Logger("Key as ASCII: " + keyOutputRemaped);
-    
-    // save as keyword
-    keyword = key;
-    
-    decipher(ciphertext, cleartext);
+    //
+    //
+    // // OLD:
+    // // int choice = getUserInput("Moechten Sie den Buchstaben " + mostFrequented + " ("+ (char)
+    // // charMap.remapChar(mostFrequented) + "), der am oeftesten vorkommt,\nauf " +
+    // // nGramMostFrequentedMapped + " ("+ (char) charMap.remapChar(nGramMostFrequentedMapped) +
+    // // ") oder auf " + nGramMostFrequentedMapped2 + " ("+ (char)
+    // // charMap.remapChar(nGramMostFrequentedMapped2) + ") mappen? ");
+    //
+    //
+    //
+    // String keyOutput = "";
+    // String keyOutputRemaped = "";
+    // for (int j = 0; j < key.length; j++) {
+    // // int:
+    // keyOutput += key[j] + " ";
+    // // ascii:
+    // int remapedChar = charMap.remapChar(key[j]);
+    // keyOutputRemaped += remapedChar + " ";
+    // }
+    //
+    // Logger("Key as Integers: " + keyOutput);
+    // Logger("Key as ASCII: " + keyOutputRemaped);
+    //
+    // // save as keyword
+    // keyword = key;
+    //
+    // decipher(ciphertext, cleartext);
 
     Logger("ende");
   }
@@ -140,7 +157,33 @@ public class Vigenere extends Cipher {
   }
 
   /**
+   * Return the greatest common divisor
+   */
+  private static int gcd(int a, int b) {
+    if (b == 0)
+      return a;
+    else
+      return gcd(b, a % b);
+  }
+
+  /**
+   * gcd over list
+   */
+  private int gcdOverList(LinkedList<Integer> list) {
+    Iterator<Integer> iter = list.iterator();
+    int gcd = list.get(0);
+    int b;
+    while (iter.hasNext()) {
+      b = (int) iter.next();
+      gcd = gcd(b, gcd);
+    }
+
+    return gcd;
+  }
+
+  /**
    * Chiffretext in Sublisten teilen
+   * 
    * @param list
    * @param start
    * @param period
@@ -157,41 +200,72 @@ public class Vigenere extends Cipher {
   }
 
   /**
-   * Shift berechnen
+   * Caesar brechen
+   * 
    * @param quantityHashMap
    * @return
    */
-  int calculateShift(HashMap<Integer, Integer> quantityHashMap) {
-    ArrayList<NGram> nGrams = FrequencyTables.getNGramsAsList(1, charMap);
+  int[] breakCaesar(HashMap<Integer, Integer> quantityHashMap) {
+    // eine linkedlist bauen, die die character representationen enthält, von vorne nach hinten
+    // sortiert nach der auftrittshäufigkeit
+    LinkedList<Integer> charactersByQuantity = new LinkedList<Integer>();
+    while (!quantityHashMap.isEmpty()) {
+      // größten wert aus quantityHashMap bekommen
+      int currKey = -1, currValue = -1, greatest = -1, mostFrequented = -1;
+      Iterator<Integer> it = quantityHashMap.keySet().iterator();
+      while (it.hasNext()) {
+        currKey = it.next();
+        currValue = quantityHashMap.get(currKey);
 
-    // größten wert aus quantityHashMap bekommen
-    int currKey = -1, currValue = -1, greatest = -1, mostFrequented = -1;
-    Iterator<Integer> it = quantityHashMap.keySet().iterator();
-    while (it.hasNext()) {
-      currKey = it.next();
-      currValue = quantityHashMap.get(currKey);
-      if (currValue > greatest) {
-        greatest = currValue;
-        mostFrequented = currKey;
+        if (currValue > greatest) {
+          greatest = currValue;
+          mostFrequented = currKey;
+        }
+      }
+      // den mostfrequented als ersten eintrag hinzufügen
+      charactersByQuantity.addLast(mostFrequented);
+      // diesen eintrag aus der hashmap entfernen
+      quantityHashMap.remove(mostFrequented);
+    }
+
+    Logger("breakCaesar charactersByQuantity=" + charactersByQuantity);
+
+    // die beiden häufigsten buchstaben im gewählten alphabet, normalerweise e und n
+    ArrayList<NGram> nGrams = FrequencyTables.getNGramsAsList(1, charMap);
+    int[] nGramMostFrequentedMapped = new int[2];
+    nGramMostFrequentedMapped[0] = charMap.mapChar(Integer.parseInt(nGrams.get(0).getIntegers())); // e
+    nGramMostFrequentedMapped[1] = charMap.mapChar(Integer.parseInt(nGrams.get(1).getIntegers())); // n
+
+    // mögliche shifts
+    int[] computedShift = new int[4];
+    // häufigster auf e
+    computedShift[0] = charactersByQuantity.get(0) - nGramMostFrequentedMapped[0];
+    // 2. häufigster auf e
+    computedShift[1] = charactersByQuantity.get(1) - nGramMostFrequentedMapped[0];
+    // häufigster auf n
+    computedShift[2] = charactersByQuantity.get(0) - nGramMostFrequentedMapped[1];
+    // 2. häufigster auf n
+    computedShift[3] = charactersByQuantity.get(1) - nGramMostFrequentedMapped[1];
+
+    // alle computedShifts vom negativen ins positive
+    for (int i = 0; i < computedShift.length; i++) {
+      if (computedShift[i] < 0) {
+        computedShift[i] += modulus;
       }
     }
-    Logger("mostFreq= " + mostFrequented);
 
-    int nGramMostFrequentedMapped = charMap.mapChar(Integer.parseInt(nGrams.get(0).getIntegers()));
-    int nGramMostFrequentedMapped2 = charMap.mapChar(Integer.parseInt(nGrams.get(1).getIntegers()));
-    
-    int choice = getUserInput("Moechten Sie den Buchstaben " + mostFrequented + " ("+ (char) charMap.remapChar(mostFrequented) + "), der am oeftesten vorkommt,\nauf " + nGramMostFrequentedMapped + " ("+ (char) charMap.remapChar(nGramMostFrequentedMapped) + ") oder auf " + nGramMostFrequentedMapped2 + " ("+ (char) charMap.remapChar(nGramMostFrequentedMapped2) + ") mappen? ");
-    
-    int computedShift = mostFrequented - choice;
-    if (computedShift < 0) {
-      computedShift += modulus;
+    // debug logging
+    Logger("breakCaesar computedShift= ");
+    for (int i = 0; i < computedShift.length; i++) {
+      Logger("" + computedShift[i] + ", ");
     }
 
     return computedShift;
   }
 
   /**
-   * Helper Methode für für User Input
+   * Helper Methode für User Input
+   * 
    * @param question
    * @return data
    */
@@ -203,10 +277,9 @@ public class Vigenere extends Cipher {
       Logger(question);
       data = Integer.parseInt(standardInput.readLine());
     } catch (NumberFormatException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     } catch (IOException e) {
-      Logger("WTF?");
+      Logger("Problem beim Einlesen");
       e.printStackTrace();
     }
 
@@ -214,7 +287,34 @@ public class Vigenere extends Cipher {
   }
 
   /**
-   * Berechne IC
+   * Berechne Periode d mittels Friedman-Test
+   * 
+   * @param ciphertextList
+   * @return d
+   */
+  int friedmanTest(LinkedList<Integer> ciphertextList) {
+    HashMap<Integer, Integer> quantities = getQuantities(ciphertextList);
+
+    Logger("friedmanTest: quantities= " + quantities.toString());
+
+    int N = ciphertextList.size();
+
+    double IC = IC(N, quantities);
+    Logger("friedmanTest IC= " + IC);
+
+    double d = d(N, IC);
+
+    int d_round = (int) Math.round(d);
+
+    Logger("friedmanTest d= " + d);
+    Logger("friedmanTest d gerundet= " + d_round);
+
+    return d_round;
+  }
+
+  /**
+   * Friedman-Test: Berechne IC
+   * 
    * @param N
    * @param quantities
    * @return IC
@@ -235,14 +335,15 @@ public class Vigenere extends Cipher {
 
     return IC;
   }
-  
+
   /**
-   * Berechne Periode d
+   * Friedman-Test: Berechne Periode d
+   * 
    * @param N
    * @param IC
    * @return d
    */
-  private int d(int N, double IC) {
+  private double d(int N, double IC) {
     // Summe der relativen Häufigkeiten eines beliebigen zufälligen chiffretextes:
     double sum = sumP();
 
@@ -251,17 +352,11 @@ public class Vigenere extends Cipher {
 
     double d = (enumerator / denominator);
 
-    Logger("d ungerundet= " + d);
-
-    int d_round = (int) Math.round(d);
-    
-    Logger("d gerundet= " + d);
-
-    return d_round;
+    return d;
   }
 
   /**
-   * Berechne summe mit pi's für standard nGram frequency tabellen
+   * Friedman-Test: Berechne summe mit pi's für standard nGram frequency tabellen
    * 
    * @param modulus
    * @return
@@ -306,7 +401,7 @@ public class Vigenere extends Cipher {
 
           int index = d++ % keyword.length;
 
-          int val = character - keyword[index];          
+          int val = character - keyword[index];
           if (val < 0) {
             val += modulus;
           }
