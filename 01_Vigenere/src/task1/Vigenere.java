@@ -187,13 +187,16 @@ public class Vigenere extends Cipher {
 
     Iterator<Integer> keyIterator = map.keySet().iterator();
 
+    HashMap<Integer, Integer> modifiedMap = new HashMap<Integer, Integer>();
+
     while (keyIterator.hasNext()) {
       int key = keyIterator.next();
       int value = map.get(key);
 
-      if (value < max / 2) {
-        map.remove(key);
+      if (value > max / 2) {
+        modifiedMap.put(key, value);
       }
+
     }
 
     return map;
