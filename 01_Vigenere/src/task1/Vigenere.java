@@ -79,20 +79,26 @@ public class Vigenere extends Cipher {
     Logger("ciphertextList= " + ciphertextList);
 
     // ngramme finden
-
+    HashMap<Integer, Integer> intervalFrequencies = getIntervalFrequencies(ciphertextList, 3);
+    
+    Logger("intervalFrequencies= "+intervalFrequencies);
+    
+//    intervalFrequencies 
+    
+    
     // gcd -> periode d
 
     // in teiltexte zerlegen
-    for (int i = 0; i < d; i++) {
-      LinkedList<Integer> sublist = getSublist(ciphertextList, i, d);
-      Logger("" + sublist);
-      // HashMap<Integer, Integer> quantityHashMap = getQuantities(sublist);
-      // Logger("" + quantityHashMap);
-
-      // mit friedman auf periode 1 testen
-      int d_friedman = friedmanTest(sublist);
-
-    }
+//    for (int i = 0; i < d; i++) {
+//      LinkedList<Integer> sublist = getSublist(ciphertextList, i, d);
+//      Logger("" + sublist);
+//      // HashMap<Integer, Integer> quantityHashMap = getQuantities(sublist);
+//      // Logger("" + quantityHashMap);
+//
+//      // mit friedman auf periode 1 testen
+//      int d_friedman = friedmanTest(sublist);
+//
+//    }
 
     // auf teiltexte Caesar anwenden
     // ----------------------------
@@ -235,11 +241,9 @@ public class Vigenere extends Cipher {
   }
 
   /**
-<<<<<<< HEAD
    * Caesar brechen
-=======
    * Shift berechnen
->>>>>>> d25fbe6b96cf1dc72c808a968e49a58a84b697c9
+
    * 
    * @param quantityHashMap
    * @return
@@ -303,11 +307,7 @@ public class Vigenere extends Cipher {
   }
 
   /**
-<<<<<<< HEAD
    * Helper Methode für User Input
-=======
-   * Helper Methode für für User Input
->>>>>>> d25fbe6b96cf1dc72c808a968e49a58a84b697c9
    * 
    * @param question
    * @return data
@@ -330,7 +330,6 @@ public class Vigenere extends Cipher {
   }
 
   /**
-<<<<<<< HEAD
    * Berechne Periode d mittels Friedman-Test
    * 
    * @param ciphertextList
@@ -358,9 +357,6 @@ public class Vigenere extends Cipher {
 
   /**
    * Friedman-Test: Berechne IC
-=======
-   * Berechne IC
->>>>>>> d25fbe6b96cf1dc72c808a968e49a58a84b697c9
    * 
    * @param N
    * @param quantities
@@ -384,11 +380,7 @@ public class Vigenere extends Cipher {
   }
 
   /**
-<<<<<<< HEAD
    * Friedman-Test: Berechne Periode d
-=======
-   * Berechne Periode d
->>>>>>> d25fbe6b96cf1dc72c808a968e49a58a84b697c9
    * 
    * @param N
    * @param IC
