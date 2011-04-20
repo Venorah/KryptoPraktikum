@@ -78,38 +78,59 @@ public class Vigenere extends Cipher {
 
     Logger("ciphertextList= " + ciphertextList);
 
-    // intervalle zwischen ngrammen der länge 3 finden
-    HashMap<Integer, Integer> intervalFrequencies = getIntervalFrequencies(ciphertextList, 3);
-    Logger("intervalFrequencies= "+intervalFrequencies);
-    
-    // zufällig entstandene abstände löschen
-    LinkedList<Integer> intervalFrequenciesRest = (LinkedList<Integer>) removeUnnecessaryInformation(intervalFrequencies).values();
-    Logger("intervalFrequenciesRest= "+intervalFrequenciesRest);
-    
-    int d = gcdOverList(intervalFrequenciesRest);
-    Logger("d= "+ d);
-    
-    
-    // gcd -> periode d
+    // init
+    HashMap<Integer, Integer> intervalFrequencies;
+    LinkedList<Integer> intervalFrequenciesRest;
+    int d = 1;
+    double percent;
+
+    for (int nGramLength = 10; nGramLength > 2; nGramLength--) {
+      // intervalle zwischen ngrammen der länge 3 finden
+      intervalFrequencies = getIntervalFrequencies(ciphertextList, nGramLength);
+      Logger("intervalFrequencies= " + intervalFrequencies);
+
+      // suche nache einer periode != 1
+      percent = 0.1;
+      // init:
+      intervalFrequenciesRest = new LinkedList<Integer>(intervalFrequencies.keySet());
+      while ((intervalFrequenciesRest.size() > 2) && (d == 1)) {
+        d = gcdOverList(intervalFrequenciesRest);
+        Logger("d= " + d);
+        percent += 0.01f;
+
+        // liste verkleinern
+        HashMap<Integer, Integer> intervalFrequenciesRestHashMap = removeUnnecessaryInformation(intervalFrequencies, percent);
+        intervalFrequenciesRest = new LinkedList<Integer>(intervalFrequenciesRestHashMap.keySet());
+        Logger("intervalFrequenciesRest= " + intervalFrequenciesRest);
+      }
+
+      if (d != 1) {
+        Logger("jo d= " + d);
+        break;
+      }
+    }
+
+    if (d == 1) {
+      Logger("d=1 !!! Problem");
+      System.exit(0);
+    }
 
     // in teiltexte zerlegen
-    // for (int i = 0; i < d; i++) {
-    // LinkedList<Integer> sublist = getSublist(ciphertextList, i, d);
-    // Logger("" + sublist);
-    // // HashMap<Integer, Integer> quantityHashMap = getQuantities(sublist);
-    // // Logger("" + quantityHashMap);
-    //
-    // // mit friedman auf periode 1 testen
-    // int d_friedman = friedmanTest(sublist);
-    //
-    // }
+    for (int i = 0; i < d; i++) {
+      LinkedList<Integer> sublist = getSublist(ciphertextList, i, d);
+      Logger("" + sublist);
+      // HashMap<Integer, Integer> quantityHashMap = getQuantities(sublist);
+      // Logger("" + quantityHashMap);
 
-    // auf teiltexte Caesar anwenden
-    // ----------------------------
-    HashMap<Integer, Integer> quantityHashMap = getQuantities(ciphertextList); // TODO
-    Logger("quantity" + quantityHashMap);
-    int[] caesar = breakCaesar(quantityHashMap); // mögliche shifts für diesen caesar teiltext
-    // ----------------------------
+      // mit friedman auf periode 1 testen
+      int d_friedman = friedmanTest(sublist);
+      Logger("d_friedman= " + d_friedman);
+      
+      // auf teiltexte Caesar anwenden
+      HashMap<Integer, Integer> quantityHashMap = getQuantities(ciphertextList); // TODO
+      Logger("quantity" + quantityHashMap);
+      int[] caesar = breakCaesar(quantityHashMap); // mögliche shifts für diesen caesar teiltext
+    }
 
     //
     //
@@ -178,7 +199,7 @@ public class Vigenere extends Cipher {
     return frequenciesHashMap;
   }
 
-  private HashMap<Integer, Integer> removeUnnecessaryInformation(HashMap<Integer, Integer> map) {
+  private HashMap<Integer, Integer> removeUnnecessaryInformation(HashMap<Integer, Integer> map, double percent) {
 
     Iterator<Integer> valueIterator = map.values().iterator();
     int max = 0;
@@ -198,13 +219,14 @@ public class Vigenere extends Cipher {
       int key = keyIterator.next();
       int value = map.get(key);
 
-      if (value > max / 2) {
+      double threshold = max * percent;
+      if ((double) value > threshold) {
         modifiedMap.put(key, value);
       }
 
     }
 
-    return map;
+    return modifiedMap;
   }
 
   /**
@@ -332,7 +354,7 @@ public class Vigenere extends Cipher {
     // debug logging
     Logger("breakCaesar computedShift= ");
     for (int i = 0; i < computedShift.length; i++) {
-      Logger("" + computedShift[i] + ", ");
+      Logger("" + computedShift[i] + " (" + (char) charMap.remapChar(computedShift[i]) + ") , ");
     }
 
     return computedShift;
