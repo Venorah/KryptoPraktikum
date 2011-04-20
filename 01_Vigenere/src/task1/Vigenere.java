@@ -173,6 +173,11 @@ public class Vigenere extends Cipher {
 
     return frequenciesHashMap;
   }
+  
+  private HashMap<Integer, Integer> removeUnnecessaryInformation(HashMap<Integer, Integer> map){
+    
+    return map;
+  }
 
   /**
    * Generiere HashMap mit allen im Chiffretext vorkommenden Buchstaben und der jeweiligen Anzahl
