@@ -78,13 +78,18 @@ public class Vigenere extends Cipher {
 
     Logger("ciphertextList= " + ciphertextList);
 
-    // ngramme finden
+    // intervalle zwischen ngrammen der länge 3 finden
     HashMap<Integer, Integer> intervalFrequencies = getIntervalFrequencies(ciphertextList, 3);
-
-    Logger("intervalFrequencies= " + intervalFrequencies);
-
-    // intervalFrequencies
-
+    Logger("intervalFrequencies= "+intervalFrequencies);
+    
+    // zufällig entstandene abstände löschen
+    LinkedList<Integer> intervalFrequenciesRest = (LinkedList<Integer>) removeUnnecessaryInformation(intervalFrequencies).values();
+    Logger("intervalFrequenciesRest= "+intervalFrequenciesRest);
+    
+    int d = gcdOverList(intervalFrequenciesRest);
+    Logger("d= "+ d);
+    
+    
     // gcd -> periode d
 
     // in teiltexte zerlegen
