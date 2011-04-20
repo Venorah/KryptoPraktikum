@@ -80,27 +80,28 @@ public class Vigenere extends Cipher {
 
     // ngramme finden
     HashMap<Integer, Integer> intervalFrequencies = getIntervalFrequencies(ciphertextList, 3);
-    
     Logger("intervalFrequencies= "+intervalFrequencies);
     
-    LinkedList<Integer> intervalFrequenciesRest = 
+    LinkedList<Integer> intervalFrequenciesRest = (LinkedList<Integer>) removeUnnecessaryInformation(intervalFrequencies).values();
+    Logger("intervalFrequenciesRest= "+intervalFrequenciesRest);
     
     int d = gcdOverList(intervalFrequenciesRest);
+    Logger("d= "+ d);
     
     
     // gcd -> periode d
 
     // in teiltexte zerlegen
-//    for (int i = 0; i < d; i++) {
-//      LinkedList<Integer> sublist = getSublist(ciphertextList, i, d);
-//      Logger("" + sublist);
-//      // HashMap<Integer, Integer> quantityHashMap = getQuantities(sublist);
-//      // Logger("" + quantityHashMap);
-//
-//      // mit friedman auf periode 1 testen
-//      int d_friedman = friedmanTest(sublist);
-//
-//    }
+    // for (int i = 0; i < d; i++) {
+    // LinkedList<Integer> sublist = getSublist(ciphertextList, i, d);
+    // Logger("" + sublist);
+    // // HashMap<Integer, Integer> quantityHashMap = getQuantities(sublist);
+    // // Logger("" + quantityHashMap);
+    //
+    // // mit friedman auf periode 1 testen
+    // int d_friedman = friedmanTest(sublist);
+    //
+    // }
 
     // auf teiltexte Caesar anwenden
     // ----------------------------
@@ -140,7 +141,7 @@ public class Vigenere extends Cipher {
     Logger("ende");
   }
 
-  private static HashMap<Integer, Integer> getIntervalFrequencies(LinkedList<Integer> list, int n) {
+  private HashMap<Integer, Integer> getIntervalFrequencies(LinkedList<Integer> list, int n) {
     HashMap<Integer, Integer> frequenciesHashMap = new HashMap<Integer, Integer>();
     HashMap<String, Integer> stringPositionMap = new HashMap<String, Integer>();
 
@@ -174,6 +175,32 @@ public class Vigenere extends Cipher {
     }
 
     return frequenciesHashMap;
+  }
+
+  private HashMap<Integer, Integer> removeUnnecessaryInformation(HashMap<Integer, Integer> map) {
+
+    Iterator<Integer> valueIterator = map.values().iterator();
+    int max = 0;
+
+    while (valueIterator.hasNext()) {
+      int currentValue = valueIterator.next();
+      if (max < currentValue) {
+        max = currentValue;
+      }
+    }
+
+    Iterator<Integer> keyIterator = map.keySet().iterator();
+
+    while (keyIterator.hasNext()) {
+      int key = keyIterator.next();
+      int value = map.get(key);
+
+      if (value < max / 2) {
+        map.remove(key);
+      }
+    }
+
+    return map;
   }
 
   /**
@@ -243,9 +270,8 @@ public class Vigenere extends Cipher {
   }
 
   /**
-   * Caesar brechen
-   * Shift berechnen
-
+   * Caesar brechen Shift berechnen
+   * 
    * 
    * @param quantityHashMap
    * @return
