@@ -140,6 +140,7 @@ public class Vigenere extends Cipher {
               shift = caesar[j];
               break;
             }
+
           }
         }
 
@@ -160,23 +161,19 @@ public class Vigenere extends Cipher {
 
       String keyOutput = "";
       String keyOutputRemaped = "";
-      keyword = new int[d];
       for (int j = 0; j < key.length; j++) {
         // int:
         keyOutput += key[j] + " ";
         // ascii:
         char remapedChar = (char) charMap.remapChar(key[j]);
         keyOutputRemaped += remapedChar;
-        
-        // save as keyword
-        keyword[j] = charMap.remapChar(key[j]);
       }
 
       Logger("Key as Integers: " + keyOutput);
       Logger("Key as String: " + keyOutputRemaped);
 
       // save as keyword
-//      keyword = key;
+      keyword = key;
 
       cleartext.close();
       ciphertext.close();
