@@ -68,7 +68,7 @@ public class Vigenere extends Cipher {
           // eigentlich nicht auftreten können.
         }
       }
-      cleartext.close();
+      // cleartext.close();
       ciphertext.close();
     } catch (IOException e) {
       System.err.println("Abbruch: Fehler beim Zugriff auf Klar- oder " + "Chiffretextdatei.");
@@ -114,11 +114,10 @@ public class Vigenere extends Cipher {
       Logger("d=1 !!! Problem");
       System.exit(0);
     }
-    
+
     // key initialisieren
     int[] key = new int[d];
-    
-    
+
     // in teiltexte zerlegen
     for (int i = 0; i < d; i++) {
       LinkedList<Integer> sublist = getSublist(ciphertextList, i, d);
@@ -150,7 +149,7 @@ public class Vigenere extends Cipher {
       if (shift == -1) {
         Logger("prob");
       }
-      
+
       // shift als key-wert nehmen
       key[i] = shift;
     }
@@ -171,7 +170,7 @@ public class Vigenere extends Cipher {
     // save as keyword
     keyword = key;
 
-    decipher(ciphertext, cleartext);
+    // decipher(ciphertext, cleartext);
     Logger("ende");
   }
 
