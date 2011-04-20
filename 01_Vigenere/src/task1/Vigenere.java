@@ -83,7 +83,9 @@ public class Vigenere extends Cipher {
     
     Logger("intervalFrequencies= "+intervalFrequencies);
     
-//    intervalFrequencies 
+    LinkedList<Integer> intervalFrequenciesRest = 
+    
+    int d = gcdOverList(intervalFrequenciesRest);
     
     
     // gcd -> periode d
