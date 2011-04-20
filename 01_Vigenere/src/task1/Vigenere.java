@@ -68,6 +68,7 @@ public class Vigenere extends Cipher {
           // eigentlich nicht auftreten können.
         }
       }
+      ciphertext.close();
 
       Logger("ciphertextList= " + ciphertextList);
 
@@ -172,11 +173,10 @@ public class Vigenere extends Cipher {
       Logger("Key as Integers: " + keyOutput);
       Logger("Key as String: " + keyOutputRemaped);
 
+      Logger("modulus " + modulus);
       // save as keyword
       keyword = key;
 
-      cleartext.close();
-      ciphertext.close();
     } catch (IOException e) {
       System.err.println("Abbruch: Fehler beim Zugriff auf Klar- oder " + "Chiffretextdatei.");
       e.printStackTrace();
