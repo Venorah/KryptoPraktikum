@@ -68,6 +68,116 @@ public class Vigenere extends Cipher {
           // eigentlich nicht auftreten können.
         }
       }
+
+      Logger("ciphertextList= " + ciphertextList);
+
+      // init
+      HashMap<Integer, Integer> intervalFrequencies;
+      LinkedList<Integer> intervalFrequenciesRest;
+      int d = 1;
+      double percent;
+
+      for (int nGramLength = 10; nGramLength > 2; nGramLength--) {
+        // intervalle zwischen ngrammen der länge 3 finden
+        intervalFrequencies = getIntervalFrequencies(ciphertextList, nGramLength);
+        Logger("intervalFrequencies= " + intervalFrequencies);
+
+        // suche nache einer periode != 1
+        percent = 0.1;
+        // init:
+        intervalFrequenciesRest = new LinkedList<Integer>(intervalFrequencies.keySet());
+        while ((intervalFrequenciesRest.size() > 2) && (d == 1)) {
+          d = gcdOverList(intervalFrequenciesRest);
+          Logger("d= " + d);
+          percent += 0.01f;
+
+          // liste verkleinern
+          HashMap<Integer, Integer> intervalFrequenciesRestHashMap = removeUnnecessaryInformation(intervalFrequencies, percent);
+          intervalFrequenciesRest = new LinkedList<Integer>(intervalFrequenciesRestHashMap.keySet());
+          Logger("intervalFrequenciesRest= " + intervalFrequenciesRest);
+        }
+
+        // beende schleife wenn d gefunden wurde
+        if (d != 1) {
+          break;
+        }
+      }
+
+      if (d == 1) {
+        int d_friedman = friedmanTest(ciphertextList);
+        Logger("Durch den Kasiski-Test konnte keine sinnvolle Periode gefunden werden! Laut Friedman-Test müsste die Periode " + d_friedman + " sein.\nDeshalb nehmen wir jetzt die!");
+        d = d_friedman;
+        // System.exit(0);
+      }
+
+      // key initialisieren
+      int[] key = new int[d];
+
+      // in teiltexte zerlegen
+      for (int i = 0; i < d; i++) {
+        LinkedList<Integer> sublist = getSublist(ciphertextList, i, d);
+        // Logger("" + sublist);
+
+        // mit friedman auf periode 1 testen
+        int d_friedman = friedmanTest(sublist);
+        // Logger("d_friedman= " + d_friedman);
+
+        if (d_friedman != 1) {
+          Logger("Die Periode scheint nicht ganz richtig zu sein, da der Friedman-Test keine 1 als Periode zurückgibt!");
+          System.exit(0);
+        }
+
+        // auf teiltexte Caesar anwenden
+        HashMap<Integer, Integer> quantityHashMap = getQuantities(sublist);
+        Logger("quantity" + quantityHashMap);
+        int[] caesar = breakCaesar(quantityHashMap); // mögliche shifts für diesen caesar teiltext
+
+        // shift nehmen der am öftesten vorkommt
+        int shift = -1;
+        for (int j = 0; j < caesar.length; j++) {
+          for (int k = 0; k < caesar.length; k++) {
+            if (caesar[j] == caesar[k]) {
+              shift = caesar[j];
+              break;
+            }
+          }
+        }
+
+        Logger("shift= " + shift);
+
+        // wenn kein shift doppelt vorkommt, soll der benutzer auswählen!
+        if (shift == -1) {
+          Logger("Der Shift konnte nicht automatisch gefunden werden. Wählen Sie zwischen den folgenden Zahlen:");
+          for (int l = 0; l < caesar.length; l++) {
+            System.out.print("" + caesar[i] + " (" + (char) charMap.remapChar(caesar[i]) + ") , ");
+          }
+          shift = getUserInput("Eingabe: ");
+        }
+
+        // shift als key-wert nehmen
+        key[i] = shift;
+      }
+
+      String keyOutput = "";
+      String keyOutputRemaped = "";
+      keyword = new int[d];
+      for (int j = 0; j < key.length; j++) {
+        // int:
+        keyOutput += key[j] + " ";
+        // ascii:
+        char remapedChar = (char) charMap.remapChar(key[j]);
+        keyOutputRemaped += remapedChar;
+        
+        // save as keyword
+        keyword[j] = charMap.remapChar(key[j]);
+      }
+
+      Logger("Key as Integers: " + keyOutput);
+      Logger("Key as String: " + keyOutputRemaped);
+
+      // save as keyword
+//      keyword = key;
+
       cleartext.close();
       ciphertext.close();
     } catch (IOException e) {
@@ -75,104 +185,6 @@ public class Vigenere extends Cipher {
       e.printStackTrace();
       System.exit(1);
     }
-
-    Logger("ciphertextList= " + ciphertextList);
-
-    // init
-    HashMap<Integer, Integer> intervalFrequencies;
-    LinkedList<Integer> intervalFrequenciesRest;
-    int d = 1;
-    double percent;
-
-    for (int nGramLength = 10; nGramLength > 2; nGramLength--) {
-      // intervalle zwischen ngrammen der länge 3 finden
-      intervalFrequencies = getIntervalFrequencies(ciphertextList, nGramLength);
-      Logger("intervalFrequencies= " + intervalFrequencies);
-
-      // suche nache einer periode != 1
-      percent = 0.1;
-      // init:
-      intervalFrequenciesRest = new LinkedList<Integer>(intervalFrequencies.keySet());
-      while ((intervalFrequenciesRest.size() > 2) && (d == 1)) {
-        d = gcdOverList(intervalFrequenciesRest);
-        Logger("d= " + d);
-        percent += 0.01f;
-
-        // liste verkleinern
-        HashMap<Integer, Integer> intervalFrequenciesRestHashMap = removeUnnecessaryInformation(intervalFrequencies, percent);
-        intervalFrequenciesRest = new LinkedList<Integer>(intervalFrequenciesRestHashMap.keySet());
-        Logger("intervalFrequenciesRest= " + intervalFrequenciesRest);
-      }
-
-      if (d != 1) {
-        Logger("jo d= " + d);
-        break;
-      }
-    }
-
-    if (d == 1) {
-      Logger("d=1 !!! Problem");
-      System.exit(0);
-    }
-    
-    // key initialisieren
-    int[] key = new int[d];
-    
-    
-    // in teiltexte zerlegen
-    for (int i = 0; i < d; i++) {
-      LinkedList<Integer> sublist = getSublist(ciphertextList, i, d);
-      Logger("" + sublist);
-      // HashMap<Integer, Integer> quantityHashMap = getQuantities(sublist);
-      // Logger("" + quantityHashMap);
-
-      // mit friedman auf periode 1 testen
-      int d_friedman = friedmanTest(sublist);
-      Logger("d_friedman= " + d_friedman);
-
-      // auf teiltexte Caesar anwenden
-      HashMap<Integer, Integer> quantityHashMap = getQuantities(sublist);
-      Logger("quantity" + quantityHashMap);
-      int[] caesar = breakCaesar(quantityHashMap); // mögliche shifts für diesen caesar teiltext
-
-      // shift nehmen der am öftesten vorkommt
-      int shift = -1;
-      for (int j = 0; j < caesar.length; j++) {
-        for (int k = 0; k < caesar.length; k++) {
-          if (caesar[j] == caesar[k]) {
-            shift = caesar[j];
-            break;
-          }
-        }
-      }
-
-      Logger("shift= " + shift);
-      if (shift == -1) {
-        Logger("prob");
-      }
-      
-      // shift als key-wert nehmen
-      key[i] = shift;
-    }
-
-    String keyOutput = "";
-    String keyOutputRemaped = "";
-    for (int j = 0; j < key.length; j++) {
-      // int:
-      keyOutput += key[j] + " ";
-      // ascii:
-      char remapedChar = (char) charMap.remapChar(key[j]);
-      keyOutputRemaped += remapedChar + " ";
-    }
-
-    Logger("Key as Integers: " + keyOutput);
-    Logger("Key as String: " + keyOutputRemaped);
-
-    // save as keyword
-    keyword = key;
-
-    decipher(ciphertext, cleartext);
-    Logger("ende");
   }
 
   private HashMap<Integer, Integer> getIntervalFrequencies(LinkedList<Integer> list, int n) {
