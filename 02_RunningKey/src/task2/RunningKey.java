@@ -238,9 +238,11 @@ public class RunningKey extends Cipher {
 
   private String getTextAsString(BufferedReader br) {
     String s = "", story = "";
+    int character = 0;
     try {
-      while ((s = br.readLine()) != null) {
-        story = story + s;
+      while ((character = br.read()) != -1) {
+        char c = (char) character;
+        story = story + c;
       }
     } catch (IOException e) {
       e.printStackTrace();
