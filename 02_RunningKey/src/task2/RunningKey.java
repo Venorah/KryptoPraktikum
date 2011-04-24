@@ -13,92 +13,125 @@ package task2;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
+import java.util.StringTokenizer;
 
+import de.tubs.cs.iti.jcrypt.chiffre.CharacterMapping;
 import de.tubs.cs.iti.jcrypt.chiffre.Cipher;
 
-/**
- * Dummy-Klasse für die Chiffre mit laufendem Schlüssel.
- *
- * @author Martin Klußmann
- * @version 1.0 - Tue Mar 30 16:23:47 CEST 2010
- */
 public class RunningKey extends Cipher {
 
-  /**
-   * Analysiert den durch den Reader <code>ciphertext</code> gegebenen
-   * Chiffretext, bricht die Chiffre bzw. unterstützt das Brechen der Chiffre
-   * (ggf. interaktiv) und schreibt den Klartext mit dem Writer
-   * <code>cleartext</code>.
-   *
-   * @param ciphertext
-   * Der Reader, der den Chiffretext liefert.
-   * @param cleartext
-   * Der Writer, der den Klartext schreiben soll.
-   */
-  public void breakCipher(BufferedReader ciphertext, BufferedWriter cleartext) {
+  File text;
+
+  public void makeKey() {
+
+    BufferedReader standardInput = launcher.openStandardInput();
+    boolean accepted = false;
+
+    do {
+      Logger("Geben Sie den Modulus ein: ");
+      try {
+        modulus = Integer.parseInt(standardInput.readLine());
+        if (modulus < 1) {
+          Logger("Ein Modulus < 1 wird nicht akzeptiert. Bitte " + "korrigieren Sie Ihre Eingabe.");
+        } else {
+          String defaultAlphabet = CharacterMapping.getDefaultAlphabet(modulus);
+          if (!defaultAlphabet.equals("")) {
+            Logger("Vordefiniertes Alphabet: '" + defaultAlphabet + "'\nDieses vordefinierte Alphabet kann durch Angabe einer " + "geeigneten Alphabet-Datei\nersetzt werden. Weitere " + "Informationen finden Sie im Javadoc der Klasse\n'Character" + "Mapping'.");
+            accepted = true;
+          } else {
+            Logger("Warnung: Dem eingegebenen Modulus kann kein Default-" + "Alphabet zugeordnet werden.\nErstellen Sie zusätzlich zu " + "dieser Schlüssel- eine passende Alphabet-Datei.\nWeitere " + "Informationen finden Sie im Javadoc der Klasse 'Character" + "Mapping'.");
+            accepted = true;
+          }
+        }
+      } catch (NumberFormatException e) {
+        Logger("Fehler beim Parsen des Modulus. Bitte korrigieren" + " Sie Ihre Eingabe.");
+      } catch (IOException e) {
+        Logger("Abbruch: Fehler beim Lesen von der Standardeingabe.");
+        e.printStackTrace();
+        System.exit(1);
+      }
+    } while (!accepted);
+    accepted = false;
+
+    Logger("Folgende Dateien stehen zur Auswahl:");
+    File directory = new File("../text/");
+    String[] list = directory.list();
+    for (int i = 0; i < list.length; i++) {
+      Logger("[" + i + "] " + list[i]);
+    }
+    int choice = 0;
+    try {
+      Logger("Welche Datei soll zum Verschluesseln benutzt werden: ");
+      choice = Integer.parseInt(standardInput.readLine());
+    } catch (NumberFormatException e) {
+      e.printStackTrace();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+    text = new File("../text/" + list[choice]);
+
+    Logger("Using File: " + text.getName() + " with Modulus " + modulus);
 
   }
 
-  /**
-   * Entschlüsselt den durch den Reader <code>ciphertext</code> gegebenen
-   * Chiffretext und schreibt den Klartext mit dem Writer
-   * <code>cleartext</code>.
-   *
-   * @param ciphertext
-   * Der Reader, der den Chiffretext liefert.
-   * @param cleartext
-   * Der Writer, der den Klartext schreiben soll.
-   */
-  public void decipher(BufferedReader ciphertext, BufferedWriter cleartext) {
+  public void writeKey(BufferedWriter key) {
+    try {
+      key.write(modulus + " " + text.getName());
+      key.newLine();
+
+      Logger("Writing Information: ");
+      Logger("+--Modulus: " + modulus);
+      Logger("+--File: " + text.getName());
+
+      key.close();
+    } catch (IOException e) {
+      System.out.println("Abbruch: Fehler beim Schreiben oder Schließen der " + "Schlüsseldatei.");
+      e.printStackTrace();
+      System.exit(1);
+    }
 
   }
 
-  /**
-   * Verschlüsselt den durch den Reader <code>cleartext</code> gegebenen
-   * Klartext und schreibt den Chiffretext mit dem Writer
-   * <code>ciphertext</code>.
-   * 
-   * @param cleartext
-   * Der Reader, der den Klartext liefert.
-   * @param ciphertext
-   * Der Writer, der den Chiffretext schreiben soll.
-   */
+  public void readKey(BufferedReader key) {
+    try {
+      StringTokenizer st = new StringTokenizer(key.readLine(), " ");
+
+      modulus = Integer.parseInt(st.nextToken());
+      text = new File("../text/" + st.nextToken());
+
+      Logger("Reading Information: ");
+      Logger("+--Modulus: " + modulus);
+      Logger("+--File: " + text.getName());
+
+      key.close();
+    } catch (IOException e) {
+      System.err.println("Abbruch: Fehler beim Lesen oder Schließen der " + "Schlüsseldatei.");
+      e.printStackTrace();
+      System.exit(1);
+    } catch (NumberFormatException e) {
+      System.err.println("Abbruch: Fehler beim Parsen eines Wertes aus der " + "Schlüsseldatei.");
+      e.printStackTrace();
+      System.exit(1);
+    }
+  }
+
   public void encipher(BufferedReader cleartext, BufferedWriter ciphertext) {
 
   }
 
-  /**
-   * Erzeugt einen neuen Schlüssel.
-   * 
-   * @see #readKey readKey
-   * @see #writeKey writeKey
-   */
-  public void makeKey() {
-
-    System.out.println("Dummy für die Schlüsselerzeugung.");
-  }
-
-  /**
-   * Liest den Schlüssel mit dem Reader <code>key</code>.
-   * 
-   * @param key
-   * Der Reader, der aus der Schlüsseldatei liest.
-   * @see #makeKey makeKey
-   * @see #writeKey writeKey
-   */
-  public void readKey(BufferedReader key) {
+  public void decipher(BufferedReader ciphertext, BufferedWriter cleartext) {
 
   }
 
-  /**
-   * Schreibt den Schlüssel mit dem Writer <code>key</code>.
-   * 
-   * @param key
-   * Der Writer, der in die Schlüsseldatei schreibt.
-   * @see #makeKey makeKey
-   * @see #readKey readKey
-   */
-  public void writeKey(BufferedWriter key) {
+  public void breakCipher(BufferedReader ciphertext, BufferedWriter cleartext) {
 
   }
+
+  private static void Logger(String event) {
+    System.out.println("    RunningCipher$ " + event);
+  }
+
 }
