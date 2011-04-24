@@ -14,8 +14,12 @@ package task2;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.StringTokenizer;
+
+import javax.management.openmbean.KeyAlreadyExistsException;
 
 import de.tubs.cs.iti.jcrypt.chiffre.CharacterMapping;
 import de.tubs.cs.iti.jcrypt.chiffre.Cipher;
@@ -23,6 +27,7 @@ import de.tubs.cs.iti.jcrypt.chiffre.Cipher;
 public class RunningKey extends Cipher {
 
   File text;
+  int position = 42;
 
   public void makeKey() {
 
@@ -120,10 +125,130 @@ public class RunningKey extends Cipher {
 
   public void encipher(BufferedReader cleartext, BufferedWriter ciphertext) {
 
+    char[] cleartextArray = getTextAsString(cleartext).toCharArray();
+    int[] keyword = generateKeyArray(cleartextArray.length);
+
+    int size = 0;
+
+    boolean characterSkipped = false;
+
+    if (cleartextArray.length != keyword.length) {
+      Logger("Key did not match with cleartext!");
+      System.exit(1);
+    } else {
+      size = cleartextArray.length;
+    }
+
+    for (int i = 0; i < size; i++) {
+      int character = charMap.mapChar(cleartextArray[i]);
+      if (character != -1) {
+
+        character = (character + keyword[i]) % modulus;
+        character = charMap.remapChar(character);
+        try {
+          ciphertext.write(character);
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+      } else {
+        characterSkipped = true;
+      }
+    }
+    if (characterSkipped) {
+      Logger("Warnung: Mindestens ein Zeichen aus der " + "Klartextdatei ist im Alphabet nicht\nenthalten und wurde " + "überlesen.");
+    }
+    try {
+      cleartext.close();
+      ciphertext.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 
   public void decipher(BufferedReader ciphertext, BufferedWriter cleartext) {
 
+    char[] ciphertextArray = getTextAsString(ciphertext).toCharArray();
+    int[] keyword = generateKeyArray(ciphertextArray.length);
+
+    int size = 0;
+
+    if (ciphertextArray.length != keyword.length) {
+      Logger("Key did not match with ciphertext!");
+      System.exit(1);
+    } else {
+      size = ciphertextArray.length;
+    }
+
+    for (int i = 0; i < size; i++) {
+      int character = charMap.mapChar(ciphertextArray[i]);
+      if (character != -1) {
+        character = (character - keyword[i] + modulus) % modulus;
+        character = charMap.remapChar(character);
+
+        try {
+          cleartext.write(character);
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+      } else {
+        // Ein überlesenes Zeichen sollte bei korrekter Chiffretext-Datei
+        // eigentlich nicht auftreten können.
+      }
+    }
+    try {
+      cleartext.close();
+      ciphertext.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+  }
+
+  private int[] generateKeyArray(int size) {
+
+    int[] key = new int[size];
+    String story = "";
+
+    FileReader fr = null;
+    try {
+      fr = new FileReader(text);
+    } catch (FileNotFoundException e) {
+      e.printStackTrace();
+    }
+
+    BufferedReader br = new BufferedReader(fr);
+    String s;
+
+    story = getTextAsString(br);
+
+    char[] storyArray = story.toCharArray();
+
+    for (int i = position, j = 0; i < position + size; i++, j++) {
+      int mappedCharacter = charMap.mapChar(storyArray[i]);
+      key[j] = mappedCharacter;
+    }
+
+    // for (int i = 0; i < key.length; i++) {
+    // char tmp = (char) key[i];
+    // Logger(tmp + ": " + key[i]);
+    // }
+
+    return key;
+  }
+
+  private String getTextAsString(BufferedReader br) {
+    String s = "", story = "";
+    try {
+      while ((s = br.readLine()) != null) {
+        story = story + s;
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+    Logger("Read the whole story! Phew~");
+
+    return story;
   }
 
   public void breakCipher(BufferedReader ciphertext, BufferedWriter cleartext) {
