@@ -26,8 +26,9 @@ import de.tubs.cs.iti.jcrypt.chiffre.Cipher;
 
 public class RunningKey extends Cipher {
 
-  File text;
+  File keyFile;
   int position = 42;
+  BufferedReader keyBuffer;
 
   public void makeKey() {
 
@@ -76,20 +77,28 @@ public class RunningKey extends Cipher {
       e.printStackTrace();
     }
 
-    text = new File("../text/" + list[choice]);
+    keyFile = new File("../text/" + list[choice]);
 
-    Logger("Using File: " + text.getName() + " with Modulus " + modulus);
+    FileReader fr = null;
+    try {
+      fr = new FileReader(keyFile);
+    } catch (FileNotFoundException e) {
+      e.printStackTrace();
+    }
+    keyBuffer = new BufferedReader(fr);
+
+    Logger("Using File: " + keyFile.getName() + " with Modulus " + modulus);
 
   }
 
   public void writeKey(BufferedWriter key) {
     try {
-      key.write(modulus + " " + text.getName());
+      key.write(modulus + " " + keyFile.getName());
       key.newLine();
 
       Logger("Writing Information: ");
       Logger("+--Modulus: " + modulus);
-      Logger("+--File: " + text.getName());
+      Logger("+--File: " + keyFile.getName());
 
       key.close();
     } catch (IOException e) {
@@ -105,11 +114,19 @@ public class RunningKey extends Cipher {
       StringTokenizer st = new StringTokenizer(key.readLine(), " ");
 
       modulus = Integer.parseInt(st.nextToken());
-      text = new File("../text/" + st.nextToken());
+      keyFile = new File("../text/" + st.nextToken());
+
+      FileReader fr = null;
+      try {
+        fr = new FileReader(keyFile);
+      } catch (FileNotFoundException e) {
+        e.printStackTrace();
+      }
+      keyBuffer = new BufferedReader(fr);
 
       Logger("Reading Information: ");
       Logger("+--Modulus: " + modulus);
-      Logger("+--File: " + text.getName());
+      Logger("+--File: " + keyFile.getName());
 
       key.close();
     } catch (IOException e) {
@@ -124,6 +141,43 @@ public class RunningKey extends Cipher {
   }
 
   public void encipher(BufferedReader cleartext, BufferedWriter ciphertext) {
+
+    boolean characterSkipped = false;
+    int cipherChar = 0, clearChar = 0, keyChar = 0;
+
+    try {
+      while (((clearChar = cleartext.read()) != -1) && ((keyChar = keyBuffer.read()) != -1)) {
+        clearChar = charMap.mapChar(clearChar);
+        keyChar = charMap.mapChar(keyChar);
+        if (clearChar != -1) { // TODO Maybe also check keyChar?!
+          cipherChar = (clearChar + keyChar) % modulus;
+          cipherChar = charMap.remapChar(cipherChar);
+          try {
+            ciphertext.write(cipherChar);
+          } catch (IOException e) {
+            e.printStackTrace();
+          }
+        } else {
+          characterSkipped = true;
+        }
+      }
+    } catch (IOException e1) {
+      e1.printStackTrace();
+    }
+
+    if (characterSkipped) {
+      Logger("Warnung: Mindestens ein Zeichen aus der " + "Klartextdatei ist im Alphabet nicht\nenthalten und wurde " + "überlesen.");
+    }
+    try {
+      cleartext.close();
+      ciphertext.close();
+      keyBuffer.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  public void encipherOLD(BufferedReader cleartext, BufferedWriter ciphertext) {
 
     char[] cleartextArray = getTextAsString(cleartext).toCharArray();
     int[] keyword = generateKeyArray(cleartextArray.length);
@@ -166,6 +220,44 @@ public class RunningKey extends Cipher {
   }
 
   public void decipher(BufferedReader ciphertext, BufferedWriter cleartext) {
+
+    int cipherChar = 0, clearChar = 0, keyChar = 0;
+
+    try {
+      while (((cipherChar = ciphertext.read()) != -1) && ((keyChar = keyBuffer.read()) != -1)) {
+
+        cipherChar = charMap.mapChar(cipherChar);
+        keyChar = charMap.mapChar(keyChar);
+
+        if (cipherChar != -1) { // TODO Maybe also check keyChar?!
+
+          clearChar = (cipherChar - keyChar + modulus) % modulus;
+          clearChar = charMap.remapChar(clearChar);
+
+          try {
+            cleartext.write(clearChar);
+          } catch (IOException e) {
+            e.printStackTrace();
+          }
+        } else {
+          Logger("Wow!? Eh.. hi?");
+        }
+      }
+    } catch (IOException e1) {
+      e1.printStackTrace();
+    }
+
+    try {
+      cleartext.close();
+      ciphertext.close();
+      keyBuffer.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+  }
+
+  public void decipherOLD(BufferedReader ciphertext, BufferedWriter cleartext) {
 
     char[] ciphertextArray = getTextAsString(ciphertext).toCharArray();
     int[] keyword = generateKeyArray(ciphertextArray.length);
@@ -211,7 +303,7 @@ public class RunningKey extends Cipher {
 
     FileReader fr = null;
     try {
-      fr = new FileReader(text);
+      fr = new FileReader(keyFile);
     } catch (FileNotFoundException e) {
       e.printStackTrace();
     }
