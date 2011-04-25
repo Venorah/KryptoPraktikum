@@ -17,12 +17,15 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
 
 import de.tubs.cs.iti.jcrypt.chiffre.CharacterMapping;
 import de.tubs.cs.iti.jcrypt.chiffre.Cipher;
+import de.tubs.cs.iti.jcrypt.chiffre.FrequencyTables;
+import de.tubs.cs.iti.jcrypt.chiffre.NGram;
 
 public class RunningKey extends Cipher {
 
@@ -347,6 +350,33 @@ public class RunningKey extends Cipher {
 
   public void breakCipher(BufferedReader ciphertext, BufferedWriter cleartext) {
 
+  }
+
+  private double bewertung(double g1, double g2, double g3) {
+
+    double replaceMe = 42;
+    double result = 0;
+    double k1 = 0, k2 = 0, k3 = 0;
+    double s1 = 0, s2 = 0, s3 = 0;
+
+    // ArrayList<NGram> nGrams = FrequencyTables.getNGramsAsList(1, charMap);
+
+    for (int i = 1; i <= 4; i++) {
+      k1 += replaceMe;
+      s1 += replaceMe;
+    }
+    for (int i = 1; i <= 3; i++) {
+      k2 += replaceMe;
+      s2 += replaceMe;
+    }
+    for (int i = 1; i <= 2; i++) {
+      k3 += replaceMe;
+      s3 += replaceMe;
+    }
+
+    result = (g1 * k1 + g2 * k2 + g3 * k3) * (g1 * s1 + g2 * s2 + g3 * s3);
+
+    return result;
   }
 
   private static void Logger(String event) {
