@@ -18,6 +18,9 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.StringTokenizer;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
@@ -351,15 +354,35 @@ public class RunningKey extends Cipher {
   public void breakCipher(BufferedReader ciphertext, BufferedWriter cleartext) {
 
   }
+  
+  private HashMap<String, Double> nGramToHashMap(ArrayList<NGram> nGram){
+    HashMap<String, Double> nGramHashMap = new HashMap<String, Double>();
+    
+    Iterator<NGram> it = nGram.iterator();
+    
+    while(it.hasNext()){
+      NGram n = it.next();
+      nGramHashMap.put(n.getCharacters(), n.getFrequency());
+    }
+    
+    return nGramHashMap;
+  }
 
-  private double bewertung(double g1, double g2, double g3) {
+  private double bewertung(String cipherPart, double g1, double g2, double g3) {
 
     double replaceMe = 42;
     double result = 0;
     double k1 = 0, k2 = 0, k3 = 0;
     double s1 = 0, s2 = 0, s3 = 0;
 
-    // ArrayList<NGram> nGrams = FrequencyTables.getNGramsAsList(1, charMap);
+    ArrayList<NGram> unigram = FrequencyTables.getNGramsAsList(1, charMap);
+    ArrayList<NGram> digram = FrequencyTables.getNGramsAsList(2, charMap);
+    ArrayList<NGram> trigram = FrequencyTables.getNGramsAsList(3, charMap);
+
+    HashMap<String, Double> unigramHashMap = nGramToHashMap(unigram);
+    HashMap<String, Double> digramHashMap = nGramToHashMap(digram);
+    HashMap<String, Double> trigramHashMap = nGramToHashMap(trigram);
+
 
     for (int i = 1; i <= 4; i++) {
       k1 += replaceMe;
