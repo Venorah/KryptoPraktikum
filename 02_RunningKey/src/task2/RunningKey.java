@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.StringTokenizer;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
@@ -183,48 +184,6 @@ public class RunningKey extends Cipher {
     }
   }
 
-  public void encipherOLD(BufferedReader cleartext, BufferedWriter ciphertext) {
-
-    char[] cleartextArray = getTextAsString(cleartext).toCharArray();
-    int[] keyword = generateKeyArray(cleartextArray.length);
-
-    int size = 0;
-
-    boolean characterSkipped = false;
-
-    if (cleartextArray.length != keyword.length) {
-      Logger("Key did not match with cleartext!");
-      System.exit(1);
-    } else {
-      size = cleartextArray.length;
-    }
-
-    for (int i = 0; i < size; i++) {
-      int character = charMap.mapChar(cleartextArray[i]);
-      if (character != -1) {
-
-        character = (character + keyword[i]) % modulus;
-        character = charMap.remapChar(character);
-        try {
-          ciphertext.write(character);
-        } catch (IOException e) {
-          e.printStackTrace();
-        }
-      } else {
-        characterSkipped = true;
-      }
-    }
-    if (characterSkipped) {
-      Logger("Warnung: Mindestens ein Zeichen aus der " + "Klartextdatei ist im Alphabet nicht\nenthalten und wurde " + "überlesen.");
-    }
-    try {
-      cleartext.close();
-      ciphertext.close();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-  }
-
   public void decipher(BufferedReader ciphertext, BufferedWriter cleartext) {
 
     int cipherChar = 0, clearChar = 0, keyChar = 0;
@@ -263,75 +222,25 @@ public class RunningKey extends Cipher {
 
   }
 
-  public void decipherOLD(BufferedReader ciphertext, BufferedWriter cleartext) {
+  public void breakCipher(BufferedReader ciphertext, BufferedWriter cleartext) {
 
-    char[] ciphertextArray = getTextAsString(ciphertext).toCharArray();
-    int[] keyword = generateKeyArray(ciphertextArray.length);
+    String[] cipherArray = getTextAsStringArray(ciphertext, 4);
 
-    int size = 0;
+    LinkedList<int[]> combinations = getCombination(cipherArray[1]);
+    Logger("combinations.size(): " + combinations.size());
+    
+    System.out.println(bewertung(combinations.get(1), 1, 1, 1));
 
-    if (ciphertextArray.length != keyword.length) {
-      Logger("Key did not match with ciphertext!");
-      System.exit(1);
-    } else {
-      size = ciphertextArray.length;
-    }
-
-    for (int i = 0; i < size; i++) {
-      int character = charMap.mapChar(ciphertextArray[i]);
-      if (character != -1) {
-        character = (character - keyword[i] + modulus) % modulus;
-        character = charMap.remapChar(character);
-
-        try {
-          cleartext.write(character);
-        } catch (IOException e) {
-          e.printStackTrace();
-        }
-      } else {
-        // Ein überlesenes Zeichen sollte bei korrekter Chiffretext-Datei
-        // eigentlich nicht auftreten können.
-      }
-    }
-    try {
-      cleartext.close();
-      ciphertext.close();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-
-  }
-
-  private int[] generateKeyArray(int size) {
-
-    int[] key = new int[size];
-    String story = "";
-
-    FileReader fr = null;
-    try {
-      fr = new FileReader(keyFile);
-    } catch (FileNotFoundException e) {
-      e.printStackTrace();
-    }
-
-    BufferedReader br = new BufferedReader(fr);
-    String s;
-
-    story = getTextAsString(br);
-
-    char[] storyArray = story.toCharArray();
-
-    for (int i = position, j = 0; i < position + size; i++, j++) {
-      int mappedCharacter = charMap.mapChar(storyArray[i]);
-      key[j] = mappedCharacter;
-    }
-
-    // for (int i = 0; i < key.length; i++) {
-    // char tmp = (char) key[i];
-    // Logger(tmp + ": " + key[i]);
+    // for(int i=0; i<combinations.size(); i++){
+    // int[] ar = combinations.get(i);
+    // String clear = "" + ar[0] + "," + ar[1] + "," + ar[2] + "," + ar[3];
+    // String key = "" + ar[4] + "," + ar[5] + "," + ar[6] + "," + ar[7];
+    //
+    // Logger("Clear: " + clear + "   Key: " + key);
     // }
 
-    return key;
+    // Suppress framework exception
+    System.exit(0);
   }
 
   private String getTextAsString(BufferedReader br) {
@@ -351,29 +260,115 @@ public class RunningKey extends Cipher {
     return story;
   }
 
-  public void breakCipher(BufferedReader ciphertext, BufferedWriter cleartext) {
+  private String[] getTextAsStringArray(BufferedReader br, int tokenSize) {
 
-  }
-  
-  private HashMap<String, Double> nGramToHashMap(ArrayList<NGram> nGram){
-    HashMap<String, Double> nGramHashMap = new HashMap<String, Double>();
-    
-    Iterator<NGram> it = nGram.iterator();
-    
-    while(it.hasNext()){
-      NGram n = it.next();
-      nGramHashMap.put(n.getCharacters(), n.getFrequency());
+    String text = getTextAsString(br);
+
+    String[] story = new String[(text.length() / tokenSize) + 1];
+
+    for (int i = 0; i < story.length; i++) {
+      if (text.length() > tokenSize) {
+        String subString = text.substring(0, tokenSize);
+        text = text.substring(tokenSize);
+        story[i] = subString;
+      } else {
+        story[i] = text;
+      }
     }
-    
-    return nGramHashMap;
+
+    return story;
   }
 
-  private double bewertung(String cipherPart, double g1, double g2, double g3) {
+  /**
+   * 
+   * @param cipherToken
+   *          Token of the length 4 from the cipher text.
+   * @return List with suggestions. Format of int[]: int[0-3] = cleartext suggestions int[4-6] =
+   *         keytext suggestions
+   */
+  private LinkedList<int[]> getCombination(String cipherToken) {
 
-    double replaceMe = 42;
-    double result = 0;
-    double k1 = 0, k2 = 0, k3 = 0;
-    double s1 = 0, s2 = 0, s3 = 0;
+    char[] cipherTokenArray = cipherToken.toCharArray();
+
+    int token0 = charMap.mapChar(cipherTokenArray[0]);
+    int token1 = charMap.mapChar(cipherTokenArray[1]);
+    int token2 = charMap.mapChar(cipherTokenArray[2]);
+    int token3 = charMap.mapChar(cipherTokenArray[3]);
+
+    int[] tokenArray = { token0, token1, token2, token3 };
+
+    HashMap<Integer, LinkedList<int[]>> map = cipherMapping();
+
+    LinkedList<int[]> la = map.get(tokenArray[0]);
+    LinkedList<int[]> lb = map.get(tokenArray[1]);
+    LinkedList<int[]> lc = map.get(tokenArray[2]);
+    LinkedList<int[]> ld = map.get(tokenArray[3]);
+
+    LinkedList<int[]> list = new LinkedList<int[]>();
+
+    for (int a = 0; a < la.size(); a++) {
+      int[] clear = new int[4];
+      int[] key = new int[4];
+
+      clear[0] = la.get(a)[0];
+      key[0] = lb.get(a)[1];
+
+      for (int b = 0; b < lb.size(); b++) {
+        clear[1] = lb.get(b)[0];
+        key[1] = lb.get(b)[1];
+
+        for (int c = 0; c < lc.size(); c++) {
+          clear[2] = lc.get(c)[0];
+          key[2] = lb.get(c)[1];
+
+          for (int d = 0; d < ld.size(); d++) {
+            clear[3] = ld.get(d)[0];
+            key[3] = lb.get(d)[1];
+
+            int[] mixed = { clear[0], clear[1], clear[2], clear[3], key[0], key[1], key[2], key[3] };
+            list.add(mixed);
+            // System.out.println(clear[0] + " " + clear[1] + " " + clear[2] + " " + clear[3]);
+          }
+        }
+      }
+    }
+
+    return list;
+  }
+
+  private HashMap<Integer, LinkedList<int[]>> cipherMapping() {
+
+    HashMap<Integer, LinkedList<int[]>> map = new HashMap<Integer, LinkedList<int[]>>();
+
+    for (int i = 0; i < modulus; i++) {
+      for (int j = 0; j < modulus; j++) {
+
+        int result = (i + j) % modulus;
+
+        int[] mapping = { i, j };
+
+        if (map.containsKey(result)) {
+          LinkedList<int[]> list = map.get(result);
+          list.add(mapping);
+        } else {
+          LinkedList<int[]> list = new LinkedList<int[]>();
+          list.add(mapping);
+          map.put(result, list);
+        }
+      }
+    }
+
+    return map;
+
+  }
+
+  private double bewertung(int[] combination, double g1, double g2, double g3) {
+
+    // char[] clearPartArray = clearPart.toCharArray();
+    // char[] keyPartArray = keyPart.toCharArray();
+
+    int[] clearArray = { combination[0], combination[1], combination[2], combination[3] };
+    int[] keyArray = { combination[4], combination[5], combination[6], combination[7] };
 
     ArrayList<NGram> unigram = FrequencyTables.getNGramsAsList(1, charMap);
     ArrayList<NGram> digram = FrequencyTables.getNGramsAsList(2, charMap);
@@ -383,23 +378,47 @@ public class RunningKey extends Cipher {
     HashMap<String, Double> digramHashMap = nGramToHashMap(digram);
     HashMap<String, Double> trigramHashMap = nGramToHashMap(trigram);
 
+    double result = 0;
+    double k1 = 0, k2 = 0, k3 = 0;
+    double s1 = 0, s2 = 0, s3 = 0;
 
-    for (int i = 1; i <= 4; i++) {
-      k1 += replaceMe;
-      s1 += replaceMe;
+    for (int i = 0; i < 4; i++) {
+      s1 += unigramHashMap.get(charMap.remapChar(clearArray[i]) + "");
+      k1 += unigramHashMap.get(charMap.remapChar(keyArray[i]) + "");
     }
-    for (int i = 1; i <= 3; i++) {
-      k2 += replaceMe;
-      s2 += replaceMe;
+    for (int i = 0; i < 3; i++) {
+
+      String stmp = charMap.remapChar(clearArray[i]) + "" + charMap.remapChar(clearArray[i + 1]);
+      String ktmp = charMap.remapChar(keyArray[i]) + "" + charMap.remapChar(keyArray[i + 1]);
+
+      s2 += digramHashMap.get(stmp);
+      k2 += digramHashMap.get(ktmp);
     }
-    for (int i = 1; i <= 2; i++) {
-      k3 += replaceMe;
-      s3 += replaceMe;
+    for (int i = 0; i < 2; i++) {
+
+      String stmp = charMap.remapChar(clearArray[i]) + charMap.remapChar(clearArray[i + 1]) + "" + charMap.remapChar(clearArray[i + 2]);
+      String ktmp = charMap.remapChar(keyArray[i]) + charMap.remapChar(keyArray[i + 1]) + "" + charMap.remapChar(keyArray[i + 2]);
+
+      s3 += trigramHashMap.get(stmp);
+      k3 += trigramHashMap.get(ktmp);
     }
 
     result = (g1 * k1 + g2 * k2 + g3 * k3) * (g1 * s1 + g2 * s2 + g3 * s3);
 
     return result;
+  }
+
+  private HashMap<String, Double> nGramToHashMap(ArrayList<NGram> nGram) {
+    HashMap<String, Double> nGramHashMap = new HashMap<String, Double>();
+
+    Iterator<NGram> it = nGram.iterator();
+
+    while (it.hasNext()) {
+      NGram n = it.next();
+      nGramHashMap.put(n.getCharacters(), n.getFrequency());
+    }
+
+    return nGramHashMap;
   }
 
   private static void Logger(String event) {
