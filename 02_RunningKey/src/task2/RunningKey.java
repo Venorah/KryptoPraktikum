@@ -364,6 +364,8 @@ public class RunningKey extends Cipher {
 
   private double bewertung(int[] combination, double g1, double g2, double g3) {
 
+    Logger("Ich bin da!!!");
+    
     // char[] clearPartArray = clearPart.toCharArray();
     // char[] keyPartArray = keyPart.toCharArray();
 
