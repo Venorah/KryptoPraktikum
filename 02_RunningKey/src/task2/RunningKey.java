@@ -151,18 +151,19 @@ public class RunningKey extends Cipher {
   public void encipher(BufferedReader cleartext, BufferedWriter ciphertext) {
     boolean characterSkipped = false;
     int cipherChar = -1, cipherCharMapped = -1, clearChar = -1, clearCharMapped = -1, keyChar = -1, keyCharMapped = -1;
-
+   
     try {
       // lese cleartext schritt für schritt
-      while (((clearChar = cleartext.read()) != -1)) {
-
+      while ((clearChar = cleartext.read()) != -1) {
         // use a char that is not -1
         while ((clearCharMapped = charMap.mapChar(clearChar)) == -1) {
           Logger("clearCharMapped "+clearCharMapped);
           characterSkipped = true;
           // read next char
-          if ((clearChar = cleartext.read()) == -1)
+          clearChar = cleartext.read();
+          if (clearChar == -1) {
             break;
+          }
         }
         Logger("clearCharMapped after "+clearCharMapped);
 
@@ -172,8 +173,10 @@ public class RunningKey extends Cipher {
           Logger("keyCharMapped "+keyCharMapped);
           characterSkipped = true;
           // read next char
-          if ((keyChar = keyBuffer.read()) == -1)
+          keyChar = keyBuffer.read();
+          if (keyChar == -1) {
             break;
+          }
         }
         Logger("keyCharMapped after "+keyCharMapped);
 
@@ -213,15 +216,16 @@ public class RunningKey extends Cipher {
 
     try {
       // lese ciphertext schritt für schritt
-      while (((cipherChar = ciphertext.read()) != -1)) {
-
+      while ((cipherChar = ciphertext.read()) != -1) {
         // use a char that is not -1
         while ((cipherCharMapped = charMap.mapChar(cipherChar)) == -1) {
           Logger("ciphermapped "+cipherCharMapped);
           characterSkipped = true;
           // read next char
-          if ((cipherChar = ciphertext.read()) == -1)
+          cipherChar = ciphertext.read();
+          if (cipherChar == -1) {
             break;
+          }
         }
         Logger("ciphermapped after "+cipherCharMapped);
 
@@ -231,8 +235,10 @@ public class RunningKey extends Cipher {
           Logger("keycharmapped "+keyCharMapped);
           characterSkipped = true;
           // read next char
-          if ((keyChar = keyBuffer.read()) == -1)
+          keyChar = keyBuffer.read();
+          if (keyChar == -1) {
             break;
+          }
         }
         Logger("keycharmapped after "+keyCharMapped);
 
