@@ -202,9 +202,11 @@ public class RunningKey extends Cipher {
     Logger("Berechne beste Kombination! Kann dauern...");
     TreeMap<Double, int[]> calculationMap = new TreeMap<Double, int[]>();
 
-    // for (int i = 0; i < combinationsList.size(); i++) {
-    for (int i = 0; i < 20000; i++) { //FIXME
-      Logger("Benutze Bewertungsmethode: " + i + "/" + combinationsList.size());
+    for (int i = 0; i < combinationsList.size(); i++) {
+      // for (int i = 0; i < 20000; i++) { //FIXME
+      if (i % 50000 == 0) {
+        Logger("Benutze Bewertungsmethode: " + i + "/" + combinationsList.size());
+      }
       int[] currentCombination = combinationsList.get(i);
       double calculation = bewertung(currentCombination, 1, 1, 1);
 
@@ -217,8 +219,8 @@ public class RunningKey extends Cipher {
     for (int i = 0; i < 10 & it.hasNext(); i++) {
       int[] currentArray = calculationMap.get(it.next());
 
-      clearPart = "" + ((char)charMap.remapChar(currentArray[0])) + ((char)charMap.remapChar(currentArray[1])) + ((char)charMap.remapChar(currentArray[2])) + ((char)charMap.remapChar(currentArray[3]));
-      keyPart = "" + ((char)charMap.remapChar(currentArray[4])) + ((char)charMap.remapChar(currentArray[5])) + ((char)charMap.remapChar(currentArray[6])) + ((char)charMap.remapChar(currentArray[7]));
+      clearPart = "" + ((char) charMap.remapChar(currentArray[0])) + ((char) charMap.remapChar(currentArray[1])) + ((char) charMap.remapChar(currentArray[2])) + ((char) charMap.remapChar(currentArray[3]));
+      keyPart = "" + ((char) charMap.remapChar(currentArray[4])) + ((char) charMap.remapChar(currentArray[5])) + ((char) charMap.remapChar(currentArray[6])) + ((char) charMap.remapChar(currentArray[7]));
       Logger("[" + i + "] CIPHER: " + cipherPart + " CLEAR: " + clearPart + " KEY: " + keyPart);
       userInputMap.put(i, clearPart);
     }
@@ -303,7 +305,7 @@ public class RunningKey extends Cipher {
       int[] keyCharsMapped = new int[4];
 
       clearCharsMapped[0] = la.get(a)[0];
-      keyCharsMapped[0] = lb.get(a)[1];
+      keyCharsMapped[0] = la.get(a)[1];
 
       for (int b = 0; b < lb.size(); b++) {
         clearCharsMapped[1] = lb.get(b)[0];
@@ -311,21 +313,117 @@ public class RunningKey extends Cipher {
 
         for (int c = 0; c < lc.size(); c++) {
           clearCharsMapped[2] = lc.get(c)[0];
-          keyCharsMapped[2] = lb.get(c)[1];
+          keyCharsMapped[2] = lc.get(c)[1];
 
           for (int d = 0; d < ld.size(); d++) {
             clearCharsMapped[3] = ld.get(d)[0];
-            keyCharsMapped[3] = lb.get(d)[1];
+            keyCharsMapped[3] = ld.get(d)[1];
 
             int[] mixed = { clearCharsMapped[0], clearCharsMapped[1], clearCharsMapped[2], clearCharsMapped[3], keyCharsMapped[0], keyCharsMapped[1], keyCharsMapped[2], keyCharsMapped[3] };
-            list.add(mixed);
-            // System.out.println(clear[0] + " " + clear[1] + " " + clear[2] + " " + clear[3]);
+
+            // Logger(clearCharsMapped[0] + " " + clearCharsMapped[1] + " " + clearCharsMapped[2] +
+            // " " + clearCharsMapped[3] + " " + keyCharsMapped[0] + " " + keyCharsMapped[1] + " " +
+            // keyCharsMapped[2] + " " + keyCharsMapped[3]);
+
+            if (isCorrectCombination(mixed)) {
+              list.add(mixed);
+            } else {
+              // Nothing to do, yay!
+            }
+
           }
         }
       }
     }
 
     return list;
+  }
+
+  private boolean isCorrectCombination(int[] combination) {
+
+    char c0 = (char) charMap.remapChar(combination[0]);
+    char c1 = (char) charMap.remapChar(combination[1]);
+    char c2 = (char) charMap.remapChar(combination[2]);
+    char c3 = (char) charMap.remapChar(combination[3]);
+    char k0 = (char) charMap.remapChar(combination[4]);
+    char k1 = (char) charMap.remapChar(combination[5]);
+    char k2 = (char) charMap.remapChar(combination[6]);
+    char k3 = (char) charMap.remapChar(combination[7]);
+
+    // Logger(c0 + " " + c1 + " " + c2 + " " + c3 + " " + k0 + " " + k1 + " " + k2 + " " + k3);
+
+    char[] clearArray = { c0, c1, c2, c3 };
+    char[] keyArray = { k0, k1, k2, k3 };
+
+    Logger(String.valueOf(clearArray) + " " + String.valueOf(keyArray));
+
+    double tmp = 0;
+
+    boolean unigram = false;
+    boolean digram = false;
+    boolean trigram = false;
+
+//    for (int i = 0; i < 4; i++) {
+//      try {
+//        tmp = unigramHashMap.get(clearArray[i] + "");
+//        unigram = unigram | true;
+//      } catch (Exception e) {
+//        unigram = unigram | false;
+//      }
+//
+//      try {
+//        tmp = unigramHashMap.get(keyArray[i] + "");
+//        unigram = unigram | true;
+//      } catch (Exception e) {
+//        unigram = unigram | false;
+//      }
+//    }
+
+    for (int i = 0; i < 3; i++) {
+      try {
+        tmp = (double) digramHashMap.get(clearArray[i] + clearArray[i + 1] + "");
+        Logger("1");
+        digram = digram | true;
+      } catch (Exception e) {
+        digram |= false;
+      }
+
+      try {
+        tmp = (double) digramHashMap.get(keyArray[i] + keyArray[i + 1] + "");
+        Logger("2");
+        digram |= true;
+      } catch (Exception e) {
+        digram |= false;
+      }
+
+    }
+    for (int i = 0; i < 2; i++) {
+      try {
+        tmp = (double) trigramHashMap.get(clearArray[i] + clearArray[i + 1] + clearArray[i + 2] + "");
+        Logger("3");
+        trigram |= true;
+      } catch (Exception e) {
+        trigram |= false;
+      }
+
+      try {
+        tmp = (double) trigramHashMap.get(keyArray[i] + keyArray[i + 1] + keyArray[i + 2] + "");
+        Logger("4");
+        trigram |= true;
+      } catch (Exception e) {
+        trigram |= false;
+      }
+
+    }
+
+    Logger("Checking: " + (unigram | digram | trigram));
+
+    if (unigram || digram || trigram) {
+      return true;
+    } else {
+      return false;
+    }
+
   }
 
   private HashMap<Integer, LinkedList<int[]>> cipherMapping() {
