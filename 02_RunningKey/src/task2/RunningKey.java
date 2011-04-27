@@ -149,24 +149,46 @@ public class RunningKey extends Cipher {
   }
 
   public void encipher(BufferedReader cleartext, BufferedWriter ciphertext) {
-
     boolean characterSkipped = false;
-    int cipherChar = 0, clearChar = 0, keyChar = 0;
+    int cipherChar = -1, cipherCharMapped = -1, clearChar = -1, clearCharMapped = -1, keyChar = -1, keyCharMapped = -1;
 
     try {
-      while (((clearChar = cleartext.read()) != -1) && ((keyChar = keyBuffer.read()) != -1)) {
-        clearChar = charMap.mapChar(clearChar);
-        keyChar = charMap.mapChar(keyChar);
-        if (clearChar != -1 && keyChar != -1) { // TODO Maybe also check keyChar?!
-          cipherChar = (clearChar + keyChar) % modulus;
-          cipherChar = charMap.remapChar(cipherChar);
+      // lese cleartext schritt für schritt
+      while (((clearChar = cleartext.read()) != -1)) {
+
+        // use a char that is not -1
+        while ((clearCharMapped = charMap.mapChar(clearChar)) == -1) {
+          Logger("clearCharMapped "+clearCharMapped);
+          characterSkipped = true;
+          // read next char
+          if ((clearChar = cleartext.read()) == -1)
+            break;
+        }
+        Logger("clearCharMapped after "+clearCharMapped);
+
+        // read next keychar
+        keyChar = keyBuffer.read();
+        while ((keyCharMapped = charMap.mapChar(keyChar)) == -1) {
+          Logger("keyCharMapped "+keyCharMapped);
+          characterSkipped = true;
+          // read next char
+          if ((keyChar = keyBuffer.read()) == -1)
+            break;
+        }
+        Logger("keyCharMapped after "+keyCharMapped);
+
+        if (clearCharMapped != -1 && keyCharMapped != 1) {
+          cipherCharMapped = (clearCharMapped + keyCharMapped) % modulus;
+          Logger("clear enc: " + clearCharMapped);
+          Logger("key enc: " + keyCharMapped);
+          Logger("-> cipher enc: " + cipherCharMapped);
+          cipherChar = charMap.remapChar(cipherCharMapped);
+          Logger("cipher enc ascii: " + cipherChar);
           try {
             ciphertext.write(cipherChar);
           } catch (IOException e) {
             e.printStackTrace();
           }
-        } else {
-          characterSkipped = true;
         }
       }
     } catch (IOException e1) {
@@ -174,44 +196,7 @@ public class RunningKey extends Cipher {
     }
 
     if (characterSkipped) {
-      Logger("Warnung: Mindestens ein Zeichen aus der " + "Klartextdatei ist im Alphabet nicht\nenthalten und wurde " + "überlesen.");
-    }
-    try {
-      cleartext.close();
-      ciphertext.close();
-      keyBuffer.close();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-  }
-  
-  public void encipherOLD(BufferedReader cleartext, BufferedWriter ciphertext) {
-
-    boolean characterSkipped = false;
-    int cipherChar = 0, clearChar = 0, keyChar = 0;
-
-    try {
-      while (((clearChar = cleartext.read()) != -1) && ((keyChar = keyBuffer.read()) != -1)) {
-        clearChar = charMap.mapChar(clearChar);
-        keyChar = charMap.mapChar(keyChar);
-        if (clearChar != -1 && keyChar != -1) { // TODO Maybe also check keyChar?!
-          cipherChar = (clearChar + keyChar) % modulus;
-          cipherChar = charMap.remapChar(cipherChar);
-          try {
-            ciphertext.write(cipherChar);
-          } catch (IOException e) {
-            e.printStackTrace();
-          }
-        } else {
-          characterSkipped = true;
-        }
-      }
-    } catch (IOException e1) {
-      e1.printStackTrace();
-    }
-
-    if (characterSkipped) {
-      Logger("Warnung: Mindestens ein Zeichen aus der " + "Klartextdatei ist im Alphabet nicht\nenthalten und wurde " + "überlesen.");
+      Logger("Warnung: Mindestens ein Zeichen aus der " + "Klartextdatei oder der Keydatei ist im Alphabet nicht\nenthalten und wurde " + "überlesen.");
     }
     try {
       cleartext.close();
@@ -223,33 +208,57 @@ public class RunningKey extends Cipher {
   }
 
   public void decipher(BufferedReader ciphertext, BufferedWriter cleartext) {
-
-    int cipherChar = 0, clearChar = 0, keyChar = 0;
+    boolean characterSkipped = false;
+    int cipherChar = -1, cipherCharMapped = -1, clearChar = -1, clearCharMapped = -1, keyChar = -1, keyCharMapped = -1;
 
     try {
-      while (((cipherChar = ciphertext.read()) != -1) && ((keyChar = keyBuffer.read()) != -1)) {
+      // lese ciphertext schritt für schritt
+      while (((cipherChar = ciphertext.read()) != -1)) {
 
-        cipherChar = charMap.mapChar(cipherChar);
-        keyChar = charMap.mapChar(keyChar);
+        // use a char that is not -1
+        while ((cipherCharMapped = charMap.mapChar(cipherChar)) == -1) {
+          Logger("ciphermapped "+cipherCharMapped);
+          characterSkipped = true;
+          // read next char
+          if ((cipherChar = ciphertext.read()) == -1)
+            break;
+        }
+        Logger("ciphermapped after "+cipherCharMapped);
 
-        if (cipherChar != -1) { // TODO Maybe also check keyChar?!
+        // read next keychar
+        keyChar = keyBuffer.read();
+        while ((keyCharMapped = charMap.mapChar(keyChar)) == -1) {
+          Logger("keycharmapped "+keyCharMapped);
+          characterSkipped = true;
+          // read next char
+          if ((keyChar = keyBuffer.read()) == -1)
+            break;
+        }
+        Logger("keycharmapped after "+keyCharMapped);
 
-          clearChar = (cipherChar - keyChar + modulus) % modulus;
-          clearChar = charMap.remapChar(clearChar);
 
+        if (cipherCharMapped != -1 && keyCharMapped != 1) {
+          // decipher
+          clearCharMapped = (cipherCharMapped - keyCharMapped + modulus) % modulus;
+          Logger("cipher dec: " + cipherCharMapped);
+          Logger("key dec: " + keyCharMapped);
+          Logger("-> clear dec: " + clearCharMapped);
+          clearChar = charMap.remapChar(clearCharMapped);
+          Logger("clear dec ascii: " + clearChar);
           try {
             cleartext.write(clearChar);
           } catch (IOException e) {
             e.printStackTrace();
           }
-        } else {
-          Logger("Wow!? Eh.. hi?");
         }
       }
     } catch (IOException e1) {
       e1.printStackTrace();
     }
 
+    if (characterSkipped) {
+      Logger("Warnung: Mindestens ein Zeichen aus der " + "Chiffretextdatei oder der Keydatei ist im Alphabet nicht\nenthalten und wurde " + "überlesen.");
+    }
     try {
       cleartext.close();
       ciphertext.close();
@@ -338,6 +347,7 @@ public class RunningKey extends Cipher {
     
     LinkedList<int[]> combinationsList = getCombination(cipherPart);
     TreeMap<Double, int[]> calculationMap = new TreeMap<Double, int[]>();
+
 
     for (int i = 0; i < combinationsList.size(); i++) {
       int[] currentCombination = combinationsList.get(i);
