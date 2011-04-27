@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.StringTokenizer;
+import java.util.TreeMap;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
 
@@ -156,7 +157,44 @@ public class RunningKey extends Cipher {
       while (((clearChar = cleartext.read()) != -1) && ((keyChar = keyBuffer.read()) != -1)) {
         clearChar = charMap.mapChar(clearChar);
         keyChar = charMap.mapChar(keyChar);
-        if (clearChar != -1) { // TODO Maybe also check keyChar?!
+        if (clearChar != -1 && keyChar != -1) { // TODO Maybe also check keyChar?!
+          cipherChar = (clearChar + keyChar) % modulus;
+          cipherChar = charMap.remapChar(cipherChar);
+          try {
+            ciphertext.write(cipherChar);
+          } catch (IOException e) {
+            e.printStackTrace();
+          }
+        } else {
+          characterSkipped = true;
+        }
+      }
+    } catch (IOException e1) {
+      e1.printStackTrace();
+    }
+
+    if (characterSkipped) {
+      Logger("Warnung: Mindestens ein Zeichen aus der " + "Klartextdatei ist im Alphabet nicht\nenthalten und wurde " + "überlesen.");
+    }
+    try {
+      cleartext.close();
+      ciphertext.close();
+      keyBuffer.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+  
+  public void encipherOLD(BufferedReader cleartext, BufferedWriter ciphertext) {
+
+    boolean characterSkipped = false;
+    int cipherChar = 0, clearChar = 0, keyChar = 0;
+
+    try {
+      while (((clearChar = cleartext.read()) != -1) && ((keyChar = keyBuffer.read()) != -1)) {
+        clearChar = charMap.mapChar(clearChar);
+        keyChar = charMap.mapChar(keyChar);
+        if (clearChar != -1 && keyChar != -1) { // TODO Maybe also check keyChar?!
           cipherChar = (clearChar + keyChar) % modulus;
           cipherChar = charMap.remapChar(cipherChar);
           try {
@@ -221,23 +259,115 @@ public class RunningKey extends Cipher {
     }
 
   }
+  
+  public void decipherOLD(BufferedReader ciphertext, BufferedWriter cleartext) {
+
+    int cipherChar = 0, clearChar = 0, keyChar = 0;
+
+    try {
+      while (((cipherChar = ciphertext.read()) != -1) && ((keyChar = keyBuffer.read()) != -1)) {
+
+        cipherChar = charMap.mapChar(cipherChar);
+        keyChar = charMap.mapChar(keyChar);
+
+        if (cipherChar != -1) { // TODO Maybe also check keyChar?!
+
+          clearChar = (cipherChar - keyChar + modulus) % modulus;
+          clearChar = charMap.remapChar(clearChar);
+
+          try {
+            cleartext.write(clearChar);
+          } catch (IOException e) {
+            e.printStackTrace();
+          }
+        } else {
+          Logger("Wow!? Eh.. hi?");
+        }
+      }
+    } catch (IOException e1) {
+      e1.printStackTrace();
+    }
+
+    try {
+      cleartext.close();
+      ciphertext.close();
+      keyBuffer.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+  }
 
   public void breakCipher(BufferedReader ciphertext, BufferedWriter cleartext) {
 
     String[] cipherArray = getTextAsStringArray(ciphertext, 4);
-
-    LinkedList<int[]> combinations = getCombination(cipherArray[1]);
-    Logger("combinations.size(): " + combinations.size());
     
-    System.out.println(bewertung(combinations.get(1), 1, 1, 1));
+    String cipherPart = "";
+    String keyPart = "";
+    String clearPart = "";
 
-    // for(int i=0; i<combinations.size(); i++){
-    // int[] ar = combinations.get(i);
-    // String clear = "" + ar[0] + "," + ar[1] + "," + ar[2] + "," + ar[3];
-    // String key = "" + ar[4] + "," + ar[5] + "," + ar[6] + "," + ar[7];
-    //
-    // Logger("Clear: " + clear + "   Key: " + key);
-    // }
+    /***** Interaction START */
+    BufferedReader std1 = launcher.openStandardInput();
+    Logger("Welche Stelle des Ciphertextes soll betrachtet werden?");
+    Logger("Waehle: 0-" + cipherArray.length);
+
+    int textPosition = 0;
+    try {
+      textPosition = Integer.parseInt(std1.readLine());
+      cipherPart = cipherArray[textPosition];
+    } catch (Exception e) {
+      Logger("Falsche Eingabe, 0. Stelle wird ausgewaehlt!");
+    }
+
+    BufferedReader stdin2 = launcher.openStandardInput();
+    Logger("Wie soll die Gewichtung aussehen fuer Uni/Di/Tri Grams?");
+    int uni = 1, di = 1, tri = 1;
+    try {
+      Logger("Gewichtung Unigram: 1-1000: ");
+      uni = Integer.parseInt(stdin2.readLine());
+
+      Logger("Gewichtung Digram: 1-1000: ");
+      di = Integer.parseInt(stdin2.readLine());
+
+      Logger("Gewichtung Trigram: 1-1000: ");
+      tri = Integer.parseInt(stdin2.readLine());
+    } catch (Exception e) {
+      Logger("Falsche Eingabe, 1 wird fuer alle ausgewaehlt");
+    }
+    /***** Interaction END */
+    
+    LinkedList<int[]> combinationsList = getCombination(cipherPart);
+    TreeMap<Double, int[]> calculationMap = new TreeMap<Double, int[]>();
+
+    for (int i = 0; i < combinationsList.size(); i++) {
+      int[] currentCombination = combinationsList.get(i);
+      double calculation = bewertung(currentCombination, 1, 1, 1);
+
+      calculationMap.put(calculation, combinationsList.get(i));
+    }
+
+    Logger("Folgende Mappings erziehlten das beste Ergebnis:");
+    Iterator<Double> it = calculationMap.keySet().iterator();
+    HashMap<Integer, String> userInputMap = new HashMap<Integer, String>();
+    for (int i = 0; i < 10 & it.hasNext(); i++) {
+      int[] currentArray = calculationMap.get(it.next());
+      
+      clearPart = "" + currentArray[0] + currentArray[1] + currentArray[2] + currentArray[3];
+      keyPart = "" + currentArray[4] + currentArray[5] + currentArray[6] + currentArray[7];
+      Logger("[" + i + "] CIPHER: " + cipherPart + " CLEAR: " + clearPart + " KEY: " + keyPart);
+      userInputMap.put(i, clearPart);
+    }
+    
+    BufferedReader std3 = launcher.openStandardInput();
+    Logger("Welches Mapping soll ausgewaehlt werden?");
+    int choice = 0;
+    try {
+      choice = Integer.parseInt(std3.readLine());
+    } catch (Exception e) {
+      Logger("Falsche Eingabe, 0. Stelle wird ausgewaehlt!");
+    }
+    
+    Logger(cipherPart + " wird in " + clearPart + " gemapped!");
 
     // Suppress framework exception
     System.exit(0);
@@ -365,7 +495,7 @@ public class RunningKey extends Cipher {
   private double bewertung(int[] combination, double g1, double g2, double g3) {
 
     Logger("Ich bin da!!!");
-    
+
     // char[] clearPartArray = clearPart.toCharArray();
     // char[] keyPartArray = keyPart.toCharArray();
 
