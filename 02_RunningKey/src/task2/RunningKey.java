@@ -27,6 +27,8 @@ import java.util.TreeMap;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
 
+import com.sun.org.apache.bcel.internal.generic.NEW;
+
 import de.tubs.cs.iti.jcrypt.chiffre.CharacterMapping;
 import de.tubs.cs.iti.jcrypt.chiffre.Cipher;
 import de.tubs.cs.iti.jcrypt.chiffre.FrequencyTables;
@@ -37,6 +39,10 @@ public class RunningKey extends Cipher {
   File keyFile;
   int position = 42;
   BufferedReader keyBuffer;
+
+  HashMap<String, Double> unigramHashMap = new HashMap<String, Double>();
+  HashMap<String, Double> digramHashMap = new HashMap<String, Double>();
+  HashMap<String, Double> trigramHashMap = new HashMap<String, Double>();
 
   public void makeKey() {
 
@@ -150,6 +156,8 @@ public class RunningKey extends Cipher {
 
   public void breakCipher(BufferedReader ciphertext, BufferedWriter cleartext) {
 
+    generateNGramHashMaps();
+
     String[] cipherArray = getTextAsStringArray(ciphertext, 4);
 
     String cipherPart = "";
@@ -157,39 +165,46 @@ public class RunningKey extends Cipher {
     String clearPart = "";
 
     /***** Interaction START */
-    BufferedReader std1 = launcher.openStandardInput();
+    BufferedReader cin = launcher.openStandardInput();
+
     Logger("Welche Stelle des Ciphertextes soll betrachtet werden?");
     Logger("Waehle: 0-" + cipherArray.length);
 
     int textPosition = 0;
     try {
-      textPosition = Integer.parseInt(std1.readLine());
+      textPosition = Integer.parseInt(cin.readLine());
       cipherPart = cipherArray[textPosition];
     } catch (Exception e) {
       Logger("Falsche Eingabe, 0. Stelle wird ausgewaehlt!");
+      cipherPart = cipherArray[textPosition];
     }
 
-    BufferedReader stdin2 = launcher.openStandardInput();
     Logger("Wie soll die Gewichtung aussehen fuer Uni/Di/Tri Grams?");
+
     int uni = 1, di = 1, tri = 1;
     try {
       Logger("Gewichtung Unigram: 1-1000: ");
-      uni = Integer.parseInt(stdin2.readLine());
+      uni = Integer.parseInt(cin.readLine());
 
       Logger("Gewichtung Digram: 1-1000: ");
-      di = Integer.parseInt(stdin2.readLine());
+      di = Integer.parseInt(cin.readLine());
 
       Logger("Gewichtung Trigram: 1-1000: ");
-      tri = Integer.parseInt(stdin2.readLine());
+      tri = Integer.parseInt(cin.readLine());
     } catch (Exception e) {
-      Logger("Falsche Eingabe, 1 wird fuer alle ausgewaehlt");
+      Logger("Falsche Eingabe, 1 wird fuer die restlichen ausgewaehlt");
     }
     /***** Interaction END */
 
+    Logger("Berechne moegliche Kombination!");
     LinkedList<int[]> combinationsList = getCombination(cipherPart);
+
+    Logger("Berechne beste Kombination! Kann dauern...");
     TreeMap<Double, int[]> calculationMap = new TreeMap<Double, int[]>();
 
-    for (int i = 0; i < combinationsList.size(); i++) {
+    // for (int i = 0; i < combinationsList.size(); i++) {
+    for (int i = 0; i < 20000; i++) { //FIXME
+      Logger("Benutze Bewertungsmethode: " + i + "/" + combinationsList.size());
       int[] currentCombination = combinationsList.get(i);
       double calculation = bewertung(currentCombination, 1, 1, 1);
 
@@ -202,17 +217,16 @@ public class RunningKey extends Cipher {
     for (int i = 0; i < 10 & it.hasNext(); i++) {
       int[] currentArray = calculationMap.get(it.next());
 
-      clearPart = "" + currentArray[0] + currentArray[1] + currentArray[2] + currentArray[3];
-      keyPart = "" + currentArray[4] + currentArray[5] + currentArray[6] + currentArray[7];
+      clearPart = "" + ((char)charMap.remapChar(currentArray[0])) + ((char)charMap.remapChar(currentArray[1])) + ((char)charMap.remapChar(currentArray[2])) + ((char)charMap.remapChar(currentArray[3]));
+      keyPart = "" + ((char)charMap.remapChar(currentArray[4])) + ((char)charMap.remapChar(currentArray[5])) + ((char)charMap.remapChar(currentArray[6])) + ((char)charMap.remapChar(currentArray[7]));
       Logger("[" + i + "] CIPHER: " + cipherPart + " CLEAR: " + clearPart + " KEY: " + keyPart);
       userInputMap.put(i, clearPart);
     }
 
-    BufferedReader std3 = launcher.openStandardInput();
     Logger("Welches Mapping soll ausgewaehlt werden?");
     int choice = 0;
     try {
-      choice = Integer.parseInt(std3.readLine());
+      choice = Integer.parseInt(cin.readLine());
     } catch (Exception e) {
       Logger("Falsche Eingabe, 0. Stelle wird ausgewaehlt!");
     }
@@ -270,42 +284,40 @@ public class RunningKey extends Cipher {
 
     char[] cipherTokenArray = cipherToken.toCharArray();
 
-    int token0 = charMap.mapChar(cipherTokenArray[0]);
-    int token1 = charMap.mapChar(cipherTokenArray[1]);
-    int token2 = charMap.mapChar(cipherTokenArray[2]);
-    int token3 = charMap.mapChar(cipherTokenArray[3]);
-
-    int[] tokenArray = { token0, token1, token2, token3 };
+    int firstCharMapped = charMap.mapChar(cipherTokenArray[0]);
+    int secondCharMapped = charMap.mapChar(cipherTokenArray[1]);
+    int thirdCharMapped = charMap.mapChar(cipherTokenArray[2]);
+    int fourthCharMapped = charMap.mapChar(cipherTokenArray[3]);
 
     HashMap<Integer, LinkedList<int[]>> map = cipherMapping();
 
-    LinkedList<int[]> la = map.get(tokenArray[0]);
-    LinkedList<int[]> lb = map.get(tokenArray[1]);
-    LinkedList<int[]> lc = map.get(tokenArray[2]);
-    LinkedList<int[]> ld = map.get(tokenArray[3]);
+    LinkedList<int[]> la = map.get(firstCharMapped);
+    LinkedList<int[]> lb = map.get(secondCharMapped);
+    LinkedList<int[]> lc = map.get(thirdCharMapped);
+    LinkedList<int[]> ld = map.get(fourthCharMapped);
 
     LinkedList<int[]> list = new LinkedList<int[]>();
 
     for (int a = 0; a < la.size(); a++) {
-      int[] clear = new int[4];
-      int[] key = new int[4];
+      int[] clearCharsMapped = new int[4];
+      int[] keyCharsMapped = new int[4];
 
-      clear[0] = la.get(a)[0];
-      key[0] = lb.get(a)[1];
+      clearCharsMapped[0] = la.get(a)[0];
+      keyCharsMapped[0] = lb.get(a)[1];
 
       for (int b = 0; b < lb.size(); b++) {
-        clear[1] = lb.get(b)[0];
-        key[1] = lb.get(b)[1];
+        clearCharsMapped[1] = lb.get(b)[0];
+        keyCharsMapped[1] = lb.get(b)[1];
 
         for (int c = 0; c < lc.size(); c++) {
-          clear[2] = lc.get(c)[0];
-          key[2] = lb.get(c)[1];
+          clearCharsMapped[2] = lc.get(c)[0];
+          keyCharsMapped[2] = lb.get(c)[1];
 
           for (int d = 0; d < ld.size(); d++) {
-            clear[3] = ld.get(d)[0];
-            key[3] = lb.get(d)[1];
+            clearCharsMapped[3] = ld.get(d)[0];
+            keyCharsMapped[3] = lb.get(d)[1];
 
-            int[] mixed = { clear[0], clear[1], clear[2], clear[3], key[0], key[1], key[2], key[3] };
+            int[] mixed = { clearCharsMapped[0], clearCharsMapped[1], clearCharsMapped[2], clearCharsMapped[3], keyCharsMapped[0], keyCharsMapped[1], keyCharsMapped[2], keyCharsMapped[3] };
             list.add(mixed);
             // System.out.println(clear[0] + " " + clear[1] + " " + clear[2] + " " + clear[3]);
           }
@@ -342,47 +354,73 @@ public class RunningKey extends Cipher {
 
   }
 
-  private double bewertung(int[] combination, double g1, double g2, double g3) {
-
-    Logger("Ich bin da!!!");
-
-    // char[] clearPartArray = clearPart.toCharArray();
-    // char[] keyPartArray = keyPart.toCharArray();
-
-    int[] clearArray = { combination[0], combination[1], combination[2], combination[3] };
-    int[] keyArray = { combination[4], combination[5], combination[6], combination[7] };
-
+  private void generateNGramHashMaps() {
     ArrayList<NGram> unigram = FrequencyTables.getNGramsAsList(1, charMap);
     ArrayList<NGram> digram = FrequencyTables.getNGramsAsList(2, charMap);
     ArrayList<NGram> trigram = FrequencyTables.getNGramsAsList(3, charMap);
 
-    HashMap<String, Double> unigramHashMap = nGramToHashMap(unigram);
-    HashMap<String, Double> digramHashMap = nGramToHashMap(digram);
-    HashMap<String, Double> trigramHashMap = nGramToHashMap(trigram);
+    unigramHashMap = nGramToHashMap(unigram);
+    digramHashMap = nGramToHashMap(digram);
+    trigramHashMap = nGramToHashMap(trigram);
+  }
+
+  private double bewertung(int[] combination, double g1, double g2, double g3) {
+
+    int[] clearArray = { combination[0], combination[1], combination[2], combination[3] };
+    int[] keyArray = { combination[4], combination[5], combination[6], combination[7] };
 
     double result = 0;
     double k1 = 0, k2 = 0, k3 = 0;
     double s1 = 0, s2 = 0, s3 = 0;
 
     for (int i = 0; i < 4; i++) {
-      s1 += unigramHashMap.get(charMap.remapChar(clearArray[i]) + "");
-      k1 += unigramHashMap.get(charMap.remapChar(keyArray[i]) + "");
+      char s1Char = (char) charMap.remapChar(clearArray[i]);
+      char k1Char = (char) charMap.remapChar(keyArray[i]);
+
+      s1 += unigramHashMap.get(s1Char + "");
+      k1 += unigramHashMap.get(k1Char + "");
     }
     for (int i = 0; i < 3; i++) {
 
-      String stmp = charMap.remapChar(clearArray[i]) + "" + charMap.remapChar(clearArray[i + 1]);
-      String ktmp = charMap.remapChar(keyArray[i]) + "" + charMap.remapChar(keyArray[i + 1]);
+      char s2Char1 = (char) charMap.remapChar(clearArray[i]);
+      char s2Char2 = (char) charMap.remapChar(clearArray[i + 1]);
+      char k2Char1 = (char) charMap.remapChar(keyArray[i]);
+      char k2Char2 = (char) charMap.remapChar(keyArray[i + 1]);
 
-      s2 += digramHashMap.get(stmp);
-      k2 += digramHashMap.get(ktmp);
+      try {
+        s2 += digramHashMap.get(s2Char1 + s2Char2 + "");
+      } catch (Exception e) {
+        s2 += 0;
+      }
+
+      try {
+        k2 += digramHashMap.get(k2Char1 + k2Char2 + "");
+      } catch (Exception e) {
+        k2 += 0;
+      }
+
     }
     for (int i = 0; i < 2; i++) {
 
-      String stmp = charMap.remapChar(clearArray[i]) + charMap.remapChar(clearArray[i + 1]) + "" + charMap.remapChar(clearArray[i + 2]);
-      String ktmp = charMap.remapChar(keyArray[i]) + charMap.remapChar(keyArray[i + 1]) + "" + charMap.remapChar(keyArray[i + 2]);
+      char s3Char1 = (char) charMap.remapChar(clearArray[i]);
+      char s3Char2 = (char) charMap.remapChar(clearArray[i + 1]);
+      char s3Char3 = (char) charMap.remapChar(clearArray[i + 2]);
+      char k3Char1 = (char) charMap.remapChar(keyArray[i]);
+      char k3Char2 = (char) charMap.remapChar(keyArray[i + 1]);
+      char k3Char3 = (char) charMap.remapChar(keyArray[i + 2]);
 
-      s3 += trigramHashMap.get(stmp);
-      k3 += trigramHashMap.get(ktmp);
+      try {
+        s3 += trigramHashMap.get(s3Char1 + s3Char2 + s3Char3 + "");
+      } catch (Exception e) {
+        s3 += 0;
+      }
+
+      try {
+        k3 += trigramHashMap.get(k3Char1 + k3Char2 + k3Char3 + "");
+      } catch (Exception e) {
+        k3 += 0;
+      }
+
     }
 
     result = (g1 * k1 + g2 * k2 + g3 * k3) * (g1 * s1 + g2 * s2 + g3 * s3);
