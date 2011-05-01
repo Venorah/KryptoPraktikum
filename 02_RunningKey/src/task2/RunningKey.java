@@ -199,11 +199,13 @@ public class RunningKey extends Cipher {
     Logger("Berechne moegliche Kombination!");
     LinkedList<int[]> combinationsList = getCombination(cipherPart);
 
+    Logger("Anzahl von sinnvollen Kombinationen: " + combinationsList.size());
+
     Logger("Berechne beste Kombination! Kann dauern...");
     TreeMap<Double, int[]> calculationMap = new TreeMap<Double, int[]>();
 
-    for (int i = 0; i < combinationsList.size(); i++) {
-      // for (int i = 0; i < 20000; i++) { //FIXME
+//    for (int i = 0; i < combinationsList.size(); i++) {
+       for (int i = 0; i < 100000; i++) { //FIXME
       if (i % 50000 == 0) {
         Logger("Benutze Bewertungsmethode: " + i + "/" + combinationsList.size());
       }
@@ -284,6 +286,8 @@ public class RunningKey extends Cipher {
    */
   private LinkedList<int[]> getCombination(String cipherToken) {
 
+    int counter = 0;
+
     char[] cipherTokenArray = cipherToken.toCharArray();
 
     int firstCharMapped = charMap.mapChar(cipherTokenArray[0]);
@@ -321,9 +325,10 @@ public class RunningKey extends Cipher {
 
             int[] mixed = { clearCharsMapped[0], clearCharsMapped[1], clearCharsMapped[2], clearCharsMapped[3], keyCharsMapped[0], keyCharsMapped[1], keyCharsMapped[2], keyCharsMapped[3] };
 
-            // Logger(clearCharsMapped[0] + " " + clearCharsMapped[1] + " " + clearCharsMapped[2] +
-            // " " + clearCharsMapped[3] + " " + keyCharsMapped[0] + " " + keyCharsMapped[1] + " " +
-            // keyCharsMapped[2] + " " + keyCharsMapped[3]);
+            counter++;
+            if (counter % 50000 == 0) {
+              Logger("Counter: " + counter);
+            }
 
             if (isCorrectCombination(mixed)) {
               list.add(mixed);
@@ -336,61 +341,56 @@ public class RunningKey extends Cipher {
       }
     }
 
+    Logger("Maximale Anzahl von Kombinationen: " + counter);
+
     return list;
   }
 
   private boolean isCorrectCombination(int[] combination) {
 
-    char c0 = (char) charMap.remapChar(combination[0]);
-    char c1 = (char) charMap.remapChar(combination[1]);
-    char c2 = (char) charMap.remapChar(combination[2]);
-    char c3 = (char) charMap.remapChar(combination[3]);
-    char k0 = (char) charMap.remapChar(combination[4]);
-    char k1 = (char) charMap.remapChar(combination[5]);
-    char k2 = (char) charMap.remapChar(combination[6]);
-    char k3 = (char) charMap.remapChar(combination[7]);
+    char clearChar0 = (char) charMap.remapChar(combination[0]);
+    char clearChar1 = (char) charMap.remapChar(combination[1]);
+    char clearChar2 = (char) charMap.remapChar(combination[2]);
+    char clearChar3 = (char) charMap.remapChar(combination[3]);
+    char keyChar0 = (char) charMap.remapChar(combination[4]);
+    char keyChar1 = (char) charMap.remapChar(combination[5]);
+    char keyChar2 = (char) charMap.remapChar(combination[6]);
+    char keyChar3 = (char) charMap.remapChar(combination[7]);
 
-    // Logger(c0 + " " + c1 + " " + c2 + " " + c3 + " " + k0 + " " + k1 + " " + k2 + " " + k3);
+    char[] clearArray = { clearChar0, clearChar1, clearChar2, clearChar3 };
+    char[] keyArray = { keyChar0, keyChar1, keyChar2, keyChar3 };
 
-    char[] clearArray = { c0, c1, c2, c3 };
-    char[] keyArray = { k0, k1, k2, k3 };
+    String clearString = String.valueOf(clearArray);
+    String keyString = String.valueOf(keyArray);
 
-    Logger(String.valueOf(clearArray) + " " + String.valueOf(keyArray));
-
-    double tmp = 0;
-
-    boolean unigram = false;
     boolean digram = false;
     boolean trigram = false;
 
-//    for (int i = 0; i < 4; i++) {
-//      try {
-//        tmp = unigramHashMap.get(clearArray[i] + "");
-//        unigram = unigram | true;
-//      } catch (Exception e) {
-//        unigram = unigram | false;
-//      }
-//
-//      try {
-//        tmp = unigramHashMap.get(keyArray[i] + "");
-//        unigram = unigram | true;
-//      } catch (Exception e) {
-//        unigram = unigram | false;
-//      }
-//    }
+    double tmp = 0;
 
     for (int i = 0; i < 3; i++) {
+      String digramString = "";
+      char c1, c2;
+
       try {
-        tmp = (double) digramHashMap.get(clearArray[i] + clearArray[i + 1] + "");
-        Logger("1");
+        c1 = (char) clearArray[i];
+        c2 = (char) clearArray[i + 1];
+        char[] charArray = { c1, c2 };
+
+        digramString = String.valueOf(charArray);
+        tmp = (double) digramHashMap.get(digramString);
         digram = digram | true;
       } catch (Exception e) {
         digram |= false;
       }
 
       try {
-        tmp = (double) digramHashMap.get(keyArray[i] + keyArray[i + 1] + "");
-        Logger("2");
+        c1 = (char) keyArray[i];
+        c2 = (char) keyArray[i + 1];
+        char[] charArray = { c1, c2 };
+
+        digramString = String.valueOf(charArray);
+        tmp = (double) digramHashMap.get(digramString);
         digram |= true;
       } catch (Exception e) {
         digram |= false;
@@ -398,17 +398,30 @@ public class RunningKey extends Cipher {
 
     }
     for (int i = 0; i < 2; i++) {
+      String trigramString = "";
+      char c1, c2, c3;
+
       try {
-        tmp = (double) trigramHashMap.get(clearArray[i] + clearArray[i + 1] + clearArray[i + 2] + "");
-        Logger("3");
+        c1 = (char) clearArray[i];
+        c2 = (char) clearArray[i + 1];
+        c3 = (char) clearArray[i + 2];
+        char[] charArray = { c1, c2, c3 };
+
+        trigramString = String.valueOf(charArray);
+        tmp = (double) trigramHashMap.get(trigramString);
         trigram |= true;
       } catch (Exception e) {
         trigram |= false;
       }
 
       try {
-        tmp = (double) trigramHashMap.get(keyArray[i] + keyArray[i + 1] + keyArray[i + 2] + "");
-        Logger("4");
+        c1 = (char) keyArray[i];
+        c2 = (char) keyArray[i + 1];
+        c3 = (char) keyArray[i + 2];
+        char[] charArray = { c1, c2, c3 };
+
+        trigramString = String.valueOf(charArray);
+        tmp = (double) trigramHashMap.get(trigramString);
         trigram |= true;
       } catch (Exception e) {
         trigram |= false;
@@ -416,9 +429,7 @@ public class RunningKey extends Cipher {
 
     }
 
-    Logger("Checking: " + (unigram | digram | trigram));
-
-    if (unigram || digram || trigram) {
+    if (digram || trigram) {
       return true;
     } else {
       return false;
