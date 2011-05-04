@@ -218,14 +218,15 @@ public class RunningKey extends Cipher {
     HashMap<Integer, String> userInputMap = new HashMap<Integer, String>();
 
     for (int i = 0; i < 100 & mapIterator.hasNext(); i++) {
-
+      
       double calculationResult = mapIterator.next();
+      int calculationResultReduced = (int)calculationResult;
       int[] currentArray = calculationMap.get(calculationResult);
 
       clearPart = "" + ((char) charMap.remapChar(currentArray[0])) + ((char) charMap.remapChar(currentArray[1])) + ((char) charMap.remapChar(currentArray[2])) + ((char) charMap.remapChar(currentArray[3]));
       keyPart = "" + ((char) charMap.remapChar(currentArray[4])) + ((char) charMap.remapChar(currentArray[5])) + ((char) charMap.remapChar(currentArray[6])) + ((char) charMap.remapChar(currentArray[7]));
 
-      Logger("Calculation Result: " + calculationResult + " CIPHER: " + cipherPart + " => CLEAR: " + clearPart + " KEY: " + keyPart);
+      Logger("Calculation Result: " + calculationResultReduced + " CIPHER: " + cipherPart + " => CLEAR: " + clearPart + " KEY: " + keyPart);
       userInputMap.put(i, clearPart);
     }
 
