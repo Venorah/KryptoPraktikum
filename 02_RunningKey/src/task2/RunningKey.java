@@ -16,7 +16,9 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -161,86 +163,146 @@ public class RunningKey extends Cipher {
     generateNGramHashMaps();
 
     String[] cipherArray = getTextAsStringArray(ciphertext, 4);
-
-    String cipherPart = "";
-    String keyPart = "";
-    String clearPart = "";
-
-    /***** Interaction START */
-    BufferedReader cin = launcher.openStandardInput();
-
-    Logger("Welche Stelle des Ciphertextes soll betrachtet werden?");
-    Logger("Waehle: 0-" + cipherArray.length);
-
-    int textPosition = 0;
-    try {
-      textPosition = Integer.parseInt(cin.readLine());
-      cipherPart = cipherArray[textPosition];
-    } catch (Exception e) {
-      Logger("Falsche Eingabe, 0. Stelle wird ausgewaehlt!");
-      cipherPart = cipherArray[textPosition];
+    
+    String[] keyArray = new String[cipherArray.length];
+    for (int i = 0; i < keyArray.length; i++) {
+      keyArray[i] = "aaaa";
     }
 
-    Logger("Wie soll die Gewichtung aussehen fuer Uni/Di/Tri Grams?");
+    boolean lust = true;
+    while (lust) {
+      String cipherPart = "";
+      String keyPart = "";
+      String clearPart = "";
 
-    int uni = 1, di = 1, tri = 1;
-    try {
-      Logger("Gewichtung Unigram: 1-1000: ");
-      uni = Integer.parseInt(cin.readLine());
+      /***** Interaction START */
+      BufferedReader cin = launcher.openStandardInput();
 
-      Logger("Gewichtung Digram: 1-1000: ");
-      di = Integer.parseInt(cin.readLine());
+      Logger("Welche Stelle des Ciphertextes soll betrachtet werden?");
+      Logger("Waehle: 0-" + cipherArray.length);
 
-      Logger("Gewichtung Trigram: 1-1000: ");
-      tri = Integer.parseInt(cin.readLine());
-    } catch (Exception e) {
-      Logger("Falsche Eingabe, 1 wird fuer die restlichen ausgewaehlt");
-    }
-    /***** Interaction END */
+      int textPosition = 0;
+      try {
+        textPosition = Integer.parseInt(cin.readLine());
+        cipherPart = cipherArray[textPosition];
+      } catch (Exception e) {
+        Logger("Falsche Eingabe, 0. Stelle wird ausgewaehlt!");
+        cipherPart = cipherArray[textPosition];
+      }
 
-    Logger("Berechne moegliche Kombination!");
-    LinkedList<int[]> combinationsList = getCombination(cipherPart);
+      Logger("Wie soll die Gewichtung aussehen fuer Uni/Di/Tri Grams?");
 
-    Logger("Anzahl von sinnvollen Kombinationen: " + combinationsList.size());
+      int uni = 1, di = 1, tri = 1;
+      try {
+        Logger("Gewichtung Unigram: 1-1000: ");
+        uni = Integer.parseInt(cin.readLine());
 
-    Logger("Berechne beste Kombination! Kann dauern...");
-    TreeMap<Double, int[]> calculationMap = new TreeMap<Double, int[]>();
+        Logger("Gewichtung Digram: 1-1000: ");
+        di = Integer.parseInt(cin.readLine());
 
-    Iterator<int[]> listIterator = combinationsList.iterator();
-    while (listIterator.hasNext()) {
-      int[] currentCombination = listIterator.next();
-      double calculation = bewertung(currentCombination, 1, 1, 1);
-      calculationMap.put(calculation, currentCombination);
-    }
+        Logger("Gewichtung Trigram: 1-1000: ");
+        tri = Integer.parseInt(cin.readLine());
+      } catch (Exception e) {
+        Logger("Falsche Eingabe, 1 wird fuer die restlichen ausgewaehlt");
+      }
+      /***** Interaction END */
 
-    Logger("Folgende Mappings erziehlten das beste Ergebnis:");
-    Iterator<Double> mapIterator = calculationMap.descendingKeySet().iterator();
-    HashMap<Integer, String> userInputMap = new HashMap<Integer, String>();
+      Logger("Berechne moegliche Kombination!");
+      LinkedList<int[]> combinationsList = getCombination(cipherPart);
 
-    for (int i = 0; i < 100 & mapIterator.hasNext(); i++) {
+      Logger("Anzahl von sinnvollen Kombinationen: " + combinationsList.size());
+
+      Logger("Berechne beste Kombination! Kann dauern...");
+      TreeMap<Double, int[]> calculationMap = new TreeMap<Double, int[]>();
+
+      Iterator<int[]> listIterator = combinationsList.iterator();
+      while (listIterator.hasNext()) {
+        int[] currentCombination = listIterator.next();
+        double calculation = bewertung(currentCombination, 1, 1, 1);
+        calculationMap.put(calculation, currentCombination);
+      }
+
+      Logger("Folgende Mappings erziehlten das beste Ergebnis:");
+      Iterator<Double> mapIterator = calculationMap.descendingKeySet().iterator();
+      HashMap<Integer, String> userInputMap = new HashMap<Integer, String>();
+
+      for (int i = 0; i < 100 & mapIterator.hasNext(); i++) {
+
+        double calculationResult = mapIterator.next();
+        int[] currentArray = calculationMap.get(calculationResult);
+
+        clearPart = "" + ((char) charMap.remapChar(currentArray[0])) + ((char) charMap.remapChar(currentArray[1])) + ((char) charMap.remapChar(currentArray[2])) + ((char) charMap.remapChar(currentArray[3]));
+        keyPart = "" + ((char) charMap.remapChar(currentArray[4])) + ((char) charMap.remapChar(currentArray[5])) + ((char) charMap.remapChar(currentArray[6])) + ((char) charMap.remapChar(currentArray[7]));
+
+        System.out.printf("[%3d] Result: %6.6f CLEAR: %s  KEY: %s \n", i, calculationResult, clearPart, keyPart);
+        userInputMap.put(i, clearPart);
+      }
+
+      Logger("Welches Mapping soll ausgewaehlt werden fuer Ciphertext: " + cipherPart);
+      int choice = 0;
+      try {
+        choice = Integer.parseInt(cin.readLine());
+      } catch (Exception e) {
+        Logger("Falsche Eingabe, 0. Stelle wird ausgewaehlt!");
+      }
+
+      Logger(cipherPart + " wird in " + userInputMap.get(choice) + " gemapped!");
       
-      double calculationResult = mapIterator.next();
-      int[] currentArray = calculationMap.get(calculationResult);
-
-      clearPart = "" + ((char) charMap.remapChar(currentArray[0])) + ((char) charMap.remapChar(currentArray[1])) + ((char) charMap.remapChar(currentArray[2])) + ((char) charMap.remapChar(currentArray[3]));
-      keyPart = "" + ((char) charMap.remapChar(currentArray[4])) + ((char) charMap.remapChar(currentArray[5])) + ((char) charMap.remapChar(currentArray[6])) + ((char) charMap.remapChar(currentArray[7]));
+      // write into clearArray
+      keyArray[textPosition] = keyPart;
       
-      System.out.printf("[%d] Result: %6.6f CLEAR: %s  KEY: %s \n", i, calculationResult, clearPart, keyPart);
-      userInputMap.put(i, clearPart);
+      try {
+        Logger("Noch weiter breaken? 1 für ja, 0 für nein");
+        lust = (Integer.parseInt(cin.readLine()) != 0);  // int to boolean
+      } catch (Exception e) {
+        Logger("Falsche Eingabe, breaken wird abgebrochen.");
+        lust = false;
+      }
     }
-
-    Logger("Welches Mapping soll ausgewaehlt werden fuer Ciphertext: " + cipherPart);
-    int choice = 0;
+    
+    // running key
+    File keytextFile = new File("keyfile_break.txt");
+    FileWriter fw = null;
     try {
-      choice = Integer.parseInt(cin.readLine());
-    } catch (Exception e) {
-      Logger("Falsche Eingabe, 0. Stelle wird ausgewaehlt!");
+      fw = new FileWriter(keytextFile);
+    } catch (IOException e1) {
+      e1.printStackTrace();
+    }
+    BufferedWriter keytext = new BufferedWriter(fw);
+    for (int k = 0; k < keyArray.length; k++) {
+      try {
+        keytext.write(keyArray[k]);
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+    
+    // key file
+    File keytextFile2 = new File("key_break.txt");
+    FileWriter fw2 = null;
+    try {
+      fw2 = new FileWriter(keytextFile2);
+    } catch (IOException e1) {
+      e1.printStackTrace();
+    }
+    BufferedWriter keytext2 = new BufferedWriter(fw2);
+
+    try {
+      keytext2.write(modulus + " keyfile_break.txt");
+      keytext2.newLine();
+      keytext2.close();
+    } catch (IOException e1) {
+      e1.printStackTrace();
     }
 
-    Logger(cipherPart + " wird in " + userInputMap.get(choice) + " gemapped!");
-
-    // Suppress framework exception
-    System.exit(0);
+    // Close files
+    try {
+      keytext.close();
+//      cleartext.close();
+//      ciphertext.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 
   private String getTextAsString(BufferedReader br) {
