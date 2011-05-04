@@ -205,13 +205,13 @@ public class RunningKey extends Cipher {
     TreeMap<Double, int[]> calculationMap = new TreeMap<Double, int[]>();
 
     Iterator<int[]> listIterator = combinationsList.iterator();
-    while(listIterator.hasNext()){
+    while (listIterator.hasNext()) {
       int[] currentCombination = listIterator.next();
       double calculation = bewertung(currentCombination, 1, 1, 1);
       calculationMap.put(calculation, currentCombination);
     }
 
-    Logger("Folgende Mappings erziehlten das beste Ergebnis:");
+    Logger("Folgende Mappings erziehlten das beste Ergebnis fuer" + cipherPart);
     Iterator<Double> mapIterator = calculationMap.keySet().iterator();
     HashMap<Integer, String> userInputMap = new HashMap<Integer, String>();
     for (int i = 0; i < 10 & mapIterator.hasNext(); i++) {
@@ -320,11 +320,7 @@ public class RunningKey extends Cipher {
             keyCharsMapped[3] = ld.get(d)[1];
 
             int[] mixed = { clearCharsMapped[0], clearCharsMapped[1], clearCharsMapped[2], clearCharsMapped[3], keyCharsMapped[0], keyCharsMapped[1], keyCharsMapped[2], keyCharsMapped[3] };
-
             counter++;
-            if (counter % 50000 == 0) {
-              Logger("Counter: " + counter);
-            }
 
             if (isCorrectCombination(mixed)) {
               list.add(mixed);
@@ -415,7 +411,7 @@ public class RunningKey extends Cipher {
 
     }
 
-//     Logger("isCorrectCombination: " + clearString + " " + keyString + " " + (digram || trigram));
+    // Logger("isCorrectCombination: " + clearString + " " + keyString + " " + (digram || trigram));
 
     if (digram || trigram) {
       return true;
