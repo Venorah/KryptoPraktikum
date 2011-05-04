@@ -22,6 +22,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 
@@ -214,12 +216,16 @@ public class RunningKey extends Cipher {
     Logger("Folgende Mappings erziehlten das beste Ergebnis fuer" + cipherPart);
     Iterator<Double> mapIterator = calculationMap.keySet().iterator();
     HashMap<Integer, String> userInputMap = new HashMap<Integer, String>();
+
     for (int i = 0; i < 10 & mapIterator.hasNext(); i++) {
-      int[] currentArray = calculationMap.get(mapIterator.next());
+
+      double calculationResult = mapIterator.next();
+      int[] currentArray = calculationMap.get(calculationResult);
 
       clearPart = "" + ((char) charMap.remapChar(currentArray[0])) + ((char) charMap.remapChar(currentArray[1])) + ((char) charMap.remapChar(currentArray[2])) + ((char) charMap.remapChar(currentArray[3]));
       keyPart = "" + ((char) charMap.remapChar(currentArray[4])) + ((char) charMap.remapChar(currentArray[5])) + ((char) charMap.remapChar(currentArray[6])) + ((char) charMap.remapChar(currentArray[7]));
-      Logger("[" + i + "] CIPHER: " + cipherPart + " CLEAR: " + clearPart + " KEY: " + keyPart);
+
+      Logger("Calculation Result: " + calculationResult + " CIPHER: " + cipherPart + " => CLEAR: " + clearPart + " KEY: " + keyPart);
       userInputMap.put(i, clearPart);
     }
 
