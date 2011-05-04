@@ -204,9 +204,9 @@ public class RunningKey extends Cipher {
     Logger("Berechne beste Kombination! Kann dauern...");
     TreeMap<Double, int[]> calculationMap = new TreeMap<Double, int[]>();
 
-//    for (int i = 0; i < combinationsList.size(); i++) {
-       for (int i = 0; i < 100000; i++) { //FIXME
-      if (i % 50000 == 0) {
+    for (int i = 0; i < combinationsList.size(); i++) {
+//       for (int i = 0; i < 100000; i++) { //FIXME
+      if (i % 10000 == 0) {
         Logger("Benutze Bewertungsmethode: " + i + "/" + combinationsList.size());
       }
       int[] currentCombination = combinationsList.get(i);
