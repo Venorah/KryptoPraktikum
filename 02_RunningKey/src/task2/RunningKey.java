@@ -205,15 +205,16 @@ public class RunningKey extends Cipher {
     TreeMap<Double, int[]> calculationMap = new TreeMap<Double, int[]>();
 
     Iterator<int[]> listIterator = combinationsList.iterator();
-    while(listIterator.hasNext()){
+    while(listIterator.hasNext()) {
       int[] currentCombination = listIterator.next();
       double calculation = bewertung(currentCombination, 1, 1, 1);
       calculationMap.put(calculation, currentCombination);
     }
 
     Logger("Folgende Mappings erziehlten das beste Ergebnis:");
-    Iterator<Double> mapIterator = calculationMap.keySet().iterator();
+    Iterator<Double> mapIterator = calculationMap.descendingKeySet().iterator();
     HashMap<Integer, String> userInputMap = new HashMap<Integer, String>();
+    
     for (int i = 0; i < 10 & mapIterator.hasNext(); i++) {
       int[] currentArray = calculationMap.get(mapIterator.next());
 
