@@ -225,7 +225,7 @@ public class RunningKey extends Cipher {
       clearPart = "" + ((char) charMap.remapChar(currentArray[0])) + ((char) charMap.remapChar(currentArray[1])) + ((char) charMap.remapChar(currentArray[2])) + ((char) charMap.remapChar(currentArray[3]));
       keyPart = "" + ((char) charMap.remapChar(currentArray[4])) + ((char) charMap.remapChar(currentArray[5])) + ((char) charMap.remapChar(currentArray[6])) + ((char) charMap.remapChar(currentArray[7]));
 
-      Logger("Calculation Result: " + calculationResult + " CIPHER: " + cipherPart + " => CLEAR: " + clearPart + " KEY: " + keyPart);
+      System.out.printf("Calculation Result: %6.6f CIPHER: %s => CLEAR: %s  KEY: %s \n", calculationResult, cipherPart, clearPart, keyPart);
       userInputMap.put(i, clearPart);
     }
 
