@@ -224,12 +224,12 @@ public class RunningKey extends Cipher {
 
       clearPart = "" + ((char) charMap.remapChar(currentArray[0])) + ((char) charMap.remapChar(currentArray[1])) + ((char) charMap.remapChar(currentArray[2])) + ((char) charMap.remapChar(currentArray[3]));
       keyPart = "" + ((char) charMap.remapChar(currentArray[4])) + ((char) charMap.remapChar(currentArray[5])) + ((char) charMap.remapChar(currentArray[6])) + ((char) charMap.remapChar(currentArray[7]));
-
-      System.out.printf("Calculation Result: %6.6f CIPHER: %s => CLEAR: %s  KEY: %s \n", calculationResult, cipherPart, clearPart, keyPart);
+      
+      System.out.printf("[%d] Result: %6.6f CLEAR: %s  KEY: %s \n", i, calculationResult, clearPart, keyPart);
       userInputMap.put(i, clearPart);
     }
 
-    Logger("Welches Mapping soll ausgewaehlt werden?");
+    Logger("Welches Mapping soll ausgewaehlt werden fuer Ciphertext: " + cipherPart);
     int choice = 0;
     try {
       choice = Integer.parseInt(cin.readLine());
@@ -237,7 +237,7 @@ public class RunningKey extends Cipher {
       Logger("Falsche Eingabe, 0. Stelle wird ausgewaehlt!");
     }
 
-    Logger(cipherPart + " wird in " + clearPart + " gemapped!");
+    Logger(cipherPart + " wird in " + userInputMap.get(choice) + " gemapped!");
 
     // Suppress framework exception
     System.exit(0);
