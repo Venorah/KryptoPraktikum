@@ -22,6 +22,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 
@@ -205,7 +207,7 @@ public class RunningKey extends Cipher {
     TreeMap<Double, int[]> calculationMap = new TreeMap<Double, int[]>();
 
     Iterator<int[]> listIterator = combinationsList.iterator();
-    while(listIterator.hasNext()) {
+    while (listIterator.hasNext()) {
       int[] currentCombination = listIterator.next();
       double calculation = bewertung(currentCombination, 1, 1, 1);
       calculationMap.put(calculation, currentCombination);
@@ -214,13 +216,16 @@ public class RunningKey extends Cipher {
     Logger("Folgende Mappings erziehlten das beste Ergebnis:");
     Iterator<Double> mapIterator = calculationMap.descendingKeySet().iterator();
     HashMap<Integer, String> userInputMap = new HashMap<Integer, String>();
-    
+
     for (int i = 0; i < 100 & mapIterator.hasNext(); i++) {
-      int[] currentArray = calculationMap.get(mapIterator.next());
+
+      double calculationResult = mapIterator.next();
+      int[] currentArray = calculationMap.get(calculationResult);
 
       clearPart = "" + ((char) charMap.remapChar(currentArray[0])) + ((char) charMap.remapChar(currentArray[1])) + ((char) charMap.remapChar(currentArray[2])) + ((char) charMap.remapChar(currentArray[3]));
       keyPart = "" + ((char) charMap.remapChar(currentArray[4])) + ((char) charMap.remapChar(currentArray[5])) + ((char) charMap.remapChar(currentArray[6])) + ((char) charMap.remapChar(currentArray[7]));
-      Logger("[" + i + "] CIPHER: " + cipherPart + " CLEAR: " + clearPart + " KEY: " + keyPart);
+
+      Logger("Calculation Result: " + calculationResult + " CIPHER: " + cipherPart + " => CLEAR: " + clearPart + " KEY: " + keyPart);
       userInputMap.put(i, clearPart);
     }
 
@@ -321,11 +326,7 @@ public class RunningKey extends Cipher {
             keyCharsMapped[3] = ld.get(d)[1];
 
             int[] mixed = { clearCharsMapped[0], clearCharsMapped[1], clearCharsMapped[2], clearCharsMapped[3], keyCharsMapped[0], keyCharsMapped[1], keyCharsMapped[2], keyCharsMapped[3] };
-
             counter++;
-            if (counter % 50000 == 0) {
-              Logger("Counter: " + counter);
-            }
 
             if (isCorrectCombination(mixed)) {
               list.add(mixed);
@@ -416,7 +417,7 @@ public class RunningKey extends Cipher {
 
     }
 
-//     Logger("isCorrectCombination: " + clearString + " " + keyString + " " + (digram || trigram));
+    // Logger("isCorrectCombination: " + clearString + " " + keyString + " " + (digram || trigram));
 
     if (digram || trigram) {
       return true;
