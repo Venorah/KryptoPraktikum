@@ -205,7 +205,7 @@ public class RunningKey extends Cipher {
     TreeMap<Double, int[]> calculationMap = new TreeMap<Double, int[]>();
 
     for (int i = 0; i < combinationsList.size(); i++) {
-//       for (int i = 0; i < 100000; i++) { //FIXME
+      // for (int i = 0; i < 100000; i++) { //FIXME
       if (i % 10000 == 0) {
         Logger("Benutze Bewertungsmethode: " + i + "/" + combinationsList.size());
       }
@@ -366,33 +366,27 @@ public class RunningKey extends Cipher {
     boolean digram = false;
     boolean trigram = false;
 
-    double tmp = 0;
-
     for (int i = 0; i < 3; i++) {
       String digramString = "";
       char c1, c2;
 
-      try {
-        c1 = (char) clearArray[i];
-        c2 = (char) clearArray[i + 1];
-        char[] charArray = { c1, c2 };
-
-        digramString = String.valueOf(charArray);
-        tmp = (double) digramHashMap.get(digramString);
-        digram = digram | true;
-      } catch (Exception e) {
+      c1 = (char) clearArray[i];
+      c2 = (char) clearArray[i + 1];
+      char[] charArray = { c1, c2 };
+      digramString = String.valueOf(charArray);
+      if (digramHashMap.get(digramString) != null) {
+        digram |= true;
+      } else {
         digram |= false;
       }
 
-      try {
-        c1 = (char) keyArray[i];
-        c2 = (char) keyArray[i + 1];
-        char[] charArray = { c1, c2 };
-
-        digramString = String.valueOf(charArray);
-        tmp = (double) digramHashMap.get(digramString);
+      c1 = (char) keyArray[i];
+      c2 = (char) keyArray[i + 1];
+      char[] charArray2 = { c1, c2 };
+      digramString = String.valueOf(charArray2);
+      if (digramHashMap.get(digramString) != null) {
         digram |= true;
-      } catch (Exception e) {
+      } else {
         digram |= false;
       }
 
@@ -401,33 +395,31 @@ public class RunningKey extends Cipher {
       String trigramString = "";
       char c1, c2, c3;
 
-      try {
-        c1 = (char) clearArray[i];
-        c2 = (char) clearArray[i + 1];
-        c3 = (char) clearArray[i + 2];
-        char[] charArray = { c1, c2, c3 };
-
-        trigramString = String.valueOf(charArray);
-        tmp = (double) trigramHashMap.get(trigramString);
+      c1 = (char) clearArray[i];
+      c2 = (char) clearArray[i + 1];
+      c3 = (char) clearArray[i + 2];
+      char[] charArray = { c1, c2, c3 };
+      trigramString = String.valueOf(charArray);
+      if (trigramHashMap.get(trigramString) != null) {
         trigram |= true;
-      } catch (Exception e) {
+      } else {
         trigram |= false;
       }
 
-      try {
-        c1 = (char) keyArray[i];
-        c2 = (char) keyArray[i + 1];
-        c3 = (char) keyArray[i + 2];
-        char[] charArray = { c1, c2, c3 };
-
-        trigramString = String.valueOf(charArray);
-        tmp = (double) trigramHashMap.get(trigramString);
+      c1 = (char) keyArray[i];
+      c2 = (char) keyArray[i + 1];
+      c3 = (char) keyArray[i + 2];
+      char[] charArray2 = { c1, c2, c3 };
+      trigramString = String.valueOf(charArray2);
+      if (trigramHashMap.get(trigramString) != null) {
         trigram |= true;
-      } catch (Exception e) {
+      } else {
         trigram |= false;
       }
 
     }
+
+    // Logger("isCorrectCombination: " + clearString + " " + keyString + " " + (digram || trigram));
 
     if (digram || trigram) {
       return true;
@@ -486,6 +478,9 @@ public class RunningKey extends Cipher {
       char s1Char = (char) charMap.remapChar(clearArray[i]);
       char k1Char = (char) charMap.remapChar(keyArray[i]);
 
+      double d1 = unigramHashMap.get(s1Char + "");
+      double d2 = unigramHashMap.get(k1Char + "");
+
       s1 += unigramHashMap.get(s1Char + "");
       k1 += unigramHashMap.get(k1Char + "");
     }
@@ -496,15 +491,21 @@ public class RunningKey extends Cipher {
       char k2Char1 = (char) charMap.remapChar(keyArray[i]);
       char k2Char2 = (char) charMap.remapChar(keyArray[i + 1]);
 
-      try {
+      // try {
+      // s2 += digramHashMap.get(s2Char1 + s2Char2 + "");
+      // } else {
+      // s2 += 0;
+      // }
+
+      if ((digramHashMap.get(s2Char1 + s2Char2 + "")) != null) {
         s2 += digramHashMap.get(s2Char1 + s2Char2 + "");
-      } catch (Exception e) {
+      } else {
         s2 += 0;
       }
 
-      try {
+      if ((digramHashMap.get(k2Char1 + k2Char2 + "")) != null) {
         k2 += digramHashMap.get(k2Char1 + k2Char2 + "");
-      } catch (Exception e) {
+      } else {
         k2 += 0;
       }
 
@@ -518,21 +519,22 @@ public class RunningKey extends Cipher {
       char k3Char2 = (char) charMap.remapChar(keyArray[i + 1]);
       char k3Char3 = (char) charMap.remapChar(keyArray[i + 2]);
 
-      try {
+      if ((trigramHashMap.get(s3Char1 + s3Char2 + s3Char3 + "")) != null) {
         s3 += trigramHashMap.get(s3Char1 + s3Char2 + s3Char3 + "");
-      } catch (Exception e) {
+      } else {
         s3 += 0;
       }
 
-      try {
+      if ((trigramHashMap.get(k3Char1 + k3Char2 + k3Char3 + "")) != null) {
         k3 += trigramHashMap.get(k3Char1 + k3Char2 + k3Char3 + "");
-      } catch (Exception e) {
+      } else {
         k3 += 0;
       }
 
     }
 
     result = (g1 * k1 + g2 * k2 + g3 * k3) * (g1 * s1 + g2 * s2 + g3 * s3);
+    Logger("Result: " + result);
 
     return result;
   }
@@ -599,7 +601,7 @@ public class RunningKey extends Cipher {
     } catch (IOException e) {
       e.printStackTrace();
     }
-    
+
     // Close files
     try {
       cleartext.close();
