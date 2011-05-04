@@ -204,22 +204,18 @@ public class RunningKey extends Cipher {
     Logger("Berechne beste Kombination! Kann dauern...");
     TreeMap<Double, int[]> calculationMap = new TreeMap<Double, int[]>();
 
-    for (int i = 0; i < combinationsList.size(); i++) {
-      // for (int i = 0; i < 100000; i++) { //FIXME
-      if (i % 10000 == 0) {
-        Logger("Benutze Bewertungsmethode: " + i + "/" + combinationsList.size());
-      }
-      int[] currentCombination = combinationsList.get(i);
+    Iterator<int[]> listIterator = combinationsList.iterator();
+    while(listIterator.hasNext()){
+      int[] currentCombination = listIterator.next();
       double calculation = bewertung(currentCombination, 1, 1, 1);
-
-      calculationMap.put(calculation, combinationsList.get(i));
+      calculationMap.put(calculation, currentCombination);
     }
 
     Logger("Folgende Mappings erziehlten das beste Ergebnis:");
-    Iterator<Double> it = calculationMap.keySet().iterator();
+    Iterator<Double> mapIterator = calculationMap.keySet().iterator();
     HashMap<Integer, String> userInputMap = new HashMap<Integer, String>();
-    for (int i = 0; i < 10 & it.hasNext(); i++) {
-      int[] currentArray = calculationMap.get(it.next());
+    for (int i = 0; i < 10 & mapIterator.hasNext(); i++) {
+      int[] currentArray = calculationMap.get(mapIterator.next());
 
       clearPart = "" + ((char) charMap.remapChar(currentArray[0])) + ((char) charMap.remapChar(currentArray[1])) + ((char) charMap.remapChar(currentArray[2])) + ((char) charMap.remapChar(currentArray[3]));
       keyPart = "" + ((char) charMap.remapChar(currentArray[4])) + ((char) charMap.remapChar(currentArray[5])) + ((char) charMap.remapChar(currentArray[6])) + ((char) charMap.remapChar(currentArray[7]));
@@ -419,7 +415,7 @@ public class RunningKey extends Cipher {
 
     }
 
-    // Logger("isCorrectCombination: " + clearString + " " + keyString + " " + (digram || trigram));
+//     Logger("isCorrectCombination: " + clearString + " " + keyString + " " + (digram || trigram));
 
     if (digram || trigram) {
       return true;
@@ -534,7 +530,7 @@ public class RunningKey extends Cipher {
     }
 
     result = (g1 * k1 + g2 * k2 + g3 * k3) * (g1 * s1 + g2 * s2 + g3 * s3);
-    Logger("Result: " + result);
+    // Logger("Result: " + result);
 
     return result;
   }
@@ -619,7 +615,7 @@ public class RunningKey extends Cipher {
       while (((cipherChar = ciphertext.read()) != -1) && ((keyChar = keyBuffer.read()) != -1)) {
         cipherCharMapped = charMap.mapChar(cipherChar);
         keyCharMapped = charMap.mapChar(keyChar);
-        
+
         boolean endOfFile = false;
 
         while (cipherCharMapped == -1) {
@@ -656,7 +652,7 @@ public class RunningKey extends Cipher {
     } catch (IOException e1) {
       e1.printStackTrace();
     }
-    
+
     // Close files
     try {
       cleartext.close();
