@@ -215,7 +215,7 @@ public class RunningKey extends Cipher {
     Iterator<Double> mapIterator = calculationMap.descendingKeySet().iterator();
     HashMap<Integer, String> userInputMap = new HashMap<Integer, String>();
     
-    for (int i = 0; i < 10 & mapIterator.hasNext(); i++) {
+    for (int i = 0; i < 100 & mapIterator.hasNext(); i++) {
       int[] currentArray = calculationMap.get(mapIterator.next());
 
       clearPart = "" + ((char) charMap.remapChar(currentArray[0])) + ((char) charMap.remapChar(currentArray[1])) + ((char) charMap.remapChar(currentArray[2])) + ((char) charMap.remapChar(currentArray[3]));
