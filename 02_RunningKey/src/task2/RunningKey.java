@@ -530,6 +530,7 @@ public class RunningKey extends Cipher {
     }
 
     result = (g1 * k1 + g2 * k2 + g3 * k3) * (g1 * s1 + g2 * s2 + g3 * s3);
+
     // Logger("Result: " + result);
 
     return result;
