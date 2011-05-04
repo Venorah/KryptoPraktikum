@@ -213,11 +213,11 @@ public class RunningKey extends Cipher {
       calculationMap.put(calculation, currentCombination);
     }
 
-    Logger("Folgende Mappings erziehlten das beste Ergebnis fuer" + cipherPart);
-    Iterator<Double> mapIterator = calculationMap.keySet().iterator();
+    Logger("Folgende Mappings erziehlten das beste Ergebnis:");
+    Iterator<Double> mapIterator = calculationMap.descendingKeySet().iterator();
     HashMap<Integer, String> userInputMap = new HashMap<Integer, String>();
 
-    for (int i = 0; i < 10 & mapIterator.hasNext(); i++) {
+    for (int i = 0; i < 100 & mapIterator.hasNext(); i++) {
 
       double calculationResult = mapIterator.next();
       int[] currentArray = calculationMap.get(calculationResult);
