@@ -555,38 +555,38 @@ public class RunningKey extends Cipher {
   }
 
   public void encipher(BufferedReader cleartext, BufferedWriter ciphertext) {
-    int cipherChar = 0, cipherCharMapped = 0, clearChar = 0, clearCharMapped = 0, keyChar = 0, keyCharMapped = 0;
+    int cipherChar = -1, cipherCharMapped = -1, clearChar = -1, clearCharMapped = -1, keyChar = -1, keyCharMapped = -1;
 
     try {
       while (((clearChar = cleartext.read()) != -1) && ((keyChar = keyBuffer.read()) != -1)) {
         clearCharMapped = charMap.mapChar(clearChar);
         keyCharMapped = charMap.mapChar(keyChar);
 
-        boolean skip = false;
+        boolean endOfFile = false;
 
         while (clearCharMapped == -1) {
           if ((clearChar = cleartext.read()) == -1) {
-            Logger("Breaking at clearChar");
-            skip = true;
+            Logger("End Of File: Cleartext");
+            endOfFile = true;
             break;
           }
           clearCharMapped = charMap.mapChar(clearChar);
         }
 
-        if (skip) {
+        if (endOfFile) {
           break;
         }
 
         while (keyCharMapped == -1) {
           if ((keyChar = keyBuffer.read()) == -1) {
-            Logger("Breaking at keyChar");
-            skip = true;
+            Logger("End Of File: Key");
+            endOfFile = true;
             break;
           }
           keyCharMapped = charMap.mapChar(keyChar);
         }
 
-        if (skip) {
+        if (endOfFile) {
           break;
         }
 
@@ -600,6 +600,7 @@ public class RunningKey extends Cipher {
       e.printStackTrace();
     }
     
+    // Close files
     try {
       cleartext.close();
       ciphertext.close();
@@ -610,39 +611,38 @@ public class RunningKey extends Cipher {
   }
 
   public void decipher(BufferedReader ciphertext, BufferedWriter cleartext) {
-
-    int cipherChar = 0, cipherCharMapped = 0, clearChar = 0, clearCharMapped = 0, keyChar = 0, keyCharMapped = 0;
+    int cipherChar = -1, cipherCharMapped = -1, clearChar = -1, clearCharMapped = -1, keyChar = -1, keyCharMapped = -1;
 
     try {
       while (((cipherChar = ciphertext.read()) != -1) && ((keyChar = keyBuffer.read()) != -1)) {
-
         cipherCharMapped = charMap.mapChar(cipherChar);
         keyCharMapped = charMap.mapChar(keyChar);
-        boolean skip = false;
+        
+        boolean endOfFile = false;
 
         while (cipherCharMapped == -1) {
           if ((cipherChar = ciphertext.read()) == -1) {
-            Logger("Breaking at clearChar");
-            skip = true;
+            Logger("End of File: Ciphertext");
+            endOfFile = true;
             break;
           }
           cipherCharMapped = charMap.mapChar(cipherChar);
         }
 
-        if (skip) {
+        if (endOfFile) {
           break;
         }
 
         while (keyCharMapped == -1) {
           if ((keyChar = keyBuffer.read()) == -1) {
-            Logger("Breaking at keyChar");
-            skip = true;
+            Logger("End of File: Key");
+            endOfFile = true;
             break;
           }
           keyCharMapped = charMap.mapChar(keyChar);
         }
 
-        if (skip) {
+        if (endOfFile) {
           break;
         }
 
@@ -654,7 +654,8 @@ public class RunningKey extends Cipher {
     } catch (IOException e1) {
       e1.printStackTrace();
     }
-
+    
+    // Close files
     try {
       cleartext.close();
       ciphertext.close();
