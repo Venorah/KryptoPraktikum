@@ -599,6 +599,14 @@ public class RunningKey extends Cipher {
     } catch (IOException e) {
       e.printStackTrace();
     }
+    
+    try {
+      cleartext.close();
+      ciphertext.close();
+      keyBuffer.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 
   public void decipher(BufferedReader ciphertext, BufferedWriter cleartext) {
