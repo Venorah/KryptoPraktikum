@@ -7,6 +7,6 @@
 <listEntry value="1"/>
 </listAttribute>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="de.tubs.cs.iti.jcrypt.chiffre.Launcher"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-execute task2.RunningKey&#10;-action encipher&#13;&#10;-cleartext ../text/weizenbaum.txt&#13;&#10;-ciphertext ../02_RunningKey/ciphertext.txt&#10;-key ../02_RunningKey/key.txt"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-execute task2.RunningKey&#10;-action encipher&#13;&#10;-cleartext ../text/simplemsg.txt&#13;&#10;-ciphertext ../02_RunningKey/ciphertext.txt&#10;-key ../02_RunningKey/key.txt"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="02_RunningKey"/>
 </launchConfiguration>
