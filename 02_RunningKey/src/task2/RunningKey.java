@@ -218,7 +218,7 @@ public class RunningKey extends Cipher {
     HashMap<Integer, String> userInputMap = new HashMap<Integer, String>();
 
     for (int i = 0; i < 100 & mapIterator.hasNext(); i++) {
-
+      
       double calculationResult = mapIterator.next();
       int[] currentArray = calculationMap.get(calculationResult);
 
