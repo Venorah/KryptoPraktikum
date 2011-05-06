@@ -649,6 +649,7 @@ public class RunningKey extends Cipher {
         }
 
         if (endOfFile) {
+          Logger("Keyfile zu kurz! Text konnte nicht komplett verschlüsselt werden!");
           break;
         }
 
