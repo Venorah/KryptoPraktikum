@@ -94,6 +94,54 @@ public final class IDEA extends BlockCipher {
 
     return array;
   }
+  
+  public String cyclicShift(String text, int positions, boolean isLeftShift) {
+
+    String outputString = "";
+
+    String binaryString = "";
+    BigInteger[] array = stringToBigIntegerArray(text);
+
+    for (int i = 0; i < array.length; i++) {
+      String currentString = decimalToBinaryString(array[i].intValue());
+
+      if (currentString.length() != 8) {
+        currentString = prependZeros(currentString, 8);
+      }
+
+      binaryString += currentString;
+    }
+    System.out.println(binaryString.length() + " " + binaryString);
+
+    char[] binaryStringArray = binaryString.toCharArray();
+    char[] shiftedArray = new char[binaryStringArray.length];
+    int length = binaryStringArray.length;
+
+    if (isLeftShift) {
+      for (int i = 0; i < length; i++) {
+        int field = ((i - positions) + length * 2) % length;
+        shiftedArray[field] = binaryStringArray[i];
+      }
+    } else {
+      for (int i = 0; i < length; i++) {
+        int field = ((i + positions) + length * 2) % length;
+        shiftedArray[field] = binaryStringArray[i];
+      }
+    }
+
+    String shiftedBinaryString = String.valueOf(shiftedArray);
+    System.out.println(shiftedBinaryString.length() + " " + shiftedBinaryString);
+
+    String[] shiftedBinaryStringArray = getTextAsStringArray(shiftedBinaryString, 8);
+
+    for (int i = 0; i < shiftedBinaryStringArray.length; i++) {
+      System.out.println(shiftedBinaryStringArray[i]);
+      char character = (char) binaryStringToDecimal(shiftedBinaryStringArray[i]);
+      outputString += character;
+    }
+
+    return outputString;
+  }
 
 
   private BigInteger[] stringToBigIntegerArray(String textPart) {
@@ -144,6 +192,16 @@ public final class IDEA extends BlockCipher {
 
     return token;
   }
+  private static String prependZeros(String textPart, int tokenSize) {
+    String token = textPart;
+
+    while (token.length() != tokenSize) {
+      token = "0" + token;
+    }
+
+    return token;
+  }
+
 
   private BigInteger byteToShort(BigInteger val1, BigInteger val2) {
     val1 = val1.shiftLeft(8);
