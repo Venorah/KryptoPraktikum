@@ -124,7 +124,6 @@ public final class IDEA extends BlockCipher {
       // print info
       String integerValues = new String();
       for (int i = 0; i < keyCharArray.length; i++) {
-        keyCharArray[i] = (char) rand.nextInt(128); // zufällig von 0...127
         integerValues += "" + (int) keyCharArray[i] + ", ";
       }
       
