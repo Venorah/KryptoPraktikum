@@ -20,6 +20,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.FileReader;
+import java.math.BigInteger;
 import java.util.Random;
 import java.util.StringTokenizer;
 
@@ -32,10 +33,9 @@ import de.tubs.cs.iti.jcrypt.chiffre.BlockCipher;
  * @version 1.1 - Sat Apr 03 21:57:35 CEST 2010
  */
 public final class IDEA extends BlockCipher {
-  
+
   String keyString;
-  
-  
+
   /**
    * Entschlüsselt den durch den FileInputStream <code>ciphertext</code> gegebenen Chiffretext und
    * schreibt den Klartext in den FileOutputStream <code>cleartext</code>.
@@ -80,6 +80,28 @@ public final class IDEA extends BlockCipher {
     return clearTextBuffer.toString();
   }
 
+  private BigInteger[] stringToBigIntegerArray(String textPart) {
+    BigInteger[] array = new BigInteger[8];
+
+    char[] charArray = textPart.toCharArray();
+
+    for (int i = 0; i < charArray.length; i++) {
+      int val = charArray[i];
+      int bac = '-';
+
+      BigInteger bi = new BigInteger(String.valueOf(val));
+      BigInteger bi_backup = new BigInteger(String.valueOf(bac));
+
+      if (bi.bitLength() > 8) {
+        array[i] = bi_backup;
+      } else {
+        array[i] = bi;
+      }
+    }
+
+    return array;
+  }
+
   private String[] getTextAsStringArray(String text, int tokenSize) {
 
     String[] story = new String[(text.length() / tokenSize) + 1];
@@ -117,7 +139,7 @@ public final class IDEA extends BlockCipher {
     BufferedReader standardInput = launcher.openStandardInput();
     keyString = new String();
     char keyCharArray[] = new char[16];
-    
+
     // Auswahl eingeben oder generieren:
     int choice = -1;
     try {
@@ -129,9 +151,9 @@ public final class IDEA extends BlockCipher {
       Logger("Problem beim Einlesen");
       e.printStackTrace();
     }
-    
+
     if (choice == 0) { // eingeben
-      
+
       try {
         Logger("Bitte gib einen 16 Zeichen langen Schlüssel ein:");
         keyString = standardInput.readLine();
@@ -141,7 +163,7 @@ public final class IDEA extends BlockCipher {
         Logger("Problem beim Einlesen");
         e.printStackTrace();
       }
-      
+
       if (keyString.length() == 16) {
         keyCharArray = keyString.toCharArray();
         for (int i = 0; i < keyCharArray.length; i++) {
@@ -150,34 +172,30 @@ public final class IDEA extends BlockCipher {
             System.exit(0);
           }
         }
-      }
-      else {
+      } else {
         Logger("Der Schlüssel muss 16 Zeichen lang sein!");
       }
-      
-    }
-    else if (choice == 1) { //zufällig generieren
+
+    } else if (choice == 1) { // zufällig generieren
       Random rand = new Random();
-      
+
       for (int i = 0; i < keyCharArray.length; i++) {
         keyCharArray[i] = (char) rand.nextInt(128); // zufällig von 0...127
         keyString += "" + keyCharArray[i];
       }
-      
+
       // print info
       String integerValues = new String();
       for (int i = 0; i < keyCharArray.length; i++) {
         integerValues += "" + (int) keyCharArray[i] + ", ";
       }
-      
-      Logger("Zufällige Werte: "+integerValues);
+
+      Logger("Zufällige Werte: " + integerValues);
       Logger("Der Schlüssel wurde zufällig generiert!");
-    }
-    else {
+    } else {
       Logger("Falsche Eingabe!");
     }
-    
-    
+
   }
 
   /**
@@ -191,7 +209,7 @@ public final class IDEA extends BlockCipher {
   public void readKey(BufferedReader key) {
     try {
       StringTokenizer st = new StringTokenizer(key.readLine(), " ");
-      
+
       keyString = new String();
       keyString = st.nextToken();
 
@@ -233,7 +251,7 @@ public final class IDEA extends BlockCipher {
       System.exit(1);
     }
   }
-  
+
   private static void Logger(String event) {
     System.out.println("IDEA$  " + event);
   }
