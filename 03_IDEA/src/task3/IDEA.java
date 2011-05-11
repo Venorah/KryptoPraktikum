@@ -76,7 +76,7 @@ public final class IDEA extends BlockCipher {
     char keyCharArray[] = new char[16];
     
     // Auswahl eingeben oder generieren:
-    int choice = 0;
+    int choice = -1;
     try {
       Logger("[0] Möchtest du einen eigenen Schlüssel eingeben\n[1] oder einen Schlüssel zufällig generieren?");
       choice = Integer.parseInt(standardInput.readLine());
