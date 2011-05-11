@@ -190,10 +190,7 @@ public final class IDEA extends BlockCipher {
    */
   public void readKey(BufferedReader key) {
     try {
-      StringTokenizer st = new StringTokenizer(key.readLine(), " ");
-      
-      keyString = new String();
-      keyString = st.nextToken();
+      String keyString = new String(key.readLine());
 
       Logger("Reading Information: ");
       Logger("+--KeyString: " + keyString);
@@ -221,7 +218,6 @@ public final class IDEA extends BlockCipher {
   public void writeKey(BufferedWriter key) {
     try {
       key.write(keyString);
-      key.newLine();
 
       Logger("Writing Information: ");
       Logger("+--Key: " + keyString);
