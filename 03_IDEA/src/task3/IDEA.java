@@ -80,8 +80,24 @@ public final class IDEA extends BlockCipher {
     return clearTextBuffer.toString();
   }
 
+  public BigInteger[] getSubBlocks(String textPart) {
+    BigInteger[] array = new BigInteger[(textPart.length()) / 2];
+
+    BigInteger[] bigArray = stringToBigIntegerArray(textPart);
+
+    for (int i = 0, j = 0; i < bigArray.length; i = i + 2, j++) {
+      BigInteger val1 = bigArray[i];
+      BigInteger val2 = bigArray[i + 1];
+
+      array[j] = byteToShort(val1, val2);
+    }
+
+    return array;
+  }
+
+
   private BigInteger[] stringToBigIntegerArray(String textPart) {
-    BigInteger[] array = new BigInteger[8];
+    BigInteger[] array = new BigInteger[textPart.length()];
 
     char[] charArray = textPart.toCharArray();
 
@@ -127,6 +143,39 @@ public final class IDEA extends BlockCipher {
     }
 
     return token;
+  }
+
+  private BigInteger byteToShort(BigInteger val1, BigInteger val2) {
+    val1 = val1.shiftLeft(8);
+    return val1.add(val2);
+  }
+  
+  public static String decimalToBinaryString(int val) {
+    String output = "";
+
+    while (val != 0) {
+      if (val % 2 == 0) {
+        output = "0" + output;
+      } else {
+        output = "1" + output;
+      }
+      val /= 2;
+    }
+
+    return output;
+  }
+
+  public static int binaryStringToDecimal(String binaryString) {
+    int output = 0;
+    char[] array = binaryString.toCharArray();
+
+    for (int i = 0, j = array.length - 1; j >= 0; i++, j--) {
+      if (array[j] == '1') {
+        output += Math.pow(2, i);
+      }
+    }
+
+    return output;
   }
 
   /**
