@@ -3,6 +3,8 @@ package task3;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.Iterator;
+import java.util.LinkedList;
 
 public class Helper {
   
@@ -178,6 +180,30 @@ public class Helper {
     round = round.shiftLeft(shift*8);
     output = output.add(round);
 
+    return output;
+  }
+  
+  private static BigInteger[] extractValues(BigInteger val, int bitLength) {
+
+    BigInteger max = generateMaxBigInteger(bitLength);
+    LinkedList<BigInteger> list = new LinkedList<BigInteger>();
+
+    while (val.bitLength() > bitLength) {
+      BigInteger tmp = new BigInteger("0");
+      tmp = val.and(max);
+      list.add(tmp);
+
+      val = val.shiftRight(bitLength);
+    }
+    
+    list.add(val);
+    
+    Iterator<BigInteger> it = list.descendingIterator();
+    BigInteger[] output = new BigInteger[list.size()];
+    for(int i=0; it.hasNext(); i++){
+      output[i] = it.next();
+    }
+    
     return output;
   }
 }
