@@ -24,6 +24,8 @@ import java.math.BigInteger;
 import java.util.Random;
 import java.util.StringTokenizer;
 
+import com.sun.org.apache.xml.internal.security.utils.HelperNodeList;
+
 import de.tubs.cs.iti.jcrypt.chiffre.BlockCipher;
 
 /**
@@ -37,76 +39,128 @@ public final class IDEA extends BlockCipher {
   String keyString;
 
   /**
-   * Entschlüsselt den durch den FileInputStream <code>ciphertext</code> gegebenen Chiffretext und
-   * schreibt den Klartext in den FileOutputStream <code>cleartext</code>.
+   * Liest den Schlüssel mit dem Reader <code>key</code>.
    * 
-   * @param ciphertext
-   *          Der FileInputStream, der den Chiffretext liefert.
-   * @param cleartext
-   *          Der FileOutputStream, in den der Klartext geschrieben werden soll.
+   * @param key
+   *          Der Reader, der aus der Schlüsseldatei liest.
+   * @see #makeKey makeKey
+   * @see #writeKey writeKey
    */
-  public void decipher(FileInputStream ciphertext, FileOutputStream cleartext) {
+  public void readKey(BufferedReader key) {
+    try {
 
+      String keyString = new String(key.readLine());
+
+      Logger("Reading Information: ");
+      Logger("+--KeyString: " + keyString);
+
+      key.close();
+    } catch (IOException e) {
+      System.err.println("Abbruch: Fehler beim Lesen oder Schließen der " + "Schlüsseldatei.");
+      e.printStackTrace();
+      System.exit(1);
+    } catch (NumberFormatException e) {
+      System.err.println("Abbruch: Fehler beim Parsen eines Wertes aus der " + "Schlüsseldatei.");
+      e.printStackTrace();
+      System.exit(1);
+    }
   }
 
   /**
-   * Verschlüsselt den durch den FileInputStream <code>cleartext</code> gegebenen Klartext und
-   * schreibt den Chiffretext in den FileOutputStream <code>ciphertext</code>.
+   * Schreibt den Schlüssel mit dem Writer <code>key</code>.
    * 
-   * @param cleartext
-   *          Der FileInputStream, der den Klartext liefert.
-   * @param ciphertext
-   *          Der FileOutputStream, in den der Chiffretext geschrieben werden soll.
+   * @param key
+   *          Der Writer, der in die Schlüsseldatei schreibt.
+   * @see #makeKey makeKey
+   * @see #readKey readKey
    */
+  public void writeKey(BufferedWriter key) {
+    try {
+      key.write(keyString);
+
+      Logger("Writing Information: ");
+      Logger("+--Key: " + keyString);
+
+      key.close();
+    } catch (IOException e) {
+      System.out.println("Abbruch: Fehler beim Schreiben oder Schließen der " + "Schlüsseldatei.");
+      e.printStackTrace();
+      System.exit(1);
+    }
+  }
+
   public void encipher(FileInputStream cleartext, FileOutputStream ciphertext) {
 
-    String clearTextString = getTextAsString(cleartext);
-    String[] clearTextArray = getTextAsStringArray(clearTextString, 8);
+    String clearTextString = Helper.getTextAsString(cleartext);
+    String[] clearTextArray = Helper.getTextAsStringArray(clearTextString, 8);
 
   }
 
-  private String getTextAsString(FileInputStream cleartext) {
-    StringBuffer clearTextBuffer = new StringBuffer();
-
-    try {
-      int ch = 0;
-      while ((ch = cleartext.read()) != -1) {
-        clearTextBuffer.append((char) ch);
-      }
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-
-    return clearTextBuffer.toString();
+  public void decipher(FileInputStream ciphertext, FileOutputStream cleartext) {
+    //TODO
   }
 
+  public String cipherBlockChaining(String cipherPart, String messagePart) {
+    String outputCipher = "";
+
+    BigInteger[] cpArray = Helper.stringToBigIntegerArray(cipherPart);
+    BigInteger[] mpArray = Helper.stringToBigIntegerArray(messagePart);
+
+    return outputCipher;
+  }
+  
   public BigInteger[] getSubBlocks(String textPart) {
     BigInteger[] array = new BigInteger[(textPart.length()) / 2];
 
-    BigInteger[] bigArray = stringToBigIntegerArray(textPart);
+    BigInteger[] bigArray = Helper.stringToBigIntegerArray(textPart);
 
     for (int i = 0, j = 0; i < bigArray.length; i = i + 2, j++) {
       BigInteger val1 = bigArray[i];
       BigInteger val2 = bigArray[i + 1];
 
-      array[j] = byteToShort(val1, val2);
+      array[j] = Helper.byteToShort(val1, val2);
     }
 
     return array;
   }
+  
+  public BigInteger[] getKeys(String keyString) {
+    BigInteger[] outputArray = new BigInteger[52];
 
+    String key = new String(keyString);
+    BigInteger[] byteKeyArray = Helper.stringToBigIntegerArray(key);
+    BigInteger[] shortKeyArray = Helper.byteArrayToShortArray(byteKeyArray);
+
+    int i = 0;
+    while (i != 52) {
+      for (int j = 0; j < shortKeyArray.length; j++) {
+        outputArray[i++] = shortKeyArray[j];
+        if (i == 52) {
+          break;
+        }
+      }
+      if (i != 52) {
+        key = cyclicShift(key, 25, true);
+        byteKeyArray = Helper.stringToBigIntegerArray(key);
+        shortKeyArray = Helper.byteArrayToShortArray(byteKeyArray);
+      }
+    }
+
+    return outputArray;
+  }
+  
   public String cyclicShift(String text, int positions, boolean isLeftShift) {
 
     String outputString = "";
 
-    BigInteger[] array = stringToBigIntegerArray(text);
+    BigInteger[] array = Helper.stringToBigIntegerArray(text);
     String binaryString = "";
-    
+
     for (int i = 0; i < array.length; i++) {
-      String currentString = decimalToBinaryString(array[i].intValue());
+      String currentString = Helper.decimalToBinaryString(array[i].intValue());
 
       if (currentString.length() != 8) {
-        currentString = prependZeros(currentString, 8);
+        currentString = Helper.prependZeros(currentString, 8);
       }
 
       binaryString += currentString;
@@ -129,146 +183,16 @@ public final class IDEA extends BlockCipher {
     }
 
     String shiftedBinaryString = String.valueOf(shiftedArray);
-    String[] shiftedBinaryStringArray = getTextAsStringArray(shiftedBinaryString, 8);
+    String[] shiftedBinaryStringArray = Helper.getTextAsStringArray(shiftedBinaryString, 8);
 
     for (int i = 0; i < shiftedBinaryStringArray.length; i++) {
-      char character = (char) binaryStringToDecimal(shiftedBinaryStringArray[i]);
+      char character = (char) Helper.binaryStringToDecimal(shiftedBinaryStringArray[i]);
       outputString += character;
     }
-
+    
     return outputString;
   }
 
-  private BigInteger[] stringToBigIntegerArray(String textPart) {
-    BigInteger[] array = new BigInteger[textPart.length()];
-
-    char[] charArray = textPart.toCharArray();
-
-    for (int i = 0; i < charArray.length; i++) {
-      int val = charArray[i];
-      int bac = '-';
-
-      BigInteger bi = new BigInteger(String.valueOf(val));
-      BigInteger bi_backup = new BigInteger(String.valueOf(bac));
-
-      if (bi.bitLength() > 8) {
-        array[i] = bi_backup;
-      } else {
-        array[i] = bi;
-      }
-    }
-
-    return array;
-  }
-
-  private String[] getTextAsStringArray(String text, int tokenSize) {
-
-    String[] story = new String[(text.length() / tokenSize) + 1];
-
-    for (int i = 0; i < story.length; i++) {
-      if (text.length() > tokenSize) {
-        String subString = text.substring(0, tokenSize);
-        text = text.substring(tokenSize);
-        story[i] = subString;
-      } else {
-        text = appendWhitespaces(text, tokenSize);
-        story[i] = text;
-      }
-    }
-    return story;
-  }
-
-  private String appendWhitespaces(String textPart, int tokenSize) {
-    String token = textPart;
-
-    while (token.length() != tokenSize) {
-      token = token + " ";
-    }
-
-    return token;
-  }
-
-  private static String prependZeros(String textPart, int tokenSize) {
-    String token = textPart;
-
-    while (token.length() != tokenSize) {
-      token = "0" + token;
-    }
-
-    return token;
-  }
-  
-  public BigInteger[] getKeys(String keyString) {
-    BigInteger[] outputArray = new BigInteger[52];
-
-    String key = new String(keyString);
-    BigInteger[] byteKeyArray = stringToBigIntegerArray(key);
-    BigInteger[] shortKeyArray = byteArrayToShortArray(byteKeyArray);
-
-    int i = 0;
-    while (i != 52) {
-      for (int j = 0; j < shortKeyArray.length; j++) {
-        outputArray[i++] = shortKeyArray[j];
-        if (i == 52) {
-          break;
-        }
-      }
-      if (i != 52) {
-        key = cyclicShift(key, 25, true);
-        byteKeyArray = stringToBigIntegerArray(key);
-        shortKeyArray = byteArrayToShortArray(byteKeyArray);
-      }
-    }
-
-    return outputArray;
-  }
-
-  private BigInteger[] byteArrayToShortArray(BigInteger[] array) {
-    BigInteger[] outputArray = new BigInteger[array.length / 2];
-
-    int counter = 0;
-    for (int i = 0; i < outputArray.length; i++) {
-      BigInteger val1 = array[counter++];
-      BigInteger val2 = array[counter++];
-
-      outputArray[i] = byteToShort(val1, val2);
-    }
-
-    return outputArray;
-  }
-
-  private BigInteger byteToShort(BigInteger val1, BigInteger val2) {
-    val1 = val1.shiftLeft(8);
-    return val1.add(val2);
-  }
-
-  public static String decimalToBinaryString(int val) {
-    String output = "";
-
-    while (val != 0) {
-      if (val % 2 == 0) {
-        output = "0" + output;
-      } else {
-        output = "1" + output;
-      }
-      val /= 2;
-    }
-
-    return output;
-  }
-
-  public static int binaryStringToDecimal(String binaryString) {
-    int output = 0;
-    char[] array = binaryString.toCharArray();
-
-    for (int i = 0, j = array.length - 1; j >= 0; i++, j--) {
-      if (array[j] == '1') {
-        output += Math.pow(2, i);
-      }
-    }
-
-    return output;
-  }
 
   /**
    * Erzeugt einen neuen Schlüssel.
@@ -337,57 +261,6 @@ public final class IDEA extends BlockCipher {
       Logger("Falsche Eingabe!");
     }
 
-  }
-
-  /**
-   * Liest den Schlüssel mit dem Reader <code>key</code>.
-   * 
-   * @param key
-   *          Der Reader, der aus der Schlüsseldatei liest.
-   * @see #makeKey makeKey
-   * @see #writeKey writeKey
-   */
-  public void readKey(BufferedReader key) {
-    try {
-
-      String keyString = new String(key.readLine());
-
-      Logger("Reading Information: ");
-      Logger("+--KeyString: " + keyString);
-
-      key.close();
-    } catch (IOException e) {
-      System.err.println("Abbruch: Fehler beim Lesen oder Schließen der " + "Schlüsseldatei.");
-      e.printStackTrace();
-      System.exit(1);
-    } catch (NumberFormatException e) {
-      System.err.println("Abbruch: Fehler beim Parsen eines Wertes aus der " + "Schlüsseldatei.");
-      e.printStackTrace();
-      System.exit(1);
-    }
-  }
-
-  /**
-   * Schreibt den Schlüssel mit dem Writer <code>key</code>.
-   * 
-   * @param key
-   *          Der Writer, der in die Schlüsseldatei schreibt.
-   * @see #makeKey makeKey
-   * @see #readKey readKey
-   */
-  public void writeKey(BufferedWriter key) {
-    try {
-      key.write(keyString);
-
-      Logger("Writing Information: ");
-      Logger("+--Key: " + keyString);
-
-      key.close();
-    } catch (IOException e) {
-      System.out.println("Abbruch: Fehler beim Schreiben oder Schließen der " + "Schlüsseldatei.");
-      e.printStackTrace();
-      System.exit(1);
-    }
   }
 
   private static void Logger(String event) {
