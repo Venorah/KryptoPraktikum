@@ -37,6 +37,7 @@ import de.tubs.cs.iti.jcrypt.chiffre.BlockCipher;
 public final class IDEA extends BlockCipher {
 
   String keyString;
+  BigInteger[] keys;
 
   /**
    * Liest den Schlüssel mit dem Reader <code>key</code>.
@@ -97,27 +98,49 @@ public final class IDEA extends BlockCipher {
   }
 
   public void decipher(FileInputStream ciphertext, FileOutputStream cleartext) {
-    //TODO
+    // TODO
   }
 
   /**
-   * @param cipherPart 64 bit
-   * @param messagePart 64 bit
+   * @param cipherPart
+   *          64 bit
+   * @param messagePart
+   *          64 bit
    * @return Ciphertext part
    */
   public String cipherBlockChaining(String cipherPart, String messagePart) {
     String outputCipher = "";
     
+    keys = getKeys(keyString);
+
     BigInteger cp = Helper.stringToBigInteger(cipherPart);
     BigInteger mp = Helper.stringToBigInteger(messagePart);
-    
+
     BigInteger input = cp.xor(mp);
-        
-    BigInteger[] inputArray = Helper.extractValues(input, 16);
 
     return outputCipher;
   }
-  
+
+  public String idea(String messagePart) {
+    String cipher = "";
+
+    // TODO idea stuff
+
+    return cipher;
+  }
+
+  public String feistelNetwork(String messagePart, int round) {
+    String output = "";
+    
+    int val = round*8;
+    
+    int[] keySlots = { 1*round, 2*round, 3*round, 4*round, 5*round, 6*round, 7*round, 8*round};
+
+    BigInteger[] messageParts = Helper.extractValues(Helper.stringToBigInteger(messagePart), 16);
+
+    return output;
+  }
+
   public BigInteger[] getSubBlocks(String textPart) {
     BigInteger[] array = new BigInteger[(textPart.length()) / 2];
 
@@ -132,8 +155,8 @@ public final class IDEA extends BlockCipher {
 
     return array;
   }
-  
-  public BigInteger[] getKeys(String keyString) {
+
+  public static BigInteger[] getKeys(String keyString) {
     BigInteger[] outputArray = new BigInteger[52];
 
     String key = new String(keyString);
@@ -158,6 +181,25 @@ public final class IDEA extends BlockCipher {
     return outputArray;
   }
   
+  public static BigInteger[][] getKeysAs2DArray(String keyString){
+    
+    BigInteger[] uglyArray = getKeys(keyString);
+    BigInteger[][] nicerArray = new BigInteger[9][6];
+    
+    int counter = 0;
+    for(int zeile=0; zeile<nicerArray.length; zeile++){
+      for(int spalte=0; spalte<nicerArray[zeile].length; spalte++){
+        nicerArray[zeile][spalte] = uglyArray[counter++];
+        System.out.println(nicerArray[zeile][spalte]);
+        if(counter == 52){
+          return nicerArray;
+        }
+      }
+    }
+    
+    return nicerArray;
+  }
+
   public String cyclicShift(String text, int positions, boolean isLeftShift) {
 
     String outputString = "";
@@ -198,10 +240,9 @@ public final class IDEA extends BlockCipher {
       char character = (char) Helper.binaryStringToDecimal(shiftedBinaryStringArray[i]);
       outputString += character;
     }
-    
+
     return outputString;
   }
-
 
   /**
    * Erzeugt einen neuen Schlüssel.
