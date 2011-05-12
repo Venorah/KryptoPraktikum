@@ -156,7 +156,7 @@ public final class IDEA extends BlockCipher {
     return array;
   }
 
-  public static BigInteger[] getKeys(String keyString) {
+  public BigInteger[] getKeys(String keyString) {
     BigInteger[] outputArray = new BigInteger[52];
 
     String key = new String(keyString);
@@ -181,7 +181,7 @@ public final class IDEA extends BlockCipher {
     return outputArray;
   }
   
-  public static BigInteger[][] getKeysAs2DArray(String keyString){
+  public BigInteger[][] getKeysAs2DArray(String keyString){
     
     BigInteger[] uglyArray = getKeys(keyString);
     BigInteger[][] nicerArray = new BigInteger[9][6];
@@ -190,7 +190,6 @@ public final class IDEA extends BlockCipher {
     for(int zeile=0; zeile<nicerArray.length; zeile++){
       for(int spalte=0; spalte<nicerArray[zeile].length; spalte++){
         nicerArray[zeile][spalte] = uglyArray[counter++];
-        System.out.println(nicerArray[zeile][spalte]);
         if(counter == 52){
           return nicerArray;
         }
