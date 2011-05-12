@@ -150,4 +150,34 @@ public class Helper {
 
     return output;
   }
+  
+  private static BigInteger generateMaxBigInteger(int bits) {
+
+    int shift = 0;
+    BigInteger output = new BigInteger("0");
+    BigInteger round = new BigInteger("0");
+    BigInteger val = new BigInteger("1");
+    
+    for (int i = 0; i < bits; i++) {
+      
+      int j = i % 8;
+      
+      if ( i != 0 && (i % 8) == 0) {
+        round = round.shiftLeft(shift*8);
+        output = output.add(round);
+
+        round = new BigInteger("0");
+        shift++;
+      }
+
+      val = new BigInteger("1");
+      val = val.shiftLeft(j);
+      round = round.add(val);
+    }
+    
+    round = round.shiftLeft(shift*8);
+    output = output.add(round);
+
+    return output;
+  }
 }
