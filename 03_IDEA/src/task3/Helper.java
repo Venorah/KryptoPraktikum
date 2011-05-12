@@ -7,7 +7,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 
 public class Helper {
-  
+
   public static String getTextAsString(FileInputStream cleartext) {
     StringBuffer clearTextBuffer = new StringBuffer();
 
@@ -22,7 +22,7 @@ public class Helper {
 
     return clearTextBuffer.toString();
   }
-  
+
   public static String[] getTextAsStringArray(String text, int tokenSize) {
 
     String[] story = new String[(text.length() / tokenSize) + 1];
@@ -39,7 +39,6 @@ public class Helper {
     }
     return story;
   }
-
 
   public static BigInteger[] stringToBigIntegerArray(String textPart) {
     BigInteger[] array = new BigInteger[textPart.length()];
@@ -61,6 +60,20 @@ public class Helper {
     }
 
     return array;
+  }
+
+  public static BigInteger stringToBigInteger(String text) {
+    BigInteger[] array = stringToBigIntegerArray(text);
+    BigInteger output = bigIntegerArraySum(array);
+
+    return output;
+  }
+  
+  public static String bigIntegerToString(BigInteger value){    
+    BigInteger[] array = Helper.extractValues(value, 8);
+    String text = Helper.bigIntegerArrayToString(array);
+    
+    return text;
   }
 
   public static String bigIntegerArrayToString(BigInteger[] array) {
@@ -85,7 +98,7 @@ public class Helper {
 
     return output;
   }
-  
+
   public static String appendWhitespaces(String textPart, int tokenSize) {
     String token = textPart;
 
@@ -152,20 +165,20 @@ public class Helper {
 
     return output;
   }
-  
-  private static BigInteger generateMaxBigInteger(int bits) {
+
+  public static BigInteger generateMaxBigInteger(int bits) {
 
     int shift = 0;
     BigInteger output = new BigInteger("0");
     BigInteger round = new BigInteger("0");
     BigInteger val = new BigInteger("1");
-    
+
     for (int i = 0; i < bits; i++) {
-      
+
       int j = i % 8;
-      
-      if ( i != 0 && (i % 8) == 0) {
-        round = round.shiftLeft(shift*8);
+
+      if (i != 0 && (i % 8) == 0) {
+        round = round.shiftLeft(shift * 8);
         output = output.add(round);
 
         round = new BigInteger("0");
@@ -176,14 +189,14 @@ public class Helper {
       val = val.shiftLeft(j);
       round = round.add(val);
     }
-    
-    round = round.shiftLeft(shift*8);
+
+    round = round.shiftLeft(shift * 8);
     output = output.add(round);
 
     return output;
   }
-  
-  private static BigInteger[] extractValues(BigInteger val, int bitLength) {
+
+  public static BigInteger[] extractValues(BigInteger val, int bitLength) {
 
     BigInteger max = generateMaxBigInteger(bitLength);
     LinkedList<BigInteger> list = new LinkedList<BigInteger>();
@@ -195,15 +208,15 @@ public class Helper {
 
       val = val.shiftRight(bitLength);
     }
-    
+
     list.add(val);
-    
+
     Iterator<BigInteger> it = list.descendingIterator();
     BigInteger[] output = new BigInteger[list.size()];
-    for(int i=0; it.hasNext(); i++){
+    for (int i = 0; it.hasNext(); i++) {
       output[i] = it.next();
     }
-    
+
     return output;
   }
 }

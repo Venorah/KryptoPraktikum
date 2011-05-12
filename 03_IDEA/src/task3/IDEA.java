@@ -100,11 +100,20 @@ public final class IDEA extends BlockCipher {
     //TODO
   }
 
+  /**
+   * @param cipherPart 64 bit
+   * @param messagePart 64 bit
+   * @return Ciphertext part
+   */
   public String cipherBlockChaining(String cipherPart, String messagePart) {
     String outputCipher = "";
-
-    BigInteger[] cpArray = Helper.stringToBigIntegerArray(cipherPart);
-    BigInteger[] mpArray = Helper.stringToBigIntegerArray(messagePart);
+    
+    BigInteger cp = Helper.stringToBigInteger(cipherPart);
+    BigInteger mp = Helper.stringToBigInteger(messagePart);
+    
+    BigInteger input = cp.xor(mp);
+        
+    BigInteger[] inputArray = Helper.extractValues(input, 16);
 
     return outputCipher;
   }
