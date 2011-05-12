@@ -94,14 +94,14 @@ public final class IDEA extends BlockCipher {
 
     return array;
   }
-  
+
   public String cyclicShift(String text, int positions, boolean isLeftShift) {
 
     String outputString = "";
 
-    String binaryString = "";
     BigInteger[] array = stringToBigIntegerArray(text);
-
+    String binaryString = "";
+    
     for (int i = 0; i < array.length; i++) {
       String currentString = decimalToBinaryString(array[i].intValue());
 
@@ -111,7 +111,6 @@ public final class IDEA extends BlockCipher {
 
       binaryString += currentString;
     }
-    System.out.println(binaryString.length() + " " + binaryString);
 
     char[] binaryStringArray = binaryString.toCharArray();
     char[] shiftedArray = new char[binaryStringArray.length];
@@ -130,19 +129,15 @@ public final class IDEA extends BlockCipher {
     }
 
     String shiftedBinaryString = String.valueOf(shiftedArray);
-    System.out.println(shiftedBinaryString.length() + " " + shiftedBinaryString);
-
     String[] shiftedBinaryStringArray = getTextAsStringArray(shiftedBinaryString, 8);
 
     for (int i = 0; i < shiftedBinaryStringArray.length; i++) {
-      System.out.println(shiftedBinaryStringArray[i]);
       char character = (char) binaryStringToDecimal(shiftedBinaryStringArray[i]);
       outputString += character;
     }
 
     return outputString;
   }
-
 
   private BigInteger[] stringToBigIntegerArray(String textPart) {
     BigInteger[] array = new BigInteger[textPart.length()];
@@ -192,6 +187,7 @@ public final class IDEA extends BlockCipher {
 
     return token;
   }
+
   private static String prependZeros(String textPart, int tokenSize) {
     String token = textPart;
 
@@ -201,13 +197,51 @@ public final class IDEA extends BlockCipher {
 
     return token;
   }
+  
+  public BigInteger[] getKeys(String keyString) {
+    BigInteger[] outputArray = new BigInteger[52];
 
+    String key = new String(keyString);
+    BigInteger[] byteKeyArray = stringToBigIntegerArray(key);
+    BigInteger[] shortKeyArray = byteArrayToShortArray(byteKeyArray);
+
+    int i = 0;
+    while (i != 52) {
+      for (int j = 0; j < shortKeyArray.length; j++) {
+        outputArray[i++] = shortKeyArray[j];
+        if (i == 52) {
+          break;
+        }
+      }
+      if (i != 52) {
+        key = cyclicShift(key, 25, true);
+        byteKeyArray = stringToBigIntegerArray(key);
+        shortKeyArray = byteArrayToShortArray(byteKeyArray);
+      }
+    }
+
+    return outputArray;
+  }
+
+  private BigInteger[] byteArrayToShortArray(BigInteger[] array) {
+    BigInteger[] outputArray = new BigInteger[array.length / 2];
+
+    int counter = 0;
+    for (int i = 0; i < outputArray.length; i++) {
+      BigInteger val1 = array[counter++];
+      BigInteger val2 = array[counter++];
+
+      outputArray[i] = byteToShort(val1, val2);
+    }
+
+    return outputArray;
+  }
 
   private BigInteger byteToShort(BigInteger val1, BigInteger val2) {
     val1 = val1.shiftLeft(8);
     return val1.add(val2);
   }
-  
+
   public static String decimalToBinaryString(int val) {
     String output = "";
 
