@@ -37,7 +37,7 @@ import de.tubs.cs.iti.jcrypt.chiffre.BlockCipher;
 public final class IDEA extends BlockCipher {
 
   String keyString;
-  BigInteger[] keys;
+  BigInteger[][] keys;
 
   /**
    * Liest den Schlüssel mit dem Reader <code>key</code>.
@@ -110,8 +110,8 @@ public final class IDEA extends BlockCipher {
    */
   public String cipherBlockChaining(String cipherPart, String messagePart) {
     String outputCipher = "";
-    
-    keys = getKeys(keyString);
+
+    keys = getKeysAs2DArray(keyString);
 
     BigInteger cp = Helper.stringToBigInteger(cipherPart);
     BigInteger mp = Helper.stringToBigInteger(messagePart);
@@ -131,12 +131,78 @@ public final class IDEA extends BlockCipher {
 
   public String feistelNetwork(String messagePart, int round) {
     String output = "";
-    
-    int val = round*8;
-    
-    int[] keySlots = { 1*round, 2*round, 3*round, 4*round, 5*round, 6*round, 7*round, 8*round};
 
-    BigInteger[] messageParts = Helper.extractValues(Helper.stringToBigInteger(messagePart), 16);
+    BigInteger[] key = keys[round];
+    BigInteger[] msg = Helper.extractValues(Helper.stringToBigInteger(messagePart), 16);
+
+    BigInteger addMod = new BigInteger("65536"); // 2^16
+    BigInteger multMod = new BigInteger("65537"); // (2^16)+1
+
+    BigInteger M1 = msg[0];
+    BigInteger M2 = msg[1];
+    BigInteger M3 = msg[2];
+    BigInteger M4 = msg[3];
+
+    if (round != 9) {
+      BigInteger K1 = key[0];
+      BigInteger K2 = key[1];
+      BigInteger K3 = key[2];
+      BigInteger K4 = key[3];
+      BigInteger K5 = key[4];
+      BigInteger K6 = key[5];
+
+      BigInteger calc01 = new BigInteger("0");
+      BigInteger calc02 = new BigInteger("0");
+      BigInteger calc03 = new BigInteger("0");
+      BigInteger calc04 = new BigInteger("0");
+      BigInteger calc05 = new BigInteger("0");
+      BigInteger calc06 = new BigInteger("0");
+      BigInteger calc07 = new BigInteger("0");
+      BigInteger calc08 = new BigInteger("0");
+      BigInteger calc09 = new BigInteger("0");
+      BigInteger calc10 = new BigInteger("0");
+      BigInteger calc11 = new BigInteger("0");
+      BigInteger calc12 = new BigInteger("0");
+      BigInteger calc13 = new BigInteger("0");
+      BigInteger calc14 = new BigInteger("0");
+
+      calc01 = (K1.multiply(M1)).mod(multMod);
+      calc02 = (K2.multiply(M2)).mod(multMod);
+      calc03 = (K3.add(M3)).mod(addMod);
+      calc04 = (K4.add(M4)).mod(addMod);
+      calc05 = calc01.xor(calc03);
+      calc06 = calc02.xor(calc04);
+      calc07 = (K5.multiply(calc05)).mod(multMod);
+      calc08 = (calc07.add(calc06)).mod(addMod);
+      calc09 = (K6.multiply(calc08)).mod(multMod);
+      calc10 = (calc09.add(calc07)).mod(addMod);
+      calc11 = calc09.xor(calc01);
+      calc12 = calc09.xor(calc03);
+      calc13 = calc10.xor(calc02);
+      calc14 = calc10.xor(calc04);
+
+      BigInteger[] result = { calc12, calc14, calc11, calc13 };
+      output = Helper.bigIntegerArrayToString(result);
+
+    } else {
+      BigInteger K1 = key[0];
+      BigInteger K2 = key[1];
+      BigInteger K3 = key[2];
+      BigInteger K4 = key[3];
+
+      BigInteger calc01 = new BigInteger("0");
+      BigInteger calc02 = new BigInteger("0");
+      BigInteger calc03 = new BigInteger("0");
+      BigInteger calc04 = new BigInteger("0");
+
+      calc01 = (K1.multiply(M1)).mod(multMod);
+      calc02 = (K2.multiply(M2)).mod(multMod);
+      calc03 = (K3.add(M3)).mod(addMod);
+      calc04 = (K4.add(M4)).mod(addMod);
+
+      BigInteger[] result = { calc01, calc02, calc03, calc04 };
+      output = Helper.bigIntegerArrayToString(result);
+    }
 
     return output;
   }
@@ -180,22 +246,22 @@ public final class IDEA extends BlockCipher {
 
     return outputArray;
   }
-  
-  public BigInteger[][] getKeysAs2DArray(String keyString){
-    
+
+  public BigInteger[][] getKeysAs2DArray(String keyString) {
+
     BigInteger[] uglyArray = getKeys(keyString);
     BigInteger[][] nicerArray = new BigInteger[9][6];
-    
+
     int counter = 0;
-    for(int zeile=0; zeile<nicerArray.length; zeile++){
-      for(int spalte=0; spalte<nicerArray[zeile].length; spalte++){
+    for (int zeile = 0; zeile < nicerArray.length; zeile++) {
+      for (int spalte = 0; spalte < nicerArray[zeile].length; spalte++) {
         nicerArray[zeile][spalte] = uglyArray[counter++];
-        if(counter == 52){
+        if (counter == 52) {
           return nicerArray;
         }
       }
     }
-    
+
     return nicerArray;
   }
 
