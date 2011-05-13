@@ -37,7 +37,7 @@ import de.tubs.cs.iti.jcrypt.chiffre.BlockCipher;
 public final class IDEA extends BlockCipher {
 
   String keyString;
-  BigInteger[][] keys;
+  static BigInteger[][] keys;
 
   /**
    * Liest den Schlüssel mit dem Reader <code>key</code>.
@@ -111,7 +111,7 @@ public final class IDEA extends BlockCipher {
   public String cipherBlockChaining(String cipherPart, String messagePart) {
     String outputCipher = "";
 
-    keys = getKeysAs2DArray(keyString);
+    keys = getKeysAs2DArray("");
 
     BigInteger cp = Helper.stringToBigInteger(cipherPart);
     BigInteger mp = Helper.stringToBigInteger(messagePart);
@@ -129,7 +129,16 @@ public final class IDEA extends BlockCipher {
     return cipher;
   }
 
-  public String feistelNetwork(String messagePart, int round) {
+  /**
+   * 
+   * @param messagePart
+   * @param round
+   *          0-8 = 9 Rounds possible
+   * @param isEnc
+   *          switch for enc/dec
+   * @return
+   */
+  public static String feistelNetwork(String messagePart, int round, boolean isEnc) {
     String output = "";
 
     BigInteger[] key = keys[round];
@@ -143,11 +152,21 @@ public final class IDEA extends BlockCipher {
     BigInteger M3 = msg[2];
     BigInteger M4 = msg[3];
 
-    if (round != 9) {
-      BigInteger K1 = key[0];
-      BigInteger K2 = key[1];
-      BigInteger K3 = key[2];
-      BigInteger K4 = key[3];
+    BigInteger K1 = key[0];
+    BigInteger K2 = key[1];
+    BigInteger K3 = key[2];
+    BigInteger K4 = key[3];
+
+    if (!isEnc) {
+      K1 = (key[0]).modInverse(multMod);
+      K2 = (key[1]).modInverse(multMod);
+      K3 = ((key[2]).negate()).mod(addMod);
+      K4 = ((key[3]).negate()).mod(addMod);
+
+    }
+
+    if (round != 8) {
+
       BigInteger K5 = key[4];
       BigInteger K6 = key[5];
 
@@ -181,14 +200,17 @@ public final class IDEA extends BlockCipher {
       calc13 = calc10.xor(calc02);
       calc14 = calc10.xor(calc04);
 
-      BigInteger[] result = { calc12, calc14, calc11, calc13 };
+      BigInteger[] c1 = Helper.extractValues(calc12, 8);
+      BigInteger[] c2 = Helper.extractValues(calc14, 8);
+      BigInteger[] c3 = Helper.extractValues(calc11, 8);
+      BigInteger[] c4 = Helper.extractValues(calc13, 8);
+
+      BigInteger[] result = { c1[0], c1[1], c2[0], c2[1], c3[0], c3[1], c4[0], c4[1] };
+      // BigInteger[] result = { calc12, calc14, calc11, calc13 };
+
       output = Helper.bigIntegerArrayToString(result);
 
     } else {
-      BigInteger K1 = key[0];
-      BigInteger K2 = key[1];
-      BigInteger K3 = key[2];
-      BigInteger K4 = key[3];
 
       BigInteger calc01 = new BigInteger("0");
       BigInteger calc02 = new BigInteger("0");
@@ -200,7 +222,14 @@ public final class IDEA extends BlockCipher {
       calc03 = (K3.add(M3)).mod(addMod);
       calc04 = (K4.add(M4)).mod(addMod);
 
-      BigInteger[] result = { calc01, calc02, calc03, calc04 };
+      BigInteger[] c1 = Helper.extractValues(calc01, 8);
+      BigInteger[] c2 = Helper.extractValues(calc02, 8);
+      BigInteger[] c3 = Helper.extractValues(calc03, 8);
+      BigInteger[] c4 = Helper.extractValues(calc04, 8);
+
+      BigInteger[] result = { c1[0], c1[1], c2[0], c2[1], c3[0], c3[1], c4[0], c4[1] };
+
+      // BigInteger[] result = { calc01, calc02, calc03, calc04 };
       output = Helper.bigIntegerArrayToString(result);
     }
 
