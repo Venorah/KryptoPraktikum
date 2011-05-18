@@ -123,8 +123,9 @@ public final class IDEA extends BlockCipher {
       BigInteger mp = Helper.stringToBigInteger(messagePart);
       BigInteger cp = Helper.stringToBigInteger(cipherPart);
       BigInteger result = cp.xor(mp);
-
-      String ideaInput = Helper.bigIntegerToString(result);
+      
+      BigInteger[] resultArray = Helper.extractValues(result, 8);
+      String ideaInput = Helper.bigIntegerArrayToString(resultArray);
 
       cipherPart = idea(ideaInput, isEncryption);
 
@@ -160,11 +161,9 @@ public final class IDEA extends BlockCipher {
 
     // BigInteger[] key = keys[round];
 
-    
-    BigInteger[][] keys = null;
-    keys = getKeysAs2DArray("abcdefghijklmnop");
+    BigInteger[][] schluessel = getKeysAs2DArray("abcdefghijklmnop");
 
-    BigInteger[] key = keys[round];
+    BigInteger[] key = schluessel[round];
     BigInteger[] msg = Helper.extractValues(Helper.stringToBigInteger(messagePart), 16);
 
     BigInteger addMod = new BigInteger("65536"); // 2^16
