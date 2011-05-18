@@ -108,25 +108,42 @@ public final class IDEA extends BlockCipher {
    *          64 bit
    * @return Ciphertext part
    */
-  public String cipherBlockChaining(String cipherPart, String messagePart) {
+  public static String cipherBlockChaining(String message, boolean isEncryption) {
     String outputCipher = "";
 
-    keys = getKeysAs2DArray("");
+    // keys = getKeysAs2DArray("");
 
-    BigInteger cp = Helper.stringToBigInteger(cipherPart);
-    BigInteger mp = Helper.stringToBigInteger(messagePart);
+    String[] messageParts = Helper.getTextAsStringArray(message, 8);
+    String cipherPart = "ÝÃ¨öÆbÒ";
 
-    BigInteger input = cp.xor(mp);
+    for (int i = 0; i < messageParts.length; i++) {
+
+      String messagePart = messageParts[i];
+
+      BigInteger mp = Helper.stringToBigInteger(messagePart);
+      BigInteger cp = Helper.stringToBigInteger(cipherPart);
+      BigInteger result = cp.xor(mp);
+
+      String ideaInput = Helper.bigIntegerToString(result);
+
+      cipherPart = idea(ideaInput, isEncryption);
+
+      outputCipher += cipherPart;
+
+    }
 
     return outputCipher;
   }
 
-  public String idea(String messagePart) {
-    String cipher = "";
+  public static String idea(String messagePart, boolean isEncryption) {
 
-    // TODO idea stuff
+    String cipherPart = messagePart;
 
-    return cipher;
+    for (int round = 0; round < 9; round++) {
+      cipherPart = feistelNetwork(cipherPart, round, isEncryption);
+    }
+
+    return cipherPart;
   }
 
   /**
@@ -140,6 +157,12 @@ public final class IDEA extends BlockCipher {
    */
   public static String feistelNetwork(String messagePart, int round, boolean isEnc) {
     String output = "";
+
+    // BigInteger[] key = keys[round];
+
+    
+    BigInteger[][] keys = null;
+    keys = getKeysAs2DArray("abcdefghijklmnop");
 
     BigInteger[] key = keys[round];
     BigInteger[] msg = Helper.extractValues(Helper.stringToBigInteger(messagePart), 16);
@@ -165,7 +188,7 @@ public final class IDEA extends BlockCipher {
 
     }
 
-    if (round != 8) {
+    if (round < 8) {
 
       BigInteger K5 = key[4];
       BigInteger K6 = key[5];
@@ -236,7 +259,7 @@ public final class IDEA extends BlockCipher {
     return output;
   }
 
-  public BigInteger[] getSubBlocks(String textPart) {
+  public static BigInteger[] getSubBlocks(String textPart) {
     BigInteger[] array = new BigInteger[(textPart.length()) / 2];
 
     BigInteger[] bigArray = Helper.stringToBigIntegerArray(textPart);
@@ -251,7 +274,7 @@ public final class IDEA extends BlockCipher {
     return array;
   }
 
-  public BigInteger[] getKeys(String keyString) {
+  public static BigInteger[] getKeys(String keyString) {
     BigInteger[] outputArray = new BigInteger[52];
 
     String key = new String(keyString);
@@ -276,7 +299,7 @@ public final class IDEA extends BlockCipher {
     return outputArray;
   }
 
-  public BigInteger[][] getKeysAs2DArray(String keyString) {
+  public static BigInteger[][] getKeysAs2DArray(String keyString) {
 
     BigInteger[] uglyArray = getKeys(keyString);
     BigInteger[][] nicerArray = new BigInteger[9][6];
@@ -291,10 +314,11 @@ public final class IDEA extends BlockCipher {
       }
     }
 
+    System.out.println();
     return nicerArray;
   }
 
-  public String cyclicShift(String text, int positions, boolean isLeftShift) {
+  public static String cyclicShift(String text, int positions, boolean isLeftShift) {
 
     String outputString = "";
 
