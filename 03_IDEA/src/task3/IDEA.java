@@ -14,18 +14,11 @@ package task3;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.FileReader;
 import java.math.BigInteger;
 import java.util.Random;
-import java.util.StringTokenizer;
-
-import com.sun.org.apache.xml.internal.security.utils.HelperNodeList;
-
 import de.tubs.cs.iti.jcrypt.chiffre.BlockCipher;
 
 /**
@@ -185,6 +178,7 @@ public final class IDEA extends BlockCipher {
       K3 = ((key[2]).negate()).mod(addMod);
       K4 = ((key[3]).negate()).mod(addMod);
 
+      System.out.println(K1.toString(16) + " " + K2.toString(16) + " " + K3.toString(16) + " " + K4.toString(16));
     }
 
     if (round < 8) {
@@ -317,6 +311,94 @@ public final class IDEA extends BlockCipher {
 
     System.out.println();
     return nicerArray;
+  }
+
+  public static BigInteger[][] getDecryptionKeys(BigInteger[][] encryptionKeys) {
+    BigInteger[][] output = new BigInteger[9][6];
+
+    BigInteger addMod = new BigInteger("65536"); // 2^16
+    BigInteger multMod = new BigInteger("65537"); // (2^16)+1
+
+    output[0][0] = encryptionKeys[8][0];
+    output[0][1] = encryptionKeys[8][1];
+    output[0][2] = encryptionKeys[8][2];
+    output[0][3] = encryptionKeys[8][3];
+    output[0][4] = encryptionKeys[7][4];
+    output[0][5] = encryptionKeys[7][5];
+
+    output[1][0] = encryptionKeys[7][0];
+    output[1][1] = encryptionKeys[7][1];
+    output[1][2] = encryptionKeys[7][2];
+    output[1][3] = encryptionKeys[7][3];
+    output[1][4] = encryptionKeys[6][4];
+    output[1][5] = encryptionKeys[6][5];
+
+    output[2][0] = encryptionKeys[6][0];
+    output[2][1] = encryptionKeys[6][1];
+    output[2][2] = encryptionKeys[6][2];
+    output[2][3] = encryptionKeys[6][3];
+    output[2][4] = encryptionKeys[5][4];
+    output[2][5] = encryptionKeys[5][5];
+
+    output[3][0] = encryptionKeys[5][0];
+    output[3][1] = encryptionKeys[5][1];
+    output[3][2] = encryptionKeys[5][2];
+    output[3][3] = encryptionKeys[5][3];
+    output[3][4] = encryptionKeys[4][4];
+    output[3][5] = encryptionKeys[4][5];
+
+    output[4][0] = encryptionKeys[4][0];
+    output[4][1] = encryptionKeys[4][1];
+    output[4][2] = encryptionKeys[4][2];
+    output[4][3] = encryptionKeys[4][3];
+    output[4][4] = encryptionKeys[3][4];
+    output[4][5] = encryptionKeys[3][5];
+
+    output[5][0] = encryptionKeys[3][0];
+    output[5][1] = encryptionKeys[3][1];
+    output[5][2] = encryptionKeys[3][2];
+    output[5][3] = encryptionKeys[3][3];
+    output[5][4] = encryptionKeys[2][4];
+    output[5][5] = encryptionKeys[2][5];
+
+    output[6][0] = encryptionKeys[2][0];
+    output[6][1] = encryptionKeys[2][1];
+    output[6][2] = encryptionKeys[2][2];
+    output[6][3] = encryptionKeys[2][3];
+    output[6][4] = encryptionKeys[1][4];
+    output[6][5] = encryptionKeys[1][5];
+
+    output[7][0] = encryptionKeys[1][0];
+    output[7][1] = encryptionKeys[1][1];
+    output[7][2] = encryptionKeys[1][2];
+    output[7][3] = encryptionKeys[1][3];
+    output[7][4] = encryptionKeys[0][4];
+    output[7][5] = encryptionKeys[0][5];
+
+    output[8][0] = encryptionKeys[0][0];
+    output[8][1] = encryptionKeys[0][1];
+    output[8][2] = encryptionKeys[0][2];
+    output[8][3] = encryptionKeys[0][3];
+
+    BigInteger[][] out = new BigInteger[9][6];
+    for (int zeile = 0; zeile < out.length; zeile++) {
+      for (int spalte = 0; spalte < out[zeile].length; spalte++) {
+        if (spalte == 0 || spalte == 1) {
+          BigInteger val = output[zeile][spalte];
+          val = val.modInverse(multMod);
+          out[zeile][spalte] = val;
+        } else if (spalte == 2 || spalte == 3) {
+          BigInteger val = output[zeile][spalte];
+          val = val.negate();
+          val = val.mod(addMod);
+          out[zeile][spalte] = val;
+        } else {
+          out[zeile][spalte] = output[zeile][spalte];
+        }
+      }
+    }
+
+    return out;
   }
 
   /**
