@@ -8,6 +8,18 @@ import java.util.LinkedList;
 
 public class Helper {
 
+  public static BigInteger shift(BigInteger key, int keyLength, int shift) {
+
+    BigInteger tempKey = key;
+    BigInteger MSBs = tempKey.shiftRight(keyLength * 8 - shift);
+    tempKey = tempKey.shiftLeft(shift);
+    tempKey = tempKey.mod(new BigInteger("2").pow(keyLength * 8));
+    tempKey = tempKey.xor(MSBs);
+
+    return tempKey;
+
+  }
+
   public static String getTextAsString(FileInputStream cleartext) {
     StringBuffer clearTextBuffer = new StringBuffer();
 
@@ -68,11 +80,11 @@ public class Helper {
 
     return output;
   }
-  
-  public static String bigIntegerToString(BigInteger value){    
-    BigInteger[] array = Helper.extractValues(value, 8);
+
+  public static String bigIntegerToString(BigInteger value, int arraySize) {
+    BigInteger[] array = Helper.extractValues(value, 8, arraySize);
     String text = Helper.bigIntegerArrayToString(array);
-    
+
     return text;
   }
 
@@ -80,7 +92,8 @@ public class Helper {
     String output = "";
 
     for (int i = 0; i < array.length; i++) {
-      char character = (char) array[i].intValue();
+      int val = array[i].intValue();
+      char character = (char) val;
       output += character;
     }
 
@@ -196,7 +209,7 @@ public class Helper {
     return output;
   }
 
-  public static BigInteger[] extractValues(BigInteger val, int bitLength) {
+  public static BigInteger[] extractValues(BigInteger val, int bitLength, int arraySize) {
 
     BigInteger max = generateMaxBigInteger(bitLength);
     LinkedList<BigInteger> list = new LinkedList<BigInteger>();
@@ -208,8 +221,11 @@ public class Helper {
 
       val = val.shiftRight(bitLength);
     }
-
     list.add(val);
+
+    while (list.size() != arraySize) {
+      list.add(new BigInteger("0"));
+    }
 
     Iterator<BigInteger> it = list.descendingIterator();
     BigInteger[] output = new BigInteger[list.size()];

@@ -123,8 +123,8 @@ public final class IDEA extends BlockCipher {
       BigInteger mp = Helper.stringToBigInteger(messagePart);
       BigInteger cp = Helper.stringToBigInteger(cipherPart);
       BigInteger result = cp.xor(mp);
-      
-      BigInteger[] resultArray = Helper.extractValues(result, 8);
+
+      BigInteger[] resultArray = Helper.extractValues(result, 8, 8);
       String ideaInput = Helper.bigIntegerArrayToString(resultArray);
 
       cipherPart = idea(ideaInput, isEncryption);
@@ -164,7 +164,7 @@ public final class IDEA extends BlockCipher {
     BigInteger[][] schluessel = getKeysAs2DArray("abcdefghijklmnop");
 
     BigInteger[] key = schluessel[round];
-    BigInteger[] msg = Helper.extractValues(Helper.stringToBigInteger(messagePart), 16);
+    BigInteger[] msg = Helper.extractValues(Helper.stringToBigInteger(messagePart), 16, 4);
 
     BigInteger addMod = new BigInteger("65536"); // 2^16
     BigInteger multMod = new BigInteger("65537"); // (2^16)+1
@@ -222,10 +222,10 @@ public final class IDEA extends BlockCipher {
       calc13 = calc10.xor(calc02);
       calc14 = calc10.xor(calc04);
 
-      BigInteger[] c1 = Helper.extractValues(calc12, 8);
-      BigInteger[] c2 = Helper.extractValues(calc14, 8);
-      BigInteger[] c3 = Helper.extractValues(calc11, 8);
-      BigInteger[] c4 = Helper.extractValues(calc13, 8);
+      BigInteger[] c1 = Helper.extractValues(calc12, 8, 2);
+      BigInteger[] c2 = Helper.extractValues(calc14, 8, 2);
+      BigInteger[] c3 = Helper.extractValues(calc11, 8, 2);
+      BigInteger[] c4 = Helper.extractValues(calc13, 8, 2);
 
       BigInteger[] result = { c1[0], c1[1], c2[0], c2[1], c3[0], c3[1], c4[0], c4[1] };
       // BigInteger[] result = { calc12, calc14, calc11, calc13 };
@@ -233,7 +233,6 @@ public final class IDEA extends BlockCipher {
       output = Helper.bigIntegerArrayToString(result);
 
     } else {
-
       BigInteger calc01 = new BigInteger("0");
       BigInteger calc02 = new BigInteger("0");
       BigInteger calc03 = new BigInteger("0");
@@ -244,10 +243,10 @@ public final class IDEA extends BlockCipher {
       calc03 = (K3.add(M3)).mod(addMod);
       calc04 = (K4.add(M4)).mod(addMod);
 
-      BigInteger[] c1 = Helper.extractValues(calc01, 8);
-      BigInteger[] c2 = Helper.extractValues(calc02, 8);
-      BigInteger[] c3 = Helper.extractValues(calc03, 8);
-      BigInteger[] c4 = Helper.extractValues(calc04, 8);
+      BigInteger[] c1 = Helper.extractValues(calc01, 8, 2);
+      BigInteger[] c2 = Helper.extractValues(calc02, 8, 2);
+      BigInteger[] c3 = Helper.extractValues(calc03, 8, 2);
+      BigInteger[] c4 = Helper.extractValues(calc04, 8, 2);
 
       BigInteger[] result = { c1[0], c1[1], c2[0], c2[1], c3[0], c3[1], c4[0], c4[1] };
 
@@ -276,22 +275,25 @@ public final class IDEA extends BlockCipher {
   public static BigInteger[] getKeys(String keyString) {
     BigInteger[] outputArray = new BigInteger[52];
 
-    String key = new String(keyString);
-    BigInteger[] byteKeyArray = Helper.stringToBigIntegerArray(key);
-    BigInteger[] shortKeyArray = Helper.byteArrayToShortArray(byteKeyArray);
+    BigInteger[] keyArray = Helper.stringToBigIntegerArray(keyString);
+    BigInteger key = Helper.bigIntegerArraySum(keyArray);
+
+    BigInteger[] shortKeyArray = Helper.extractValues(key, 16, 8);
 
     int i = 0;
     while (i != 52) {
+
       for (int j = 0; j < shortKeyArray.length; j++) {
-        outputArray[i++] = shortKeyArray[j];
+        BigInteger tmp = shortKeyArray[j];
+        outputArray[i++] = tmp;
         if (i == 52) {
           break;
         }
       }
+
       if (i != 52) {
-        key = cyclicShift(key, 25, true);
-        byteKeyArray = Helper.stringToBigIntegerArray(key);
-        shortKeyArray = Helper.byteArrayToShortArray(byteKeyArray);
+        key = Helper.shift(key, 16, 25);
+        shortKeyArray = Helper.extractValues(key, 16, 8);
       }
     }
 
@@ -315,50 +317,6 @@ public final class IDEA extends BlockCipher {
 
     System.out.println();
     return nicerArray;
-  }
-
-  public static String cyclicShift(String text, int positions, boolean isLeftShift) {
-
-    String outputString = "";
-
-    BigInteger[] array = Helper.stringToBigIntegerArray(text);
-    String binaryString = "";
-
-    for (int i = 0; i < array.length; i++) {
-      String currentString = Helper.decimalToBinaryString(array[i].intValue());
-
-      if (currentString.length() != 8) {
-        currentString = Helper.prependZeros(currentString, 8);
-      }
-
-      binaryString += currentString;
-    }
-
-    char[] binaryStringArray = binaryString.toCharArray();
-    char[] shiftedArray = new char[binaryStringArray.length];
-    int length = binaryStringArray.length;
-
-    if (isLeftShift) {
-      for (int i = 0; i < length; i++) {
-        int field = ((i - positions) + length * 2) % length;
-        shiftedArray[field] = binaryStringArray[i];
-      }
-    } else {
-      for (int i = 0; i < length; i++) {
-        int field = ((i + positions) + length * 2) % length;
-        shiftedArray[field] = binaryStringArray[i];
-      }
-    }
-
-    String shiftedBinaryString = String.valueOf(shiftedArray);
-    String[] shiftedBinaryStringArray = Helper.getTextAsStringArray(shiftedBinaryString, 8);
-
-    for (int i = 0; i < shiftedBinaryStringArray.length; i++) {
-      char character = (char) Helper.binaryStringToDecimal(shiftedBinaryStringArray[i]);
-      outputString += character;
-    }
-
-    return outputString;
   }
 
   /**
