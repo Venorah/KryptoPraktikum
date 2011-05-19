@@ -17,6 +17,7 @@ import java.io.BufferedWriter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.math.BigInteger;
 import java.util.Random;
 import de.tubs.cs.iti.jcrypt.chiffre.BlockCipher;
@@ -85,10 +86,36 @@ public final class IDEA extends BlockCipher {
   }
 
   public void encipher(FileInputStream cleartext, FileOutputStream ciphertext) {
-
     String clearTextString = Helper.getTextAsString(cleartext);
-    String[] clearTextArray = Helper.getTextAsStringArray(clearTextString, 8);
+    // String[] clearTextArray = Helper.getTextAsStringArray(clearTextString, 8);
 
+    // generate keys
+    System.out.println(keyString);
+    BigInteger[] keyArray = Helper.stringToBigIntegerArray(keyString);
+    encKeys = getEncryptionKeys(keyArray);
+    decKeys = getDecryptionKeys(encKeys);
+    
+    
+
+    String[] message = Helper.getTextAsStringArray(clearTextString, 8);
+    
+    BigInteger[] messageArray = Helper.stringToBigIntegerArray(clearTextString);
+    String iv = "ddc3a8f6c66286d2"; // as hex
+
+    BigInteger output = cipherBlockChaining(messageArray, iv, true);
+    
+    System.out.println(output);
+    
+    // TODO write the string!!! into ciphertext
+    
+
+    // Close files
+    try {
+      cleartext.close();
+      ciphertext.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 
   public void decipher(FileInputStream ciphertext, FileOutputStream cleartext) {
@@ -102,28 +129,21 @@ public final class IDEA extends BlockCipher {
    *          64 bit
    * @return Ciphertext part
    */
-  public String cipherBlockChaining(String message, boolean isEncryption) {
-    String outputCipher = "";
+  public BigInteger cipherBlockChaining(BigInteger[] message, String iv, boolean isEncryption) {
+    BigInteger outputCipher = new BigInteger("0");
 
-    // keys = getKeysAs2DArray("");
+    BigInteger cipherPart = new BigInteger(iv, 16);
 
-    String[] messageParts = Helper.getTextAsStringArray(message, 8);
-    String cipherPart = "ÝÃ¨öÆbÒ";
-
-    for (int i = 0; i < messageParts.length; i++) {
-
-      String messagePart = messageParts[i];
-
-      BigInteger mp = Helper.stringToBigInteger(messagePart);
-      BigInteger cp = Helper.stringToBigInteger(cipherPart);
-      BigInteger result = cp.xor(mp);
+    for (int i = 0; i < message.length; i++) {
+      BigInteger messagePart = message[i];
+      BigInteger result = cipherPart.xor(messagePart);
 
       BigInteger[] resultArray = Helper.extractValues(result, 8, 8);
-      String ideaInput = Helper.bigIntegerArrayToString(resultArray);
 
-      // cipherPart = idea(ideaInput, isEncryption);
+      BigInteger[] cipherPartArray = idea(resultArray, isEncryption);
+      cipherPart = Helper.bigIntegerArraySum(cipherPartArray);
 
-      outputCipher += cipherPart;
+      outputCipher.add(Helper.bigIntegerArraySum(cipherPartArray));
 
     }
 
