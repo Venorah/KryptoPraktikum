@@ -121,7 +121,7 @@ public final class IDEA extends BlockCipher {
       BigInteger[] resultArray = Helper.extractValues(result, 8, 8);
       String ideaInput = Helper.bigIntegerArrayToString(resultArray);
 
-//      cipherPart = idea(ideaInput, isEncryption);
+      // cipherPart = idea(ideaInput, isEncryption);
 
       outputCipher += cipherPart;
 
@@ -133,17 +133,17 @@ public final class IDEA extends BlockCipher {
   public BigInteger[] idea(BigInteger[] messagePart, boolean isEncryption) {
     BigInteger[] key = null;
     for (int round = 0; round < 9; round++) {
-      //keys based on encryption or decryption
+      // keys based on encryption or decryption
       if (isEncryption) {
         key = encKeys[round];
       } else {
         key = decKeys[round];
       }
-      
+
       // encryption/decryption
       messagePart = feistelNetwork(messagePart, round, key);
-      
-      Helper.printAsHEX(messagePart, 4);
+
+      // Helper.printAsHEX(messagePart, 4);
     }
 
     return messagePart;
@@ -158,40 +158,25 @@ public final class IDEA extends BlockCipher {
    *          switch for enc/dec
    * @return
    */
-  public BigInteger[] feistelNetwork(BigInteger[] input, int round, BigInteger[] keys) {
+  public BigInteger[] feistelNetwork(BigInteger[] M, int round, BigInteger[] K) {
     BigInteger[] output = new BigInteger[4];
 
     BigInteger addMod = new BigInteger("65536"); // 2^16
     BigInteger multMod = new BigInteger("65537"); // (2^16)+1
 
-    BigInteger[] M = new BigInteger[5];
-    M[1] = input[0];
-    M[2] = input[1];
-    M[3] = input[2];
-    M[4] = input[3];
-
-    BigInteger[] K = new BigInteger[7];
-    K[1] = keys[0];
-    K[2] = keys[1];
-    K[3] = keys[2];
-    K[4] = keys[3];
-
     if (round < 8) {
-
-      K[5] = keys[4];
-      K[6] = keys[5];
 
       BigInteger[] calc = new BigInteger[15];
 
-      calc[1] = (K[1].multiply(M[1])).mod(multMod);
-      calc[2] = (K[2].add(M[2])).mod(addMod);
-      calc[3] = (K[3].add(M[3])).mod(addMod);
-      calc[4] = (K[4].multiply(M[4])).mod(multMod);
+      calc[1] = (K[0].multiply(M[0])).mod(multMod);
+      calc[2] = (K[1].add(M[1])).mod(addMod);
+      calc[3] = (K[2].add(M[2])).mod(addMod);
+      calc[4] = (K[3].multiply(M[3])).mod(multMod);
       calc[5] = calc[1].xor(calc[3]);
       calc[6] = calc[2].xor(calc[4]);
-      calc[7] = (K[5].multiply(calc[5])).mod(multMod);
+      calc[7] = (K[4].multiply(calc[5])).mod(multMod);
       calc[8] = (calc[7].add(calc[6])).mod(addMod);
-      calc[9] = (K[6].multiply(calc[8])).mod(multMod);
+      calc[9] = (K[5].multiply(calc[8])).mod(multMod);
       calc[10] = (calc[9].add(calc[7])).mod(addMod);
       calc[11] = calc[9].xor(calc[1]);
       calc[12] = calc[9].xor(calc[3]);
@@ -218,6 +203,8 @@ public final class IDEA extends BlockCipher {
       output[3] = calc[4];
     }
 
+    System.out.println(output[0].toString(16) + " " + output[1].toString(16) + " " + output[2].toString(16) + " " + output[3].toString(16));
+
     return output;
   }
 
@@ -240,7 +227,7 @@ public final class IDEA extends BlockCipher {
     // String keyString
     BigInteger[] outputArray = new BigInteger[52];
 
-//    BigInteger[] keyArray = Helper.stringToBigIntegerArray(keyString);
+    // BigInteger[] keyArray = Helper.stringToBigIntegerArray(keyString);
     BigInteger key = Helper.bigIntegerArraySum(keyArray);
 
     BigInteger[] shortKeyArray = Helper.extractValues(key, 16, 8);
