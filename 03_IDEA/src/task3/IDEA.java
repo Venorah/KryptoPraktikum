@@ -142,6 +142,8 @@ public final class IDEA extends BlockCipher {
       
       // encryption/decryption
       messagePart = feistelNetwork(messagePart, round, key);
+      
+      Helper.printAsHEX(messagePart, 4);
     }
 
     return messagePart;
@@ -196,8 +198,6 @@ public final class IDEA extends BlockCipher {
       calc[13] = calc[10].xor(calc[2]);
       calc[14] = calc[10].xor(calc[4]);
 
-      System.out.println("R" + round + ": " + calc[12].toString(16) + " " + calc[14].toString(16) + " " + calc[11].toString(16) + " " + calc[13].toString(16));
-
       output[0] = calc[11];
       output[1] = calc[12];
       output[2] = calc[13];
@@ -211,8 +211,6 @@ public final class IDEA extends BlockCipher {
       calc[2] = (K[2].add(M[2])).mod(addMod);
       calc[3] = (K[3].add(M[3])).mod(addMod);
       calc[4] = (K[4].multiply(M[4])).mod(multMod);
-
-      System.out.println("R" + round + ": " + calc[1].toString(16) + " " + calc[2].toString(16) + " " + calc[3].toString(16) + " " + calc[4].toString(16));
 
       output[0] = calc[1];
       output[1] = calc[2];
