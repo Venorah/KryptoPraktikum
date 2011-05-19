@@ -19,6 +19,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.math.BigInteger;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Random;
 import de.tubs.cs.iti.jcrypt.chiffre.BlockCipher;
 
@@ -96,15 +98,14 @@ public final class IDEA extends BlockCipher {
 
     String[] message = Helper.getTextAsStringArray(clearTextString, 8);
 
-
     BigInteger[] messageArray = Helper.stringToBigIntegerArray(clearTextString);
     String iv = "ddc3a8f6c66286d2"; // as hex
 
-    BigInteger output = cipherBlockChaining(messageArray, iv, true);
-    System.out.println(output);
+    BigInteger output[] = cipherBlockChaining(messageArray, iv, true);
+    // System.out.println(output);
 
     try {
-      ciphertext.write(output.toByteArray());
+      ciphertext.write(Helper.bigIntegerArraySum(output).toByteArray());
     } catch (IOException e1) {
       System.out.println("Failed at FileOutputStream");
       e1.printStackTrace();
@@ -130,11 +131,11 @@ public final class IDEA extends BlockCipher {
     BigInteger[] messageArray = Helper.stringToBigIntegerArray(cipherTextString);
     String iv = "ddc3a8f6c66286d2"; // as hex
 
-    BigInteger output = cipherBlockChaining(messageArray, iv, true);
-    System.out.println(output);
+    BigInteger output[] = cipherBlockChaining(messageArray, iv, true);
+    // System.out.println(output);
 
     try {
-      cleartext.write(output.toByteArray());
+      cleartext.write(Helper.bigIntegerArraySum(output).toByteArray());
     } catch (IOException e1) {
       System.out.println("Failed at FileOutputStream");
       e1.printStackTrace();
@@ -156,8 +157,8 @@ public final class IDEA extends BlockCipher {
    *          64 bit
    * @return Ciphertext part
    */
-  public BigInteger cipherBlockChaining(BigInteger[] message, String iv, boolean isEncryption) {
-    String outputCipher = "";
+  public BigInteger[] cipherBlockChaining(BigInteger[] message, String iv, boolean isEncryption) {
+    LinkedList<BigInteger> list = new LinkedList<BigInteger>();
 
     BigInteger cipherPart = new BigInteger(iv, 16);
 
@@ -170,11 +171,18 @@ public final class IDEA extends BlockCipher {
       BigInteger[] cipherPartArray = idea(resultArray, isEncryption);
       cipherPart = Helper.bigIntegerArraySum(cipherPartArray);
 
-      // build output
-      outputCipher += cipherPart.toString();
+      list.addLast(cipherPart);
     }
 
-    BigInteger output = new BigInteger(outputCipher);
+    BigInteger[] output = new BigInteger[list.size()];
+
+    int counter = 0;
+    Iterator<BigInteger> it = list.iterator();
+    while (it.hasNext()) {
+      BigInteger currentValue = it.next();
+      output[counter++] = currentValue;
+    }
+
     return output;
   }
 
