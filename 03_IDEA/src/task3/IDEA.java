@@ -138,12 +138,13 @@ public final class IDEA extends BlockCipher {
     BigInteger val1 = new BigInteger("281483566841860");
     val1 = val1.shiftLeft(64);
     BigInteger val2 = new BigInteger("1407400653815816");
-    BigInteger keyValue = val1.add(val2);
+    BigInteger key = val1.add(val2);
+    
+    String keyString = Helper.bigIntegerToString(key, 16);
+    
+    
 
-    BigInteger[] array = Helper.extractValues(keyValue, 8, 16);
-    String keyString = Helper.bigIntegerArrayToString(array);
-
-    BigInteger[][] encKeys = getKeysAs2DArray(keyString);
+    BigInteger[][] encKeys = getEncryptionKeys(keyString);
 
     // BigInteger[][] encKeys = getKeysAs2DArray("abcdefghijklmnop");
 
@@ -253,7 +254,7 @@ public final class IDEA extends BlockCipher {
     return array;
   }
 
-  public static BigInteger[] getKeys(String keyString) {
+  public static BigInteger[][] getEncryptionKeys(String keyString) {
     BigInteger[] outputArray = new BigInteger[52];
 
     BigInteger[] keyArray = Helper.stringToBigIntegerArray(keyString);
@@ -261,6 +262,7 @@ public final class IDEA extends BlockCipher {
 
     BigInteger[] shortKeyArray = Helper.extractValues(key, 16, 8);
 
+    // get keys
     int i = 0;
     while (i != 52) {
 
@@ -278,25 +280,19 @@ public final class IDEA extends BlockCipher {
       }
     }
 
-    return outputArray;
-  }
-
-  public static BigInteger[][] getKeysAs2DArray(String keyString) {
-
-    BigInteger[] uglyArray = getKeys(keyString);
+    // get as 2d array
     BigInteger[][] nicerArray = new BigInteger[9][6];
 
     int counter = 0;
     for (int zeile = 0; zeile < nicerArray.length; zeile++) {
       for (int spalte = 0; spalte < nicerArray[zeile].length; spalte++) {
-        nicerArray[zeile][spalte] = uglyArray[counter++];
+        nicerArray[zeile][spalte] = outputArray[counter++];
         if (counter == 52) {
           return nicerArray;
         }
       }
     }
 
-    System.out.println();
     return nicerArray;
   }
 
