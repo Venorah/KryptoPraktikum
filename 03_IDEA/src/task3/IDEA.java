@@ -198,9 +198,9 @@ public final class IDEA extends BlockCipher {
       BigInteger[] calc = new BigInteger[15];
 
       calc[1] = (K[1].multiply(M[1])).mod(multMod);
-      calc[2] = (K[2].multiply(M[2])).mod(multMod);
+      calc[2] = (K[2].add(M[2])).mod(addMod);
       calc[3] = (K[3].add(M[3])).mod(addMod);
-      calc[4] = (K[4].add(M[4])).mod(addMod);
+      calc[4] = (K[4].multiply(M[4])).mod(multMod);
       calc[5] = calc[1].xor(calc[3]);
       calc[6] = calc[2].xor(calc[4]);
       calc[7] = (K[5].multiply(calc[5])).mod(multMod);
@@ -229,9 +229,9 @@ public final class IDEA extends BlockCipher {
       BigInteger[] calc = new BigInteger[5];
 
       calc[1] = (K[1].multiply(M[1])).mod(multMod);
-      calc[2] = (K[2].multiply(M[2])).mod(multMod);
+      calc[2] = (K[2].add(M[2])).mod(addMod);
       calc[3] = (K[3].add(M[3])).mod(addMod);
-      calc[4] = (K[4].add(M[4])).mod(addMod);
+      calc[4] = (K[4].multiply(M[4])).mod(multMod);
 
       System.out.println("R" + round + ": " + calc[1].toString(16) + " " + calc[2].toString(16) + " " + calc[3].toString(16) + " " + calc[4].toString(16));
 
