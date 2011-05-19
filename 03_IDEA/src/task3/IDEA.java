@@ -133,7 +133,7 @@ public final class IDEA extends BlockCipher {
 
     String cipherPart = messagePart;
 
-    for (int round = 1; round <= 9; round++) {
+    for (int round = 0; round < 9; round++) {
       cipherPart = feistelNetwork(cipherPart, round, isEncryption);
     }
 
@@ -158,10 +158,10 @@ public final class IDEA extends BlockCipher {
 
     BigInteger[] key;
     if (isEnc) {
-      key = encKeys[round - 1];
+      key = encKeys[round];
     } else {
       BigInteger[][] decKeys = getDecryptionKeys(encKeys);
-      key = decKeys[round - 1];
+      key = decKeys[round];
     }
 
     BigInteger[] msg = Helper.extractValues(Helper.stringToBigInteger(messagePart), 16, 4);
@@ -181,7 +181,7 @@ public final class IDEA extends BlockCipher {
     K[3] = key[2];
     K[4] = key[3];
 
-    if (round < 9) {
+    if (round < 8) {
 
       K[5] = key[4];
       K[6] = key[5];
