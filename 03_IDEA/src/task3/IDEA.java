@@ -320,19 +320,29 @@ public final class IDEA extends BlockCipher {
     BigInteger multMod = new BigInteger("65537"); // (2^16)+1
 
     // reverse array
-    for (int row = 0; row < output.length; row++) {
-      for (int column = 0; column < output[row].length; column++) {
-        if (column == 4 || column == 5) {
-          if (row == 8) {
-            output[row][column] = null;
-          }
-          else {
-            output[row][column] = encryptionKeys[7-row][column];
-          }
-        }
-        else {
-          output[row][column] = encryptionKeys[8-row][column];
-        }
+    for (int column = 0; column < 9; column++) {
+      if (column == 0) {
+        output[column][0] = encryptionKeys[8-column][0];
+        output[column][1] = encryptionKeys[8-column][1];
+        output[column][2] = encryptionKeys[8-column][2];
+        output[column][3] = encryptionKeys[8-column][3];
+        output[column][4] = encryptionKeys[7-column][4];
+        output[column][5] = encryptionKeys[7-column][5];
+      } else if (column > 0 && column < 8) {
+        output[column][0] = encryptionKeys[8-column][0];
+        output[column][1] = encryptionKeys[8-column][2];
+        output[column][2] = encryptionKeys[8-column][1];
+        output[column][3] = encryptionKeys[8-column][3];
+        output[column][4] = encryptionKeys[7-column][4];
+        output[column][5] = encryptionKeys[7-column][5];
+      }
+      else {
+        output[column][0] = encryptionKeys[8-column][0];
+        output[column][1] = encryptionKeys[8-column][1];
+        output[column][2] = encryptionKeys[8-column][2];
+        output[column][3] = encryptionKeys[8-column][3];
+        output[column][4] = null;
+        output[column][5] = null;
       }
     }
 
