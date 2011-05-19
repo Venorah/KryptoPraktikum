@@ -141,7 +141,7 @@ public final class IDEA extends BlockCipher {
       }
       
       // encryption/decryption
-      messagePart = feistelNetwork(messagePart, round, key, isEncryption);
+      messagePart = feistelNetwork(messagePart, round, key);
     }
 
     return messagePart;
@@ -156,7 +156,7 @@ public final class IDEA extends BlockCipher {
    *          switch for enc/dec
    * @return
    */
-  public BigInteger[] feistelNetwork(BigInteger[] input, int round, BigInteger[] keys, boolean isEnc) {
+  public BigInteger[] feistelNetwork(BigInteger[] input, int round, BigInteger[] keys) {
     BigInteger[] output = new BigInteger[4];
 
     BigInteger addMod = new BigInteger("65536"); // 2^16
