@@ -240,8 +240,12 @@ public class Helper {
     String output = "";
 
     for (int i = 0; i < array.length; i++) {
-      String tmp = array[i].toString(16);
-      output += prependZeros(tmp, tokenLength) + " ";
+      if (array[i] != null) {
+        String tmp = array[i].toString(16);
+        output += prependZeros(tmp, tokenLength) + " ";
+      }else{
+        output += "---- ";
+      }
     }
     System.out.println(output);
   }

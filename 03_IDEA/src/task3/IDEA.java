@@ -87,7 +87,6 @@ public final class IDEA extends BlockCipher {
 
   public void encipher(FileInputStream cleartext, FileOutputStream ciphertext) {
     String clearTextString = Helper.getTextAsString(cleartext);
-    // String[] clearTextArray = Helper.getTextAsStringArray(clearTextString, 8);
 
     // generate keys
     System.out.println(keyString);
@@ -97,16 +96,20 @@ public final class IDEA extends BlockCipher {
 
     String[] message = Helper.getTextAsStringArray(clearTextString, 8);
 
+
     BigInteger[] messageArray = Helper.stringToBigIntegerArray(clearTextString);
     String iv = "ddc3a8f6c66286d2"; // as hex
 
     BigInteger[] output = cipherBlockChaining(messageArray, iv, true);
-
     System.out.println(output);
 
-    // TODO write the string!!! into ciphertext
+    try {
+      ciphertext.write(output.toByteArray());
+    } catch (IOException e1) {
+      System.out.println("Failed at FileOutputStream");
+      e1.printStackTrace();
+    }
 
-    // Close files
     try {
       cleartext.close();
       ciphertext.close();
@@ -116,7 +119,34 @@ public final class IDEA extends BlockCipher {
   }
 
   public void decipher(FileInputStream ciphertext, FileOutputStream cleartext) {
-    // TODO
+    String cipherTextString = Helper.getTextAsString(ciphertext);
+
+    // generate keys
+    System.out.println(keyString);
+    BigInteger[] keyArray = Helper.stringToBigIntegerArray(keyString);
+    encKeys = getEncryptionKeys(keyArray);
+    decKeys = getDecryptionKeys(encKeys);
+
+    BigInteger[] messageArray = Helper.stringToBigIntegerArray(cipherTextString);
+    String iv = "ddc3a8f6c66286d2"; // as hex
+
+    BigInteger[] output = cipherBlockChaining(messageArray, iv, true);
+    System.out.println(output);
+
+    try {
+      cleartext.write(output.toByteArray());
+    } catch (IOException e1) {
+      System.out.println("Failed at FileOutputStream");
+      e1.printStackTrace();
+    }
+
+    try {
+      cleartext.close();
+      ciphertext.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
   }
 
   /**
@@ -135,11 +165,12 @@ public final class IDEA extends BlockCipher {
       BigInteger messagePart = message[i];
       BigInteger result = cipherPart.xor(messagePart);
 
-      BigInteger[] resultArray = Helper.extractValues(result, 8, 8);
+      BigInteger[] resultArray = Helper.extractValues(result, 16, 4);
 
       BigInteger[] cipherPartArray = idea(resultArray, isEncryption);
       cipherPart = Helper.bigIntegerArraySum(cipherPartArray);
 
+      // build output
       for (int j = 0; i < cipherPartArray.length; j++) {
         outputCipher[i*8+j] = cipherPart; 
       }
