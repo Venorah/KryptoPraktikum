@@ -44,7 +44,7 @@ public final class IDEA extends BlockCipher {
   public void readKey(BufferedReader key) {
     try {
 
-      String keyString = new String(key.readLine());
+      keyString = new String(key.readLine());
 
       Logger("Reading Information: ");
       Logger("+--KeyString: " + keyString);
