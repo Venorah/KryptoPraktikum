@@ -87,29 +87,26 @@ public final class IDEA extends BlockCipher {
 
   public void encipher(FileInputStream cleartext, FileOutputStream ciphertext) {
     String clearTextString = Helper.getTextAsString(cleartext);
-    // String[] clearTextArray = Helper.getTextAsStringArray(clearTextString, 8);
 
     // generate keys
     System.out.println(keyString);
     BigInteger[] keyArray = Helper.stringToBigIntegerArray(keyString);
     encKeys = getEncryptionKeys(keyArray);
     decKeys = getDecryptionKeys(encKeys);
-    
-    
 
-    String[] message = Helper.getTextAsStringArray(clearTextString, 8);
-    
     BigInteger[] messageArray = Helper.stringToBigIntegerArray(clearTextString);
     String iv = "ddc3a8f6c66286d2"; // as hex
 
     BigInteger output = cipherBlockChaining(messageArray, iv, true);
-    
     System.out.println(output);
-    
-    // TODO write the string!!! into ciphertext
-    
 
-    // Close files
+    try {
+      ciphertext.write(output.toByteArray());
+    } catch (IOException e1) {
+      System.out.println("Failed at FileOutputStream");
+      e1.printStackTrace();
+    }
+
     try {
       cleartext.close();
       ciphertext.close();
@@ -203,10 +200,10 @@ public final class IDEA extends BlockCipher {
       calc[12] = calc[9].xor(calc[1]);
       calc[13] = calc[9].xor(calc[3]);
 
-       output[0] = calc[10];
-       output[1] = calc[11];
-       output[2] = calc[12];
-       output[3] = calc[13];
+      output[0] = calc[10];
+      output[1] = calc[11];
+      output[2] = calc[12];
+      output[3] = calc[13];
 
     } else {
 
