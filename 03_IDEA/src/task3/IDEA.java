@@ -30,7 +30,8 @@ import de.tubs.cs.iti.jcrypt.chiffre.BlockCipher;
 public final class IDEA extends BlockCipher {
 
   String keyString;
-  static BigInteger[][] keys;
+  static BigInteger[][] encKeys;
+  static BigInteger[][] decKeys;
 
   /**
    * Liest den Schlüssel mit dem Reader <code>key</code>.
@@ -101,7 +102,7 @@ public final class IDEA extends BlockCipher {
    *          64 bit
    * @return Ciphertext part
    */
-  public static String cipherBlockChaining(String message, boolean isEncryption) {
+  public String cipherBlockChaining(String message, boolean isEncryption) {
     String outputCipher = "";
 
     // keys = getKeysAs2DArray("");
@@ -120,7 +121,7 @@ public final class IDEA extends BlockCipher {
       BigInteger[] resultArray = Helper.extractValues(result, 8, 8);
       String ideaInput = Helper.bigIntegerArrayToString(resultArray);
 
-      cipherPart = idea(ideaInput, isEncryption);
+//      cipherPart = idea(ideaInput, isEncryption);
 
       outputCipher += cipherPart;
 
@@ -129,38 +130,21 @@ public final class IDEA extends BlockCipher {
     return outputCipher;
   }
 
-  public static String idea(String messagePart, boolean isEncryption) {
-
-    BigInteger[] output = Helper.extractValues(Helper.stringToBigInteger(messagePart), 16, 4);
-
-    // BigInteger[] key = keys[round];
-
-    BigInteger val1 = new BigInteger("281483566841860");
-    val1 = val1.shiftLeft(64);
-    BigInteger val2 = new BigInteger("1407400653815816");
-    BigInteger key = val1.add(val2);
-    
-    String keyString = Helper.bigIntegerToString(key, 16);
-    
-    
-
-    BigInteger[][] encKeys = getEncryptionKeys(keyString);
-
-    // BigInteger[][] encKeys = getKeysAs2DArray("abcdefghijklmnop");
-
-    // encryption/decryption
+  public BigInteger[] idea(BigInteger[] messagePart, boolean isEncryption) {
+    BigInteger[] key = null;
     for (int round = 0; round < 9; round++) {
-      BigInteger[] keys;
+      //keys based on encryption or decryption
       if (isEncryption) {
-        keys = encKeys[round];
+        key = encKeys[round];
       } else {
-        BigInteger[][] decKeys = getDecryptionKeys(encKeys);
-        keys = decKeys[round];
+        key = decKeys[round];
       }
-      output = feistelNetwork(output, round, keys, isEncryption);
+      
+      // encryption/decryption
+      messagePart = feistelNetwork(messagePart, round, key, isEncryption);
     }
 
-    return Helper.bigIntegerArrayToString(output);
+    return messagePart;
   }
 
   /**
@@ -172,7 +156,7 @@ public final class IDEA extends BlockCipher {
    *          switch for enc/dec
    * @return
    */
-  public static BigInteger[] feistelNetwork(BigInteger[] input, int round, BigInteger[] keys, boolean isEnc) {
+  public BigInteger[] feistelNetwork(BigInteger[] input, int round, BigInteger[] keys, boolean isEnc) {
     BigInteger[] output = new BigInteger[4];
 
     BigInteger addMod = new BigInteger("65536"); // 2^16
@@ -239,7 +223,7 @@ public final class IDEA extends BlockCipher {
     return output;
   }
 
-  public static BigInteger[] getSubBlocks(String textPart) {
+  public BigInteger[] getSubBlocks(String textPart) {
     BigInteger[] array = new BigInteger[(textPart.length()) / 2];
 
     BigInteger[] bigArray = Helper.stringToBigIntegerArray(textPart);
@@ -254,10 +238,11 @@ public final class IDEA extends BlockCipher {
     return array;
   }
 
-  public static BigInteger[][] getEncryptionKeys(String keyString) {
+  public BigInteger[][] getEncryptionKeys(BigInteger[] keyArray) {
+    // String keyString
     BigInteger[] outputArray = new BigInteger[52];
 
-    BigInteger[] keyArray = Helper.stringToBigIntegerArray(keyString);
+//    BigInteger[] keyArray = Helper.stringToBigIntegerArray(keyString);
     BigInteger key = Helper.bigIntegerArraySum(keyArray);
 
     BigInteger[] shortKeyArray = Helper.extractValues(key, 16, 8);
@@ -296,7 +281,7 @@ public final class IDEA extends BlockCipher {
     return nicerArray;
   }
 
-  public static BigInteger[][] getDecryptionKeys(BigInteger[][] encryptionKeys) {
+  public BigInteger[][] getDecryptionKeys(BigInteger[][] encryptionKeys) {
     BigInteger[][] dencryptionKeys = new BigInteger[9][6];
 
     // reverse array
@@ -418,7 +403,7 @@ public final class IDEA extends BlockCipher {
 
   }
 
-  private static void Logger(String event) {
+  private void Logger(String event) {
     System.out.println("IDEA$  " + event);
   }
 }
