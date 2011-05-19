@@ -131,27 +131,7 @@ public final class IDEA extends BlockCipher {
 
   public static String idea(String messagePart, boolean isEncryption) {
 
-    String cipherPart = messagePart;
-
-    for (int round = 0; round < 9; round++) {
-      cipherPart = feistelNetwork(cipherPart, round, isEncryption);
-    }
-
-    return cipherPart;
-  }
-
-  /**
-   * 
-   * @param messagePart
-   * @param round
-   *          0-8 = 9 Rounds possible
-   * @param isEnc
-   *          switch for enc/dec
-   * @return
-   */
-  public static String feistelNetwork(String messagePart, int round, boolean isEnc) {
-    String output = "";
-
+    String output = messagePart;
     // BigInteger[] key = keys[round];
 
     BigInteger val1 = new BigInteger("281483566841860");
@@ -166,15 +146,34 @@ public final class IDEA extends BlockCipher {
 
 //    BigInteger[][] encKeys = getKeysAs2DArray("abcdefghijklmnop");
 
-    BigInteger[] key;
-    if (isEnc) {
-      key = encKeys[round];
-    } else {
-      BigInteger[][] decKeys = getDecryptionKeys(encKeys);
-      key = decKeys[round];
+    // encryption/decryption
+    for (int round = 0; round < 9; round++) {
+      BigInteger[] keys;
+      if (isEncryption) {
+        keys = encKeys[round];
+      } else {
+        BigInteger[][] decKeys = getDecryptionKeys(encKeys);
+        keys = decKeys[round];
+      }
+      output = feistelNetwork(output, round, keys, isEncryption);
     }
 
-    BigInteger[] msg = Helper.extractValues(Helper.stringToBigInteger(messagePart), 16, 4);
+    return output;
+  }
+
+  /**
+   * 
+   * @param input
+   * @param round
+   *          0-8 = 9 Rounds possible
+   * @param isEnc
+   *          switch for enc/dec
+   * @return
+   */
+  public static String feistelNetwork(String input, int round, BigInteger[] keys, boolean isEnc) {
+    String output = "";
+
+    BigInteger[] msg = Helper.extractValues(Helper.stringToBigInteger(input), 16, 4);
 
     BigInteger addMod = new BigInteger("65536"); // 2^16
     BigInteger multMod = new BigInteger("65537"); // (2^16)+1
@@ -186,15 +185,15 @@ public final class IDEA extends BlockCipher {
     M[4] = msg[3];
 
     BigInteger[] K = new BigInteger[7];
-    K[1] = key[0];
-    K[2] = key[1];
-    K[3] = key[2];
-    K[4] = key[3];
+    K[1] = keys[0];
+    K[2] = keys[1];
+    K[3] = keys[2];
+    K[4] = keys[3];
 
     if (round < 8) {
 
-      K[5] = key[4];
-      K[6] = key[5];
+      K[5] = keys[4];
+      K[6] = keys[5];
 
       BigInteger[] calc = new BigInteger[15];
 
