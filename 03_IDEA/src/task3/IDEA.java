@@ -183,10 +183,10 @@ public final class IDEA extends BlockCipher {
       calc[12] = calc[9].xor(calc[1]);
       calc[13] = calc[9].xor(calc[3]);
 
-      output[0] = calc[10];
-      output[1] = calc[11];
-      output[2] = calc[12];
-      output[3] = calc[13];
+       output[0] = calc[10];
+       output[1] = calc[11];
+       output[2] = calc[12];
+       output[3] = calc[13];
 
     } else {
 
