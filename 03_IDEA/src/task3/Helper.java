@@ -240,9 +240,10 @@ public class Helper {
     String output = "";
 
     for (int i = 0; i < array.length; i++) {
-      String tmp = array[i].toString();
+      String tmp = array[i].toString(16);
       output += prependZeros(tmp, tokenLength) + " ";
     }
+    System.out.println(output);
   }
 
   public static void printAsHEX(BigInteger[][] array, int tokenLength) {
