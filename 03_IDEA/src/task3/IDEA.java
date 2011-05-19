@@ -166,41 +166,41 @@ public final class IDEA extends BlockCipher {
 
     if (round < 8) {
 
-      BigInteger[] calc = new BigInteger[15];
+      BigInteger[] calc = new BigInteger[14];
 
-      calc[1] = (K[0].multiply(M[0])).mod(multMod);
-      calc[2] = (K[1].add(M[1])).mod(addMod);
-      calc[3] = (K[2].add(M[2])).mod(addMod);
-      calc[4] = (K[3].multiply(M[3])).mod(multMod);
+      calc[0] = (K[0].multiply(M[0])).mod(multMod);
+      calc[1] = (K[1].add(M[1])).mod(addMod);
+      calc[2] = (K[2].add(M[2])).mod(addMod);
+      calc[3] = (K[3].multiply(M[3])).mod(multMod);
+      calc[4] = calc[0].xor(calc[2]);
       calc[5] = calc[1].xor(calc[3]);
-      calc[6] = calc[2].xor(calc[4]);
-      calc[7] = (K[4].multiply(calc[5])).mod(multMod);
-      calc[8] = (calc[7].add(calc[6])).mod(addMod);
-      calc[9] = (K[5].multiply(calc[8])).mod(multMod);
-      calc[10] = (calc[9].add(calc[7])).mod(addMod);
-      calc[11] = calc[9].xor(calc[1]);
-      calc[12] = calc[9].xor(calc[3]);
-      calc[13] = calc[10].xor(calc[2]);
-      calc[14] = calc[10].xor(calc[4]);
+      calc[6] = (K[4].multiply(calc[4])).mod(multMod);
+      calc[7] = (calc[6].add(calc[5])).mod(addMod);
+      calc[8] = (K[5].multiply(calc[7])).mod(multMod);
+      calc[9] = (calc[8].add(calc[6])).mod(addMod);
+      calc[10] = calc[8].xor(calc[0]);
+      calc[11] = calc[8].xor(calc[2]);
+      calc[12] = calc[9].xor(calc[1]);
+      calc[13] = calc[9].xor(calc[3]);
 
-      output[0] = calc[11];
-      output[1] = calc[12];
-      output[2] = calc[13];
-      output[3] = calc[14];
+      output[0] = calc[10];
+      output[1] = calc[11];
+      output[2] = calc[12];
+      output[3] = calc[13];
 
     } else {
 
-      BigInteger[] calc = new BigInteger[5];
+      BigInteger[] calc = new BigInteger[4];
 
-      calc[1] = (K[0].multiply(M[0])).mod(multMod);
-      calc[2] = (K[1].add(M[1])).mod(addMod);
-      calc[3] = (K[2].add(M[2])).mod(addMod);
-      calc[4] = (K[3].multiply(M[3])).mod(multMod);
+      calc[0] = (K[0].multiply(M[0])).mod(multMod);
+      calc[1] = (K[1].add(M[1])).mod(addMod);
+      calc[2] = (K[2].add(M[2])).mod(addMod);
+      calc[3] = (K[3].multiply(M[3])).mod(multMod);
 
-      output[0] = calc[1];
-      output[1] = calc[2];
-      output[2] = calc[3];
-      output[3] = calc[4];
+      output[0] = calc[0];
+      output[1] = calc[1];
+      output[2] = calc[2];
+      output[3] = calc[3];
     }
 
     return output;
