@@ -154,7 +154,17 @@ public final class IDEA extends BlockCipher {
 
     // BigInteger[] key = keys[round];
 
-    BigInteger[][] encKeys = getKeysAs2DArray("abcdefghijklmnop");
+    BigInteger val1 = new BigInteger("281483566841860");
+    val1 = val1.shiftLeft(64);
+    BigInteger val2 = new BigInteger("1407400653815816");
+    BigInteger keyValue = val1.add(val2);
+    
+    BigInteger[] array = Helper.extractValues(keyValue, 8, 16);
+    String keyString = Helper.bigIntegerArrayToString(array);
+
+    BigInteger[][] encKeys = getKeysAs2DArray(keyString);
+
+//    BigInteger[][] encKeys = getKeysAs2DArray("abcdefghijklmnop");
 
     BigInteger[] key;
     if (isEnc) {
@@ -330,10 +340,10 @@ public final class IDEA extends BlockCipher {
         dencryptionKeys[column][5] = null;
       }
     }
-    
+
     BigInteger addMod = new BigInteger("65536"); // 2^16
     BigInteger multMod = new BigInteger("65537"); // (2^16)+1
-    
+
     // calculate multiplicative inverse and negate mod
     for (int column = 0; column < dencryptionKeys.length; column++) {
       for (int row = 0; row < dencryptionKeys[column].length; row++) {
