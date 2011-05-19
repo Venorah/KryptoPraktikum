@@ -133,7 +133,7 @@ public final class IDEA extends BlockCipher {
 
     String cipherPart = messagePart;
 
-    for (int round = 0; round < 9; round++) {
+    for (int round = 1; round <= 9; round++) {
       cipherPart = feistelNetwork(cipherPart, round, isEncryption);
     }
 
@@ -154,72 +154,61 @@ public final class IDEA extends BlockCipher {
 
     // BigInteger[] key = keys[round];
 
-    BigInteger[][] schluessel = getKeysAs2DArray("abcdefghijklmnop");
+    BigInteger[][] encKeys = getKeysAs2DArray("abcdefghijklmnop");
 
-    BigInteger[] key = schluessel[round];
+    BigInteger[] key;
+    if (isEnc) {
+      key = encKeys[round - 1];
+    } else {
+      BigInteger[][] decKeys = getDecryptionKeys(encKeys);
+      key = decKeys[round - 1];
+    }
+
     BigInteger[] msg = Helper.extractValues(Helper.stringToBigInteger(messagePart), 16, 4);
 
     BigInteger addMod = new BigInteger("65536"); // 2^16
     BigInteger multMod = new BigInteger("65537"); // (2^16)+1
 
-    BigInteger M1 = msg[0];
-    BigInteger M2 = msg[1];
-    BigInteger M3 = msg[2];
-    BigInteger M4 = msg[3];
+    BigInteger[] M = new BigInteger[5];
+    M[1] = msg[0];
+    M[2] = msg[1];
+    M[3] = msg[2];
+    M[4] = msg[3];
 
-    BigInteger K1 = key[0];
-    BigInteger K2 = key[1];
-    BigInteger K3 = key[2];
-    BigInteger K4 = key[3];
+    BigInteger[] K = new BigInteger[7];
+    K[1] = key[0];
+    K[2] = key[1];
+    K[3] = key[2];
+    K[4] = key[3];
 
-    if (!isEnc) {
-      K1 = (key[0]).modInverse(multMod);
-      K2 = (key[1]).modInverse(multMod);
-      K3 = ((key[2]).negate()).mod(addMod);
-      K4 = ((key[3]).negate()).mod(addMod);
+    if (round < 9) {
 
-      System.out.println(K1.toString(16) + " " + K2.toString(16) + " " + K3.toString(16) + " " + K4.toString(16));
-    }
+      K[5] = key[4];
+      K[6] = key[5];
 
-    if (round < 8) {
+      BigInteger[] calc = new BigInteger[15];
 
-      BigInteger K5 = key[4];
-      BigInteger K6 = key[5];
+      calc[1] = (K[1].multiply(M[1])).mod(multMod);
+      calc[2] = (K[2].multiply(M[2])).mod(multMod);
+      calc[3] = (K[3].add(M[3])).mod(addMod);
+      calc[4] = (K[4].add(M[4])).mod(addMod);
+      calc[5] = calc[1].xor(calc[3]);
+      calc[6] = calc[2].xor(calc[4]);
+      calc[7] = (K[5].multiply(calc[5])).mod(multMod);
+      calc[8] = (calc[7].add(calc[6])).mod(addMod);
+      calc[9] = (K[6].multiply(calc[8])).mod(multMod);
+      calc[10] = (calc[9].add(calc[7])).mod(addMod);
+      calc[11] = calc[9].xor(calc[1]);
+      calc[12] = calc[9].xor(calc[3]);
+      calc[13] = calc[10].xor(calc[2]);
+      calc[14] = calc[10].xor(calc[4]);
 
-      BigInteger calc01 = new BigInteger("0");
-      BigInteger calc02 = new BigInteger("0");
-      BigInteger calc03 = new BigInteger("0");
-      BigInteger calc04 = new BigInteger("0");
-      BigInteger calc05 = new BigInteger("0");
-      BigInteger calc06 = new BigInteger("0");
-      BigInteger calc07 = new BigInteger("0");
-      BigInteger calc08 = new BigInteger("0");
-      BigInteger calc09 = new BigInteger("0");
-      BigInteger calc10 = new BigInteger("0");
-      BigInteger calc11 = new BigInteger("0");
-      BigInteger calc12 = new BigInteger("0");
-      BigInteger calc13 = new BigInteger("0");
-      BigInteger calc14 = new BigInteger("0");
+      System.out.println("R" + round + ": " + calc[12].toString(16) + " " + calc[14].toString(16) + " " + calc[11].toString(16) + " " + calc[13].toString(16));
 
-      calc01 = (K1.multiply(M1)).mod(multMod);
-      calc02 = (K2.multiply(M2)).mod(multMod);
-      calc03 = (K3.add(M3)).mod(addMod);
-      calc04 = (K4.add(M4)).mod(addMod);
-      calc05 = calc01.xor(calc03);
-      calc06 = calc02.xor(calc04);
-      calc07 = (K5.multiply(calc05)).mod(multMod);
-      calc08 = (calc07.add(calc06)).mod(addMod);
-      calc09 = (K6.multiply(calc08)).mod(multMod);
-      calc10 = (calc09.add(calc07)).mod(addMod);
-      calc11 = calc09.xor(calc01);
-      calc12 = calc09.xor(calc03);
-      calc13 = calc10.xor(calc02);
-      calc14 = calc10.xor(calc04);
-
-      BigInteger[] c1 = Helper.extractValues(calc12, 8, 2);
-      BigInteger[] c2 = Helper.extractValues(calc14, 8, 2);
-      BigInteger[] c3 = Helper.extractValues(calc11, 8, 2);
-      BigInteger[] c4 = Helper.extractValues(calc13, 8, 2);
+      BigInteger[] c1 = Helper.extractValues(calc[12], 8, 2);
+      BigInteger[] c2 = Helper.extractValues(calc[14], 8, 2);
+      BigInteger[] c3 = Helper.extractValues(calc[11], 8, 2);
+      BigInteger[] c4 = Helper.extractValues(calc[13], 8, 2);
 
       BigInteger[] result = { c1[0], c1[1], c2[0], c2[1], c3[0], c3[1], c4[0], c4[1] };
       // BigInteger[] result = { calc12, calc14, calc11, calc13 };
@@ -227,20 +216,20 @@ public final class IDEA extends BlockCipher {
       output = Helper.bigIntegerArrayToString(result);
 
     } else {
-      BigInteger calc01 = new BigInteger("0");
-      BigInteger calc02 = new BigInteger("0");
-      BigInteger calc03 = new BigInteger("0");
-      BigInteger calc04 = new BigInteger("0");
 
-      calc01 = (K1.multiply(M1)).mod(multMod);
-      calc02 = (K2.multiply(M2)).mod(multMod);
-      calc03 = (K3.add(M3)).mod(addMod);
-      calc04 = (K4.add(M4)).mod(addMod);
+      BigInteger[] calc = new BigInteger[5];
 
-      BigInteger[] c1 = Helper.extractValues(calc01, 8, 2);
-      BigInteger[] c2 = Helper.extractValues(calc02, 8, 2);
-      BigInteger[] c3 = Helper.extractValues(calc03, 8, 2);
-      BigInteger[] c4 = Helper.extractValues(calc04, 8, 2);
+      calc[1] = (K[1].multiply(M[1])).mod(multMod);
+      calc[2] = (K[2].multiply(M[2])).mod(multMod);
+      calc[3] = (K[3].add(M[3])).mod(addMod);
+      calc[4] = (K[4].add(M[4])).mod(addMod);
+
+      System.out.println("R" + round + ": " + calc[1].toString(16) + " " + calc[2].toString(16) + " " + calc[3].toString(16) + " " + calc[4].toString(16));
+
+      BigInteger[] c1 = Helper.extractValues(calc[1], 8, 2);
+      BigInteger[] c2 = Helper.extractValues(calc[2], 8, 2);
+      BigInteger[] c3 = Helper.extractValues(calc[3], 8, 2);
+      BigInteger[] c4 = Helper.extractValues(calc[4], 8, 2);
 
       BigInteger[] result = { c1[0], c1[1], c2[0], c2[1], c3[0], c3[1], c4[0], c4[1] };
 
