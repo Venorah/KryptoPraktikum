@@ -236,18 +236,18 @@ public class Helper {
     return output;
   }
 
-  public static void printAsHEX(BigInteger[] array) {
+  public static void printAsHEX(BigInteger[] array, int tokenLength) {
     String output = "";
 
     for (int i = 0; i < array.length; i++) {
       String tmp = array[i].toString();
-      output += prependZeros(tmp, 4) + " ";
+      output += prependZeros(tmp, tokenLength) + " ";
     }
   }
 
-  public static void printAsHEX(BigInteger[][] array) {
+  public static void printAsHEX(BigInteger[][] array, int tokenLength) {
     for (int i = 0; i < array.length; i++) {
-      printAsHEX(array[i]);
+      printAsHEX(array[i], tokenLength);
     }
   }
 }
