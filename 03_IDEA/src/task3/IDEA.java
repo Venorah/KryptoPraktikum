@@ -116,7 +116,34 @@ public final class IDEA extends BlockCipher {
   }
 
   public void decipher(FileInputStream ciphertext, FileOutputStream cleartext) {
-    // TODO
+    String cipherTextString = Helper.getTextAsString(ciphertext);
+
+    // generate keys
+    System.out.println(keyString);
+    BigInteger[] keyArray = Helper.stringToBigIntegerArray(keyString);
+    encKeys = getEncryptionKeys(keyArray);
+    decKeys = getDecryptionKeys(encKeys);
+
+    BigInteger[] messageArray = Helper.stringToBigIntegerArray(cipherTextString);
+    String iv = "ddc3a8f6c66286d2"; // as hex
+
+    BigInteger output = cipherBlockChaining(messageArray, iv, true);
+    System.out.println(output);
+
+    try {
+      cleartext.write(output.toByteArray());
+    } catch (IOException e1) {
+      System.out.println("Failed at FileOutputStream");
+      e1.printStackTrace();
+    }
+
+    try {
+      cleartext.close();
+      ciphertext.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
   }
 
   /**
