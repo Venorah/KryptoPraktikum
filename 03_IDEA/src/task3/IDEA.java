@@ -314,57 +314,56 @@ public final class IDEA extends BlockCipher {
   }
 
   public static BigInteger[][] getDecryptionKeys(BigInteger[][] encryptionKeys) {
-    BigInteger[][] output = new BigInteger[9][6];
-
-    BigInteger addMod = new BigInteger("65536"); // 2^16
-    BigInteger multMod = new BigInteger("65537"); // (2^16)+1
+    BigInteger[][] dencryptionKeys = new BigInteger[9][6];
 
     // reverse array
     for (int column = 0; column < 9; column++) {
       if (column == 0) {
-        output[column][0] = encryptionKeys[8-column][0];
-        output[column][1] = encryptionKeys[8-column][1];
-        output[column][2] = encryptionKeys[8-column][2];
-        output[column][3] = encryptionKeys[8-column][3];
-        output[column][4] = encryptionKeys[7-column][4];
-        output[column][5] = encryptionKeys[7-column][5];
+        dencryptionKeys[column][0] = encryptionKeys[8 - column][0];
+        dencryptionKeys[column][1] = encryptionKeys[8 - column][1];
+        dencryptionKeys[column][2] = encryptionKeys[8 - column][2];
+        dencryptionKeys[column][3] = encryptionKeys[8 - column][3];
+        dencryptionKeys[column][4] = encryptionKeys[7 - column][4];
+        dencryptionKeys[column][5] = encryptionKeys[7 - column][5];
       } else if (column > 0 && column < 8) {
-        output[column][0] = encryptionKeys[8-column][0];
-        output[column][1] = encryptionKeys[8-column][2];
-        output[column][2] = encryptionKeys[8-column][1];
-        output[column][3] = encryptionKeys[8-column][3];
-        output[column][4] = encryptionKeys[7-column][4];
-        output[column][5] = encryptionKeys[7-column][5];
-      }
-      else {
-        output[column][0] = encryptionKeys[8-column][0];
-        output[column][1] = encryptionKeys[8-column][1];
-        output[column][2] = encryptionKeys[8-column][2];
-        output[column][3] = encryptionKeys[8-column][3];
-        output[column][4] = null;
-        output[column][5] = null;
+        dencryptionKeys[column][0] = encryptionKeys[8 - column][0];
+        dencryptionKeys[column][1] = encryptionKeys[8 - column][2];
+        dencryptionKeys[column][2] = encryptionKeys[8 - column][1];
+        dencryptionKeys[column][3] = encryptionKeys[8 - column][3];
+        dencryptionKeys[column][4] = encryptionKeys[7 - column][4];
+        dencryptionKeys[column][5] = encryptionKeys[7 - column][5];
+      } else {
+        dencryptionKeys[column][0] = encryptionKeys[8 - column][0];
+        dencryptionKeys[column][1] = encryptionKeys[8 - column][1];
+        dencryptionKeys[column][2] = encryptionKeys[8 - column][2];
+        dencryptionKeys[column][3] = encryptionKeys[8 - column][3];
+        dencryptionKeys[column][4] = null;
+        dencryptionKeys[column][5] = null;
       }
     }
-
-    BigInteger[][] out = new BigInteger[9][6];
-    for (int zeile = 0; zeile < out.length; zeile++) {
-      for (int spalte = 0; spalte < out[zeile].length; spalte++) {
-        if (spalte == 0 || spalte == 3) {
-          BigInteger val = output[zeile][spalte];
+    
+    BigInteger addMod = new BigInteger("65536"); // 2^16
+    BigInteger multMod = new BigInteger("65537"); // (2^16)+1
+    
+    // calculate multiplicative inverse and negate mod
+    for (int column = 0; column < dencryptionKeys.length; column++) {
+      for (int row = 0; row < dencryptionKeys[column].length; row++) {
+        if (row == 0 || row == 3) {
+          BigInteger val = dencryptionKeys[column][row];
           val = val.modInverse(multMod);
-          out[zeile][spalte] = val;
-        } else if (spalte == 1 || spalte == 2) {
-          BigInteger val = output[zeile][spalte];
+          dencryptionKeys[column][row] = val;
+        } else if (row == 1 || row == 2) {
+          BigInteger val = dencryptionKeys[column][row];
           val = val.negate();
           val = val.mod(addMod);
-          out[zeile][spalte] = val;
+          dencryptionKeys[column][row] = val;
         } else {
-          out[zeile][spalte] = output[zeile][spalte];
+          dencryptionKeys[column][row] = dencryptionKeys[column][row];
         }
       }
     }
 
-    return out;
+    return dencryptionKeys;
   }
 
   /**
