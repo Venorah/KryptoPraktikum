@@ -308,75 +308,41 @@ public final class IDEA extends BlockCipher {
     BigInteger addMod = new BigInteger("65536"); // 2^16
     BigInteger multMod = new BigInteger("65537"); // (2^16)+1
 
-    output[0][0] = encryptionKeys[8][0];
-    output[0][1] = encryptionKeys[8][1];
-    output[0][2] = encryptionKeys[8][2];
-    output[0][3] = encryptionKeys[8][3];
-    output[0][4] = encryptionKeys[7][4];
-    output[0][5] = encryptionKeys[7][5];
-
-    output[1][0] = encryptionKeys[7][0];
-    output[1][1] = encryptionKeys[7][1];
-    output[1][2] = encryptionKeys[7][2];
-    output[1][3] = encryptionKeys[7][3];
-    output[1][4] = encryptionKeys[6][4];
-    output[1][5] = encryptionKeys[6][5];
-
-    output[2][0] = encryptionKeys[6][0];
-    output[2][1] = encryptionKeys[6][1];
-    output[2][2] = encryptionKeys[6][2];
-    output[2][3] = encryptionKeys[6][3];
-    output[2][4] = encryptionKeys[5][4];
-    output[2][5] = encryptionKeys[5][5];
-
-    output[3][0] = encryptionKeys[5][0];
-    output[3][1] = encryptionKeys[5][1];
-    output[3][2] = encryptionKeys[5][2];
-    output[3][3] = encryptionKeys[5][3];
-    output[3][4] = encryptionKeys[4][4];
-    output[3][5] = encryptionKeys[4][5];
-
-    output[4][0] = encryptionKeys[4][0];
-    output[4][1] = encryptionKeys[4][1];
-    output[4][2] = encryptionKeys[4][2];
-    output[4][3] = encryptionKeys[4][3];
-    output[4][4] = encryptionKeys[3][4];
-    output[4][5] = encryptionKeys[3][5];
-
-    output[5][0] = encryptionKeys[3][0];
-    output[5][1] = encryptionKeys[3][1];
-    output[5][2] = encryptionKeys[3][2];
-    output[5][3] = encryptionKeys[3][3];
-    output[5][4] = encryptionKeys[2][4];
-    output[5][5] = encryptionKeys[2][5];
-
-    output[6][0] = encryptionKeys[2][0];
-    output[6][1] = encryptionKeys[2][1];
-    output[6][2] = encryptionKeys[2][2];
-    output[6][3] = encryptionKeys[2][3];
-    output[6][4] = encryptionKeys[1][4];
-    output[6][5] = encryptionKeys[1][5];
-
-    output[7][0] = encryptionKeys[1][0];
-    output[7][1] = encryptionKeys[1][1];
-    output[7][2] = encryptionKeys[1][2];
-    output[7][3] = encryptionKeys[1][3];
-    output[7][4] = encryptionKeys[0][4];
-    output[7][5] = encryptionKeys[0][5];
-
-    output[8][0] = encryptionKeys[0][0];
-    output[8][1] = encryptionKeys[0][1];
-    output[8][2] = encryptionKeys[0][2];
-    output[8][3] = encryptionKeys[0][3];
+    // reverse array
+    for (int column = 0; column < 9; column++) {
+      if (column == 0) {
+        output[column][0] = encryptionKeys[8-column][0];
+        output[column][1] = encryptionKeys[8-column][1];
+        output[column][2] = encryptionKeys[8-column][2];
+        output[column][3] = encryptionKeys[8-column][3];
+        output[column][4] = encryptionKeys[7-column][4];
+        output[column][5] = encryptionKeys[7-column][5];
+      } else if (column > 0 && column < 8) {
+        output[column][0] = encryptionKeys[8-column][0];
+        output[column][1] = encryptionKeys[8-column][2];
+        output[column][2] = encryptionKeys[8-column][1];
+        output[column][3] = encryptionKeys[8-column][3];
+        output[column][4] = encryptionKeys[7-column][4];
+        output[column][5] = encryptionKeys[7-column][5];
+      }
+      else {
+        output[column][0] = encryptionKeys[8-column][0];
+        output[column][1] = encryptionKeys[8-column][1];
+        output[column][2] = encryptionKeys[8-column][2];
+        output[column][3] = encryptionKeys[8-column][3];
+        output[column][4] = null;
+        output[column][5] = null;
+      }
+    }
 
     BigInteger[][] out = new BigInteger[9][6];
     for (int zeile = 0; zeile < out.length; zeile++) {
       for (int spalte = 0; spalte < out[zeile].length; spalte++) {
-        if (spalte == 0 || spalte == 1) {
+        if (spalte == 0 || spalte == 3) {
           BigInteger val = output[zeile][spalte];
           val = val.modInverse(multMod);
           out[zeile][spalte] = val;
-        } else if (spalte == 2 || spalte == 3) {
+        } else if (spalte == 1 || spalte == 2) {
           BigInteger val = output[zeile][spalte];
           val = val.negate();
           val = val.mod(addMod);
