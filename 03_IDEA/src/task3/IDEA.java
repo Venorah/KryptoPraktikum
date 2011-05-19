@@ -100,7 +100,7 @@ public final class IDEA extends BlockCipher {
     BigInteger[] messageArray = Helper.stringToBigIntegerArray(clearTextString);
     String iv = "ddc3a8f6c66286d2"; // as hex
 
-    BigInteger[] output = cipherBlockChaining(messageArray, iv, true);
+    BigInteger output = cipherBlockChaining(messageArray, iv, true);
     System.out.println(output);
 
     try {
@@ -130,7 +130,7 @@ public final class IDEA extends BlockCipher {
     BigInteger[] messageArray = Helper.stringToBigIntegerArray(cipherTextString);
     String iv = "ddc3a8f6c66286d2"; // as hex
 
-    BigInteger[] output = cipherBlockChaining(messageArray, iv, true);
+    BigInteger output = cipherBlockChaining(messageArray, iv, true);
     System.out.println(output);
 
     try {
@@ -156,8 +156,8 @@ public final class IDEA extends BlockCipher {
    *          64 bit
    * @return Ciphertext part
    */
-  public BigInteger[] cipherBlockChaining(BigInteger[] message, String iv, boolean isEncryption) {
-    BigInteger[] outputCipher = new BigInteger[message.length];
+  public BigInteger cipherBlockChaining(BigInteger[] message, String iv, boolean isEncryption) {
+    String outputCipher = "";
 
     BigInteger cipherPart = new BigInteger(iv, 16);
 
@@ -171,13 +171,11 @@ public final class IDEA extends BlockCipher {
       cipherPart = Helper.bigIntegerArraySum(cipherPartArray);
 
       // build output
-      for (int j = 0; i < cipherPartArray.length; j++) {
-        outputCipher[i*8+j] = cipherPart; 
-      }
-
+      outputCipher += cipherPart.toString();
     }
 
-    return outputCipher;
+    BigInteger output = new BigInteger(outputCipher);
+    return output;
   }
 
   public BigInteger[] idea(BigInteger[] messagePart, boolean isEncryption) {
