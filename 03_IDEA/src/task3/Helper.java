@@ -235,4 +235,19 @@ public class Helper {
 
     return output;
   }
+
+  public static void printAsHEX(BigInteger[] array) {
+    String output = "";
+
+    for (int i = 0; i < array.length; i++) {
+      String tmp = array[i].toString();
+      output += prependZeros(tmp, 4) + " ";
+    }
+  }
+
+  public static void printAsHEX(BigInteger[][] array) {
+    for (int i = 0; i < array.length; i++) {
+      printAsHEX(array[i]);
+    }
+  }
 }
