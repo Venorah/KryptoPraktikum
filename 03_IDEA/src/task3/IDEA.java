@@ -140,7 +140,7 @@ public final class IDEA extends BlockCipher {
     BigInteger[] messageArray = Helper.stringToBigIntegerArray(cipherTextString);
     String iv = "ddc3a8f6c66286d2"; // as hex
 
-    BigInteger output[] = cipherBlockChaining(messageArray, iv, true);
+    BigInteger output[] = cipherBlockChaining(messageArray, iv, false);
     // System.out.println(output);
 
     try {
@@ -228,10 +228,12 @@ public final class IDEA extends BlockCipher {
     BigInteger addMod = new BigInteger("65536"); // 2^16
     BigInteger multMod = new BigInteger("65537"); // (2^16)+1
 
-    if (a.intValue() == 0)
+    if (a.intValue() == 0) {
       a = addMod;
-    if (b.intValue() == 0)
+    }
+    if (b.intValue() == 0) {
       b = addMod;
+    }
 
     BigInteger ret = a.multiply(b).mod(multMod);
     if (ret.compareTo(addMod) == 0) {
