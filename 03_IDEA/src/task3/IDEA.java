@@ -197,7 +197,7 @@ public final class IDEA extends BlockCipher {
       }
 
       // encryption/decryption
-      messagePart = feistelNetwork(messagePart, round, key);
+      messagePart = feistelNetwork(messagePart, key, round);
 
       // Helper.printAsHEX(messagePart, 4);
     }
@@ -214,32 +214,13 @@ public final class IDEA extends BlockCipher {
    *          switch for enc/dec
    * @return
    */
-  public BigInteger[] feistelNetwork(BigInteger[] m, int round, BigInteger[] k) {
+  public BigInteger[] feistelNetwork(BigInteger[] M, BigInteger[] K, int round) {
     BigInteger[] output = new BigInteger[4];
 
     BigInteger addMod = new BigInteger("65536"); // 2^16
     BigInteger multMod = new BigInteger("65537"); // (2^16)+1
 
-    if (round == 6) {
-      System.out.println();
-    }
-
-    BigInteger[] M = new BigInteger[m.length];
-    M[0] = m[0].mod(multMod);
-    M[1] = m[1].mod(addMod);
-    M[2] = m[2].mod(addMod);
-    M[3] = m[3].mod(multMod);
-
-    BigInteger[] K = new BigInteger[k.length];
-    K[0] = k[0].mod(multMod);
-    K[1] = k[1].mod(addMod);
-    K[2] = k[2].mod(addMod);
-    K[3] = k[3].mod(multMod);
-
     if (round < 8) {
-
-      K[4] = k[4].mod(multMod);
-      K[5] = k[5].mod(multMod);
 
       BigInteger[] calc = new BigInteger[14];
 
@@ -277,17 +258,6 @@ public final class IDEA extends BlockCipher {
       output[2] = calc[2];
       output[3] = calc[3];
     }
-
-    String mString = "";
-    String kString = "";
-    String cString = "";
-    for (int i = 0; i < m.length; i++) {
-      mString += Helper.prependZeros(m[i].toString(16), 4) + " ";
-      kString += Helper.prependZeros(k[i].toString(16), 4) + " ";
-      cString += Helper.prependZeros(output[i].toString(16), 4) + " ";
-    }
-
-    System.out.println(round + " " + mString + "| " + kString + "| " + cString);
 
     return output;
   }
