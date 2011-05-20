@@ -102,10 +102,19 @@ public final class IDEA extends BlockCipher {
     String iv = "ddc3a8f6c66286d2"; // as hex
 
     BigInteger output[] = cipherBlockChaining(messageArray, iv, true);
-    // System.out.println(output);
+
+    String outputString = "";
+    for (int i = 0; i < output.length; i++) {
+      if (i != output.length) {
+        outputString += Helper.printAsHEX(output, 16) + " ";
+      } else {
+        outputString += Helper.printAsHEX(output, 16);
+      }
+    }
+    System.out.println(outputString);
 
     try {
-      ciphertext.write(Helper.bigIntegerArraySum(output).toByteArray());
+      ciphertext.write(outputString.getBytes());
     } catch (IOException e1) {
       System.out.println("Failed at FileOutputStream");
       e1.printStackTrace();
@@ -199,7 +208,7 @@ public final class IDEA extends BlockCipher {
       // encryption/decryption
       messagePart = feistelNetwork(messagePart, key, round);
 
-      Helper.printAsHEX(messagePart, 4);
+      System.out.println(Helper.printAsHEX(messagePart, 4));
     }
 
     return messagePart;

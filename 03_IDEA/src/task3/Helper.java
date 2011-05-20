@@ -236,23 +236,34 @@ public class Helper {
     return output;
   }
 
-  public static void printAsHEX(BigInteger[] array, int tokenLength) {
+  public static String printAsHEX(BigInteger[] array, int tokenLength) {
     String output = "";
 
     for (int i = 0; i < array.length; i++) {
-      if (array[i] != null) {
-        String tmp = array[i].toString(16);
-        output += prependZeros(tmp, tokenLength) + " ";
-      }else{
-        output += "---- ";
+      if (i != array.length - 1) {
+        if (array[i] != null) {
+          String tmp = array[i].toString(16);
+          output += prependZeros(tmp, tokenLength) + " ";
+        } else {
+          output += "---- ";
+        }
+      } else {
+        if (array[i] != null) {
+          String tmp = array[i].toString(16);
+          output += prependZeros(tmp, tokenLength);
+        } else {
+          output += "----";
+        }
       }
     }
-    System.out.println(output);
+    return output;
   }
 
-  public static void printAsHEX(BigInteger[][] array, int tokenLength) {
+  public static String printAsHEX(BigInteger[][] array, int tokenLength) {
+    String output = "";
     for (int i = 0; i < array.length; i++) {
-      printAsHEX(array[i], tokenLength);
+      output += printAsHEX(array[i], tokenLength);
     }
+    return output;
   }
 }
