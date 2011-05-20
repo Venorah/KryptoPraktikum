@@ -199,7 +199,7 @@ public final class IDEA extends BlockCipher {
       // encryption/decryption
       messagePart = feistelNetwork(messagePart, key, round);
 
-      // Helper.printAsHEX(messagePart, 4);
+      Helper.printAsHEX(messagePart, 4);
     }
 
     return messagePart;
@@ -273,8 +273,8 @@ public final class IDEA extends BlockCipher {
       BigInteger[] calc = new BigInteger[4];
 
       calc[0] = multiply(K[0], M[0]);
-      calc[1] = add(K[1], M[1]);
-      calc[2] = add(K[2], M[2]);
+      calc[1] = add(K[1], M[2]);
+      calc[2] = add(K[2], M[1]);
       calc[3] = multiply(K[3], M[3]);
 
       output[0] = calc[0];
