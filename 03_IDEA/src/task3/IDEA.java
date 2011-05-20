@@ -199,7 +199,7 @@ public final class IDEA extends BlockCipher {
       // encryption/decryption
       messagePart = feistelNetwork(messagePart, key, round);
 
-      // Helper.printAsHEX(messagePart, 4);
+      Helper.printAsHEX(messagePart, 4);
     }
 
     return messagePart;
