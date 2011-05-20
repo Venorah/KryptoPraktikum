@@ -204,6 +204,32 @@ public final class IDEA extends BlockCipher {
 
     return messagePart;
   }
+  
+  private BigInteger xor(BigInteger a, BigInteger b){
+    return a.xor(b);
+  }
+  
+  private BigInteger add(BigInteger a, BigInteger b){
+    BigInteger addMod = new BigInteger("65536"); // 2^16
+    
+    return a.add(b).mod(addMod);
+  }
+  
+  private BigInteger multiply(BigInteger a, BigInteger b){
+    if(a.intValue() == 0)
+      a = new BigInteger("2").pow(16);
+    if(b.intValue() == 0)
+      b = new BigInteger("2").pow(16);
+    
+    BigInteger multMod = new BigInteger("65537"); // (2^16)+1
+    
+    BigInteger ret = a.multiply(b).mod(multMod);
+    if(ret.compareTo(new BigInteger("2").pow(16)) == 0){
+      return new BigInteger("0");
+    } else {
+      return ret;
+    }
+  }
 
   /**
    * 
@@ -217,32 +243,24 @@ public final class IDEA extends BlockCipher {
   public BigInteger[] feistelNetwork(BigInteger[] M, BigInteger[] K, int round) {
     BigInteger[] output = new BigInteger[4];
 
-    if(round == 6){
-      System.out.println();
-    }
-    
-    BigInteger addMod = new BigInteger("65536"); // 2^16
-    BigInteger multMod = new BigInteger("65537"); // (2^16)+1
-
-
     if (round < 8) {
 
       BigInteger[] calc = new BigInteger[14];
 
-      calc[0] = (K[0].multiply(M[0])).mod(multMod);
-      calc[1] = (K[1].add(M[1])).mod(addMod);
-      calc[2] = (K[2].add(M[2])).mod(addMod);
-      calc[3] = (K[3].multiply(M[3])).mod(multMod);
-      calc[4] = calc[0].xor(calc[2]);
-      calc[5] = calc[1].xor(calc[3]);
-      calc[6] = (K[4].multiply(calc[4])).mod(multMod);
-      calc[7] = (calc[6].add(calc[5])).mod(addMod);
-      calc[8] = (K[5].multiply(calc[7])).mod(multMod);
-      calc[9] = (calc[8].add(calc[6])).mod(addMod);
-      calc[10] = calc[8].xor(calc[0]);
-      calc[11] = calc[8].xor(calc[2]);
-      calc[12] = calc[9].xor(calc[1]);
-      calc[13] = calc[9].xor(calc[3]);
+      calc[0] = multiply(K[0],M[0]);
+      calc[1] = add(K[1],M[1]);
+      calc[2] = add(K[2],M[2]);
+      calc[3] = multiply(K[3],M[3]);
+      calc[4] = xor(calc[0],calc[2]);
+      calc[5] = xor(calc[1],calc[3]);
+      calc[6] = multiply(K[4],calc[4]);
+      calc[7] = add(calc[6],calc[5]);
+      calc[8] = multiply(K[5],calc[7]);
+      calc[9] = add(calc[8],calc[6]);
+      calc[10] = xor(calc[8],calc[0]);
+      calc[11] = xor(calc[8],calc[2]);
+      calc[12] = xor(calc[9],calc[1]);
+      calc[13] = xor(calc[9],calc[3]);
 
       output[0] = calc[10];
       output[1] = calc[11];
@@ -253,10 +271,10 @@ public final class IDEA extends BlockCipher {
 
       BigInteger[] calc = new BigInteger[4];
 
-      calc[0] = (K[0].multiply(M[0])).mod(multMod);
-      calc[1] = (K[1].add(M[1])).mod(addMod);
-      calc[2] = (K[2].add(M[2])).mod(addMod);
-      calc[3] = (K[3].multiply(M[3])).mod(multMod);
+      calc[0] = multiply(K[0],M[0]);
+      calc[1] = add(K[1],M[1]);
+      calc[2] = add(K[2],M[2]);
+      calc[3] = multiply(K[3],M[3]);
 
       output[0] = calc[0];
       output[1] = calc[1];
