@@ -199,7 +199,7 @@ public final class IDEA extends BlockCipher {
       // encryption/decryption
       messagePart = feistelNetwork(messagePart, round, key);
 
-      Helper.printAsHEX(messagePart, 4);
+      // Helper.printAsHEX(messagePart, 4);
     }
 
     return messagePart;
@@ -217,12 +217,12 @@ public final class IDEA extends BlockCipher {
   public BigInteger[] feistelNetwork(BigInteger[] m, int round, BigInteger[] k) {
     BigInteger[] output = new BigInteger[4];
 
-    if(round == 6){
-      System.out.println();
-    }
-    
     BigInteger addMod = new BigInteger("65536"); // 2^16
     BigInteger multMod = new BigInteger("65537"); // (2^16)+1
+
+    if (round == 6) {
+      System.out.println();
+    }
 
     BigInteger[] M = new BigInteger[m.length];
     M[0] = m[0].mod(multMod);
@@ -277,6 +277,17 @@ public final class IDEA extends BlockCipher {
       output[2] = calc[2];
       output[3] = calc[3];
     }
+
+    String mString = "";
+    String kString = "";
+    String cString = "";
+    for (int i = 0; i < m.length; i++) {
+      mString += Helper.prependZeros(m[i].toString(16), 4) + " ";
+      kString += Helper.prependZeros(k[i].toString(16), 4) + " ";
+      cString += Helper.prependZeros(output[i].toString(16), 4) + " ";
+    }
+
+    System.out.println(round + " " + mString + "| " + kString + "| " + cString);
 
     return output;
   }
