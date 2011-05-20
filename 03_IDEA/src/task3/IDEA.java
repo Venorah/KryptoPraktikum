@@ -216,15 +216,16 @@ public final class IDEA extends BlockCipher {
   }
   
   private BigInteger multiply(BigInteger a, BigInteger b){
-    if(a.intValue() == 0)
-      a = new BigInteger("2").pow(16);
-    if(b.intValue() == 0)
-      b = new BigInteger("2").pow(16);
-    
+    BigInteger addMod = new BigInteger("65536"); // 2^16
     BigInteger multMod = new BigInteger("65537"); // (2^16)+1
-    
+
+    if(a.intValue() == 0)
+      a = addMod;
+    if(b.intValue() == 0)
+      b = addMod;
+        
     BigInteger ret = a.multiply(b).mod(multMod);
-    if(ret.compareTo(new BigInteger("2").pow(16)) == 0){
+    if(ret.compareTo(addMod) == 0){
       return new BigInteger("0");
     } else {
       return ret;
