@@ -92,6 +92,7 @@ public class Helper {
     String output = "";
 
     for (int i = 0; i < array.length; i++) {
+      System.out.println("bitLength: " + array[i].bitLength());
       int val = array[i].intValue();
       char character = (char) val;
       output += character;
