@@ -91,24 +91,32 @@ public final class IDEA extends BlockCipher {
     String clearTextString = Helper.getTextAsString(cleartext);
 
     // generate keys
-    System.out.println(keyString);
+    Logger("keyString = " + keyString);
     BigInteger[] keyArray = Helper.stringToBigIntegerArray(keyString);
     encKeys = getEncryptionKeys(keyArray);
     decKeys = getDecryptionKeys(encKeys);
 
     String[] message = Helper.getTextAsStringArray(clearTextString, 8);
+    Logger("message = ");
+    for (int i = 0; i < message.length; i++) {
+      Logger(message[i]);
+    }
 
     BigInteger[] messageArray = Helper.stringToBigIntegerArray(clearTextString);
-    String iv = "ddc3a8f6c66286d2"; // as hex
+    BigInteger iv = new BigInteger("ddc3a8f6c66286d2", 16); // as hex
+    
 
-    BigInteger output[] = cipherBlockChaining(messageArray, iv, true);
+//    BigInteger output[] = cipherBlockChaining(messageArray, iv, true);
+    
+    BigInteger output[] = cbcLoop(messageArray, iv, true);
 
+    Logger("output");
     String outputString = "";
     for (int i = 0; i < output.length; i++) {
       if (i != output.length) {
-        outputString += Helper.printAsHEX(output, 16) + " ";
+        outputString += Helper.printAsHEX(output, 8) + " ";
       } else {
-        outputString += Helper.printAsHEX(output, 16);
+        outputString += Helper.printAsHEX(output, 8);
       }
     }
     System.out.println(outputString);
@@ -157,6 +165,29 @@ public final class IDEA extends BlockCipher {
       e.printStackTrace();
     }
 
+  }
+
+  public BigInteger cbcBlock(BigInteger message, BigInteger iv, boolean isEncryption) {
+    BigInteger input = message.xor(iv);
+
+    BigInteger[] inputArray = Helper.extractValues(input, 16, 4);
+
+    BigInteger outputArray[] = idea(inputArray, isEncryption);
+
+    BigInteger output = Helper.bigIntegerArraySum(outputArray);
+
+    return output;
+  }
+
+  public BigInteger[] cbcLoop(BigInteger message[], BigInteger iv, boolean isEncryption) {
+    BigInteger[] outputArray = new BigInteger[message.length];
+    
+    for (int i = 0; i < message.length; i++) {
+      outputArray[i] = cbcBlock(message[i], iv, isEncryption);
+      iv = outputArray[i];
+    }
+    
+    return outputArray;
   }
 
   /**
