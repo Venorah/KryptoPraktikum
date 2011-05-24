@@ -92,25 +92,41 @@ public final class IDEA extends BlockCipher {
 
     // generate keys
     Logger("keyString = " + keyString);
-    BigInteger[] keyArray = Helper.stringToBigIntegerArray(keyString);
+//    BigInteger[] keyArray = Helper.stringToBigIntegerArray(keyString);
+    BigInteger keyInteger = Helper.stringToBigInteger(keyString);
+    
+    BigInteger[] keyArray = Helper.extractValues(keyInteger, 8, 16);
+
+    
+    
+    
+//    
+//    BigInteger val1 = new BigInteger("281483566841860");
+//    val1 = val1.shiftLeft(64);
+//    BigInteger val2 = new BigInteger("1407400653815816");
+//    BigInteger keyGen = val1.add(val2);
+//    BigInteger[] keyArray = Helper.extractValues(keyGen, 8, 16);
+//    
+    
+    
+
     encKeys = getEncryptionKeys(keyArray);
     decKeys = getDecryptionKeys(encKeys);
 
     String[] message = Helper.getTextAsStringArray(clearTextString, 8);
     Logger("message = ");
-    
-    
+
     BigInteger[] messageArray = new BigInteger[message.length]; // 64-bit blöcke
     for (int i = 0; i < message.length; i++) {
       messageArray[i] = Helper.stringToBigInteger(message[i]);
-      
-      Logger(message[i]);
-    }
-    
-//    BigInteger iv = new BigInteger("ddc3a8f6c66286d2", 16); // as hex
-    BigInteger iv = new BigInteger("5c7119dd40913232", 16); // as hex
 
-    
+      Logger(message[i]);
+      Logger(""+messageArray[i]);
+    }
+
+    BigInteger iv = new BigInteger("ddc3a8f6c66286d2", 16); // as hex
+    // BigInteger iv = new BigInteger("5c7119dd40913232", 16); // as hex
+
     // do cbc!
     BigInteger output[] = cbcLoop(messageArray, iv, true); // output array mit 64-bit blöcken
 
@@ -119,10 +135,10 @@ public final class IDEA extends BlockCipher {
     for (int i = 0; i < output.length; i++) {
       if (i != output.length) {
         outputString += output[i].toString(16) + " ";
-//        outputString += Helper.printAsHEX(output, 16) + " ";
+        // outputString += Helper.printAsHEX(output, 16) + " ";
       } else {
         outputString += output[i].toString(16);
-//        outputString += Helper.printAsHEX(output, 16);
+        // outputString += Helper.printAsHEX(output, 16);
       }
     }
     System.out.println(outputString);
@@ -191,12 +207,12 @@ public final class IDEA extends BlockCipher {
 
   public BigInteger[] cbcLoop(BigInteger[] message, BigInteger iv, boolean isEncryption) {
     BigInteger[] outputArray = new BigInteger[message.length];
-    
+
     for (int i = 0; i < message.length; i++) {
       outputArray[i] = cbcBlock(message[i], iv, isEncryption);
       iv = outputArray[i];
     }
-    
+
     return outputArray;
   }
 
@@ -212,6 +228,9 @@ public final class IDEA extends BlockCipher {
 
       // encryption/decryption
       messagePart = feistelNetwork(messagePart, key, round);
+      
+      Logger("key round "+round);
+      System.out.println(Helper.printAsHEX(key, 4));
 
       System.out.println(Helper.printAsHEX(messagePart, 4));
     }

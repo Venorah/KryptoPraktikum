@@ -75,8 +75,12 @@ public class Helper {
   }
 
   public static BigInteger stringToBigInteger(String text) {
-    BigInteger[] array = stringToBigIntegerArray(text);
-    BigInteger output = bigIntegerArraySum(array);
+    byte[] byteArray = text.getBytes();
+    BigInteger output = new BigInteger(byteArray);
+
+//    System.out.println("BigInt: " + output.toString());
+//    BigInteger[] array = stringToBigIntegerArray(text);
+//    BigInteger output = bigIntegerArraySum(array);
 
     return output;
   }
