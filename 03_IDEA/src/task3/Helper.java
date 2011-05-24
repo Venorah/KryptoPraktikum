@@ -78,10 +78,6 @@ public class Helper {
     byte[] byteArray = text.getBytes();
     BigInteger output = new BigInteger(byteArray);
 
-//    System.out.println("BigInt: " + output.toString());
-//    BigInteger[] array = stringToBigIntegerArray(text);
-//    BigInteger output = bigIntegerArraySum(array);
-
     return output;
   }
 
@@ -96,9 +92,9 @@ public class Helper {
     String output = "";
 
     for (int i = 0; i < array.length; i++) {
-      System.out.println("bitLength: " + array[i].bitLength());
-      int val = array[i].intValue();
-      char character = (char) val;
+      byte[] byteArray = array[i].toByteArray();
+      String character = new String(byteArray);
+
       output += character;
     }
 
@@ -116,7 +112,6 @@ public class Helper {
 
     return output;
   }
-  
 
   public static String appendWhitespaces(String textPart, int tokenSize) {
     String token = textPart;
@@ -128,61 +123,9 @@ public class Helper {
     return token;
   }
 
-  public static String prependZeros(String textPart, int tokenSize) {
-    String token = textPart;
-
-    while (token.length() != tokenSize) {
-      token = "0" + token;
-    }
-
-    return token;
-  }
-
-  public static BigInteger[] byteArrayToShortArray(BigInteger[] array) {
-    BigInteger[] outputArray = new BigInteger[array.length / 2];
-
-    int counter = 0;
-    for (int i = 0; i < outputArray.length; i++) {
-      BigInteger val1 = array[counter++];
-      BigInteger val2 = array[counter++];
-
-      outputArray[i] = byteToShort(val1, val2);
-    }
-
-    return outputArray;
-  }
-
   public static BigInteger byteToShort(BigInteger val1, BigInteger val2) {
     val1 = val1.shiftLeft(8);
     return val1.add(val2);
-  }
-
-  public static String decimalToBinaryString(int val) {
-    String output = "";
-
-    while (val != 0) {
-      if (val % 2 == 0) {
-        output = "0" + output;
-      } else {
-        output = "1" + output;
-      }
-      val /= 2;
-    }
-
-    return output;
-  }
-
-  public static int binaryStringToDecimal(String binaryString) {
-    int output = 0;
-    char[] array = binaryString.toCharArray();
-
-    for (int i = 0, j = array.length - 1; j >= 0; i++, j--) {
-      if (array[j] == '1') {
-        output += Math.pow(2, i);
-      }
-    }
-
-    return output;
   }
 
   public static BigInteger generateMaxBigInteger(int bits) {
@@ -242,34 +185,4 @@ public class Helper {
     return output;
   }
 
-  public static String printAsHEX(BigInteger[] array, int tokenLength) {
-    String output = "";
-
-    for (int i = 0; i < array.length; i++) {
-      if (i != array.length - 1) {
-        if (array[i] != null) {
-          String tmp = array[i].toString(16);
-          output += prependZeros(tmp, tokenLength) + " ";
-        } else {
-          output += "---- ";
-        }
-      } else {
-        if (array[i] != null) {
-          String tmp = array[i].toString(16);
-          output += prependZeros(tmp, tokenLength);
-        } else {
-          output += "----";
-        }
-      }
-    }
-    return output;
-  }
-
-  public static String printAsHEX(BigInteger[][] array, int tokenLength) {
-    String output = "";
-    for (int i = 0; i < array.length; i++) {
-      output += printAsHEX(array[i], tokenLength);
-    }
-    return output;
-  }
 }

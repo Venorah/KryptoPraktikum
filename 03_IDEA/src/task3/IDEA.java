@@ -17,10 +17,7 @@ import java.io.BufferedWriter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.math.BigInteger;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Random;
 import de.tubs.cs.iti.jcrypt.chiffre.BlockCipher;
 
@@ -88,58 +85,36 @@ public final class IDEA extends BlockCipher {
   }
 
   public void encipher(FileInputStream cleartext, FileOutputStream ciphertext) {
-    String clearTextString = Helper.getTextAsString(cleartext);
-
     // generate keys
-    Logger("keyString = " + keyString);
-//    BigInteger[] keyArray = Helper.stringToBigIntegerArray(keyString);
     BigInteger keyInteger = Helper.stringToBigInteger(keyString);
-    
     BigInteger[] keyArray = Helper.extractValues(keyInteger, 8, 16);
-
-    
-    
-    
-//    
-//    BigInteger val1 = new BigInteger("281483566841860");
-//    val1 = val1.shiftLeft(64);
-//    BigInteger val2 = new BigInteger("1407400653815816");
-//    BigInteger keyGen = val1.add(val2);
-//    BigInteger[] keyArray = Helper.extractValues(keyGen, 8, 16);
-//    
-    
-    
-
     encKeys = getEncryptionKeys(keyArray);
     decKeys = getDecryptionKeys(encKeys);
 
+    // get message as array with 64bit blocks
+    String clearTextString = Helper.getTextAsString(cleartext);
     String[] message = Helper.getTextAsStringArray(clearTextString, 8);
-    Logger("message = ");
-
-    BigInteger[] messageArray = new BigInteger[message.length]; // 64-bit blöcke
+    BigInteger[] messageArray = new BigInteger[message.length];
     for (int i = 0; i < message.length; i++) {
       messageArray[i] = Helper.stringToBigInteger(message[i]);
-
-      Logger(message[i]);
-      Logger(""+messageArray[i]);
     }
 
-    BigInteger iv = new BigInteger("ddc3a8f6c66286d2", 16); // as hex
-    // BigInteger iv = new BigInteger("5c7119dd40913232", 16); // as hex
+    // randomly choose 64bit IV
+    Random rnd = new Random();
+    BigInteger iv = new BigInteger(64, rnd);
+    Logger(iv.toString(16));
+    // BigInteger iv = new BigInteger("ddc3a8f6c66286d2", 16);
+    // BigInteger iv = new BigInteger("5c7119dd40913232", 16);
 
-    // do cbc!
-    BigInteger output[] = cbcLoop(messageArray, iv, true); // output array mit 64-bit blöcken
+    // Cipher Block Chaining (CBC), output as array with 64bit blocks
+    BigInteger output[] = cbcLoop(messageArray, iv, true);
 
-    Logger("output");
-    String outputString = "";
+    // build output for writing to file
+    // first prepend iv to String
+    String outputString = iv.toString(16);
+    // then ciphertext as hex
     for (int i = 0; i < output.length; i++) {
-      if (i != output.length) {
-        outputString += output[i].toString(16) + " ";
-        // outputString += Helper.printAsHEX(output, 16) + " ";
-      } else {
-        outputString += output[i].toString(16);
-        // outputString += Helper.printAsHEX(output, 16);
-      }
+      outputString += output[i].toString(16);
     }
     System.out.println(outputString);
 
@@ -159,22 +134,41 @@ public final class IDEA extends BlockCipher {
   }
 
   public void decipher(FileInputStream ciphertext, FileOutputStream cleartext) {
-    String cipherTextString = Helper.getTextAsString(ciphertext);
-
     // generate keys
-    System.out.println(keyString);
-    BigInteger[] keyArray = Helper.stringToBigIntegerArray(keyString);
+    BigInteger keyInteger = Helper.stringToBigInteger(keyString);
+    BigInteger[] keyArray = Helper.extractValues(keyInteger, 8, 16);
     encKeys = getEncryptionKeys(keyArray);
     decKeys = getDecryptionKeys(encKeys);
 
-    BigInteger[] messageArray = Helper.stringToBigIntegerArray(cipherTextString);
-    String iv = "ddc3a8f6c66286d2"; // as hex
+    // get message as array with 64bit blocks
+    String cipherTextString = Helper.getTextAsString(ciphertext);
+    // (message.length - 1) because 0 is iv!
+    int size = (cipherTextString.length() / 16);
+    BigInteger[] messageArray = new BigInteger[(size - 1)];
+    BigInteger iv = null;
+    for (int i = 0; i < size; i++) {
+      String subString = cipherTextString.substring(0, 16);
+      cipherTextString = cipherTextString.substring(16);
 
-    BigInteger output[] = cipherBlockChaining(messageArray, iv, false);
-    // System.out.println(output);
+      if (i == 0) {
+        iv = new BigInteger(subString, 16);
 
+      } else {
+        messageArray[i - 1] = new BigInteger(subString, 16);
+      }
+    }
+
+    // Cipher Block Chaining (CBC), output as array with 64bit blocks
+    BigInteger output[] = cbcLoop(messageArray, iv, false);
+
+    // build output for writing to file
+    String outputString = Helper.bigIntegerArrayToString(output);
+
+    System.out.println(outputString);
+
+    
     try {
-      cleartext.write(Helper.bigIntegerArraySum(output, 8).toByteArray());
+      cleartext.write(outputString.getBytes());
     } catch (IOException e1) {
       System.out.println("Failed at FileOutputStream");
       e1.printStackTrace();
@@ -190,17 +184,20 @@ public final class IDEA extends BlockCipher {
   }
 
   public BigInteger cbcBlock(BigInteger message, BigInteger iv, boolean isEncryption) {
-    // message xor iv
-    BigInteger input = message.xor(iv);
+    BigInteger output = null;
+    if (isEncryption) {
+      // message xor iv
+      BigInteger input = message.xor(iv);
 
-    // make 4*16bit block array
-    BigInteger[] inputArray = Helper.extractValues(input, 16, 4);
+      // encryption with idea
+      output = idea(input, isEncryption);
+    } else {
+      // decryption with idea
+      BigInteger idea = idea(message, isEncryption);
 
-    // encryption with idea
-    BigInteger outputArray[] = idea(inputArray, isEncryption);
-    
-    // from 4*16bit block array to one biginteger
-    BigInteger output = Helper.bigIntegerArraySum(outputArray, 16);
+      // idea xor iv
+      output = idea.xor(iv);
+    }
 
     return output;
   }
@@ -210,13 +207,20 @@ public final class IDEA extends BlockCipher {
 
     for (int i = 0; i < message.length; i++) {
       outputArray[i] = cbcBlock(message[i], iv, isEncryption);
-      iv = outputArray[i];
+      if (isEncryption) {
+        iv = outputArray[i];
+      } else {
+        iv = message[i];
+      }
     }
 
     return outputArray;
   }
 
-  public BigInteger[] idea(BigInteger[] messagePart, boolean isEncryption) {
+  public BigInteger idea(BigInteger input, boolean isEncryption) {
+    // make 4*16bit block array
+    BigInteger[] messagePart = Helper.extractValues(input, 16, 4);
+
     BigInteger[] key = null;
     for (int round = 0; round < 9; round++) {
       // keys based on encryption or decryption
@@ -228,14 +232,12 @@ public final class IDEA extends BlockCipher {
 
       // encryption/decryption
       messagePart = feistelNetwork(messagePart, key, round);
-      
-      Logger("key round "+round);
-      System.out.println(Helper.printAsHEX(key, 4));
-
-      System.out.println(Helper.printAsHEX(messagePart, 4));
     }
 
-    return messagePart;
+    // from 4*16bit block array to one biginteger
+    BigInteger output = Helper.bigIntegerArraySum(messagePart, 16);
+
+    return output;
   }
 
   private BigInteger xor(BigInteger a, BigInteger b) {
