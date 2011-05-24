@@ -105,17 +105,18 @@ public class Helper {
     return output;
   }
 
-  public static BigInteger bigIntegerArraySum(BigInteger[] array) {
+  public static BigInteger bigIntegerArraySum(BigInteger[] array, int blockSize) {
     BigInteger output = new BigInteger("0");
 
     int counter = array.length - 1;
     for (int i = 0; i < array.length; i++) {
-      BigInteger currentValue = array[i].shiftLeft(8 * (counter--));
+      BigInteger currentValue = array[i].shiftLeft(blockSize * (counter--));
       output = output.add(currentValue);
     }
 
     return output;
   }
+  
 
   public static String appendWhitespaces(String textPart, int tokenSize) {
     String token = textPart;

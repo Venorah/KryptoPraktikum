@@ -174,7 +174,7 @@ public final class IDEA extends BlockCipher {
     // System.out.println(output);
 
     try {
-      cleartext.write(Helper.bigIntegerArraySum(output).toByteArray());
+      cleartext.write(Helper.bigIntegerArraySum(output, 8).toByteArray());
     } catch (IOException e1) {
       System.out.println("Failed at FileOutputStream");
       e1.printStackTrace();
@@ -200,7 +200,7 @@ public final class IDEA extends BlockCipher {
     BigInteger outputArray[] = idea(inputArray, isEncryption);
     
     // from 4*16bit block array to one biginteger
-    BigInteger output = Helper.bigIntegerArraySum(outputArray);
+    BigInteger output = Helper.bigIntegerArraySum(outputArray, 16);
 
     return output;
   }
@@ -341,7 +341,7 @@ public final class IDEA extends BlockCipher {
     BigInteger[] outputArray = new BigInteger[52];
 
     // BigInteger[] keyArray = Helper.stringToBigIntegerArray(keyString);
-    BigInteger key = Helper.bigIntegerArraySum(keyArray);
+    BigInteger key = Helper.bigIntegerArraySum(keyArray, 8);
 
     BigInteger[] shortKeyArray = Helper.extractValues(key, 16, 8);
 
