@@ -102,7 +102,7 @@ public final class IDEA extends BlockCipher {
     // randomly choose 64bit IV
     Random rnd = new Random();
     BigInteger iv = new BigInteger(64, rnd);
-    Logger(iv.toString(16));
+    // Logger(iv.toString(16));
     // BigInteger iv = new BigInteger("ddc3a8f6c66286d2", 16);
     // BigInteger iv = new BigInteger("5c7119dd40913232", 16);
 
@@ -166,7 +166,6 @@ public final class IDEA extends BlockCipher {
 
     System.out.println(outputString);
 
-    
     try {
       cleartext.write(outputString.getBytes());
     } catch (IOException e1) {
