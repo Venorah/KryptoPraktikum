@@ -15,6 +15,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.Random;
@@ -44,11 +45,65 @@ public final class ElGamalCipher extends BlockCipher {
 
   }
 
-  public void decipher(FileInputStream ciphertext, FileOutputStream cleartext) {
+  public void encipher(FileInputStream cleartext, FileOutputStream ciphertext) {
 
+    keyGenerator();
+
+    String message = Helper.getTextAsString(cleartext);
+    BigInteger M = Helper.stringToBigInteger(message);
+    
+    BigInteger[] C = encrypt(M);
+
+    String outputString = C[0].toString() + " " + C[1].toString();
+    
+    System.out.println("message: " + message);
+    System.out.println("M: " + M);
+    System.out.println("Cipher: " + outputString);
+
+    try {
+      ciphertext.write(outputString.getBytes());
+    } catch (IOException e1) {
+      System.out.println("Failed at FileOutputStream");
+      e1.printStackTrace();
+    }
+
+    try {
+      cleartext.close();
+      ciphertext.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 
-  public void encipher(FileInputStream cleartext, FileOutputStream ciphertext) {
+  public void decipher(FileInputStream ciphertext, FileOutputStream cleartext) {
+
+    keyGenerator();
+
+    String cipherTextString = Helper.getTextAsString(ciphertext);
+    String[] cipherStringArray = cipherTextString.split(" ");
+
+    BigInteger[] C = new BigInteger[] { new BigInteger(cipherStringArray[0]), new BigInteger(cipherStringArray[1]) };
+    BigInteger M = decrypt(C);
+
+    String outputString = M.toString();
+    System.out.println("Cipher: " + cipherTextString);
+    System.out.println("Cipher Array: " + C[0] + " " + C[1]);
+    System.out.println("Clear: " + outputString);
+
+
+    try {
+      cleartext.write(outputString.getBytes());
+    } catch (IOException e1) {
+      System.out.println("Failed at FileOutputStream");
+      e1.printStackTrace();
+    }
+
+    try {
+      cleartext.close();
+      ciphertext.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
 
   }
 
@@ -73,8 +128,8 @@ public final class ElGamalCipher extends BlockCipher {
     Random sc = new SecureRandom();
     return BigInteger.probablePrime(64, sc);
   }
-  
-  public BigInteger x(){
+
+  public BigInteger x() {
     return new BigInteger("12345678901234567890");
   }
 
