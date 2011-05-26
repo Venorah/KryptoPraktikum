@@ -77,7 +77,7 @@ public final class ElGamalCipher extends BlockCipher {
 
   public void decipher(FileInputStream ciphertext, FileOutputStream cleartext) {
 
-    keyGenerator();
+//    keyGenerator();
 
     String cipherTextString = Helper.getTextAsString(ciphertext);
     String[] cipherStringArray = cipherTextString.split(" ");
@@ -142,6 +142,20 @@ public final class ElGamalCipher extends BlockCipher {
 
     priv = x;
     pub = new BigInteger[] { p, g, y };
+  }
+  
+  public void gammel(String message){
+    keyGenerator();
+
+    // message.length <= 8 . Wenn groesser als 8, dann kommt
+    // was falsches raus o.O
+    BigInteger M = Helper.stringToBigInteger(message);
+    BigInteger[] C = encrypt(M);
+    
+    BigInteger M2 = decrypt(C);
+    
+    String output = new String(M2.toByteArray());
+    System.out.println("Clear: " + output);
   }
 
   public BigInteger[] encrypt(BigInteger message) {
