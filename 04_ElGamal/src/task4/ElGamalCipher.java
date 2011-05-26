@@ -126,7 +126,7 @@ public final class ElGamalCipher extends BlockCipher {
 
   public BigInteger p() {
     Random sc = new SecureRandom();
-    return BigInteger.probablePrime(64, sc);
+    return BigInteger.probablePrime(512, sc);
   }
 
   public BigInteger x() {
