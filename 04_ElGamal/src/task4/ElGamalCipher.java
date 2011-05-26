@@ -85,7 +85,7 @@ public final class ElGamalCipher extends BlockCipher {
     BigInteger[] C = new BigInteger[] { new BigInteger(cipherStringArray[0]), new BigInteger(cipherStringArray[1]) };
     BigInteger M = decrypt(C);
 
-    String outputString = M.toString();
+    String outputString = new String(M.toByteArray());
     System.out.println("Cipher: " + cipherTextString);
     System.out.println("Cipher Array: " + C[0] + " " + C[1]);
     System.out.println("Clear: " + outputString);
