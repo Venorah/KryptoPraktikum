@@ -97,7 +97,7 @@ public final class ElGamalCipher extends BlockCipher {
     BigInteger y = pub[2];
 
     BigInteger M = message;
-    BigInteger k = new BigInteger(64, sc);
+    BigInteger k = new BigInteger(512, sc);
 
     BigInteger a = g.modPow(k, p);
     BigInteger b = M.multiply(y.modPow(k, p)).mod(p);
