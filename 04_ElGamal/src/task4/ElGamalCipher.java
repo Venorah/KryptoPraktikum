@@ -50,7 +50,7 @@ public final class ElGamalCipher extends BlockCipher {
     keyGenerator();
 
     String message = Helper.getTextAsString(cleartext);
-    BigInteger M = Helper.stringToBigInteger(message);
+    BigInteger M = new BigInteger(message.getBytes());
     
     BigInteger[] C = encrypt(M);
 
@@ -149,7 +149,7 @@ public final class ElGamalCipher extends BlockCipher {
 
     // message.length <= 8 . Wenn groesser als 8, dann kommt
     // was falsches raus o.O
-    BigInteger M = Helper.stringToBigInteger(message);
+    BigInteger M = new BigInteger(message.getBytes());
     BigInteger[] C = encrypt(M);
     
     BigInteger M2 = decrypt(C);
