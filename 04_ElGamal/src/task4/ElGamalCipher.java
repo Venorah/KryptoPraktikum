@@ -30,6 +30,8 @@ import de.tubs.cs.iti.jcrypt.chiffre.BlockCipher;
  */
 public final class ElGamalCipher extends BlockCipher {
 
+  String keyString;
+  
   public BigInteger[] pub;
   public BigInteger priv;
 
@@ -38,18 +40,45 @@ public final class ElGamalCipher extends BlockCipher {
   }
 
   public void readKey(BufferedReader key) {
+    try {
 
+      keyString = new String(key.readLine()); //*
+
+      Logger("Reading Information: ");
+      Logger("+--KeyString: " + keyString);
+
+      key.close();
+    } catch (IOException e) {
+      System.err.println("Abbruch: Fehler beim Lesen oder Schließen der " + "Schlüsseldatei.");
+      e.printStackTrace();
+      System.exit(1);
+    } catch (NumberFormatException e) {
+      System.err.println("Abbruch: Fehler beim Parsen eines Wertes aus der " + "Schlüsseldatei.");
+      e.printStackTrace();
+      System.exit(1);
+    }
   }
 
   public void writeKey(BufferedWriter key) {
+    try {
+      key.write(keyString);
 
+      Logger("Writing Information: ");
+      Logger("+--Key: " + keyString);
+
+      key.close();
+    } catch (IOException e) {
+      System.out.println("Abbruch: Fehler beim Schreiben oder Schließen der " + "Schlüsseldatei.");
+      e.printStackTrace();
+      System.exit(1);
+    }
   }
 
   public void encipher(FileInputStream cleartext, FileOutputStream ciphertext) {
 
     keyGenerator();
 
-    String message = Helper.getTextAsString(cleartext);
+    String message = getTextAsString(cleartext);
     BigInteger M = new BigInteger(message.getBytes());
     
     BigInteger[] C = encrypt(M);
@@ -79,7 +108,7 @@ public final class ElGamalCipher extends BlockCipher {
 
 //    keyGenerator();
 
-    String cipherTextString = Helper.getTextAsString(ciphertext);
+    String cipherTextString = getTextAsString(ciphertext);
     String[] cipherStringArray = cipherTextString.split(" ");
 
     BigInteger[] C = new BigInteger[] { new BigInteger(cipherStringArray[0]), new BigInteger(cipherStringArray[1]) };
@@ -136,7 +165,7 @@ public final class ElGamalCipher extends BlockCipher {
   public void keyGenerator() {
 
     BigInteger p = p();
-    BigInteger g = new BigInteger("3");
+    BigInteger g = new BigInteger("3");  //TODO
     BigInteger x = x();
     BigInteger y = g.modPow(x, p);
 
@@ -188,46 +217,24 @@ public final class ElGamalCipher extends BlockCipher {
 
     return M;
   }
+  
+  public static String getTextAsString(FileInputStream cleartext) {
+    StringBuffer clearTextBuffer = new StringBuffer();
 
-  public static void example() {
-    BigInteger p, g, y, x;
-    Random sc = new SecureRandom();
-    x = new BigInteger("12345678901234567890");
-    //
-    // public key calculation
-    //
-    System.out.println("secretKey = " + x);
-    p = BigInteger.probablePrime(64, sc);
-    g = new BigInteger("3");
-    y = g.modPow(x, p);
-    System.out.println("p = " + p);
-    System.out.println("b = " + g);
-    System.out.println("c = " + y);
-    //
-    // Encryption
-    //
-    System.out.println();
-    System.out.println("Starting Encryption");
-    BigInteger M = new BigInteger("666666");
-    BigInteger k = new BigInteger(64, sc);
+    try {
+      int ch = 0;
+      while ((ch = cleartext.read()) != -1) {
+        clearTextBuffer.append((char) ch);
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
 
-    BigInteger a = g.modPow(k, p);
-    BigInteger b = M.multiply(y.modPow(k, p)).mod(p);
-
-    System.out.println("Plaintext = " + M);
-    System.out.println("r = " + k);
-    System.out.println("EC = " + b);
-    System.out.println("b^r mod p = " + a);
-    //
-    // Decryption
-    //
-    System.out.println();
-    System.out.println("Starting Decryption");
-
-    BigInteger exponent = (p.subtract(x)).subtract(new BigInteger("1"));
-    BigInteger z = a.modPow(exponent, p);
-    BigInteger M2 = (z.multiply(b)).mod(p);
-    System.out.println(M2);
+    return clearTextBuffer.toString();
+  }
+  
+  private void Logger(String event) {
+    System.out.println("ElGamal$  " + event);
   }
 
 }
