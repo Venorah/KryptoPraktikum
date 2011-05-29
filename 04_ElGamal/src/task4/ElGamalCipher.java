@@ -13,7 +13,6 @@ package task4;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -24,11 +23,9 @@ import java.io.Writer;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.Random;
-import java.util.StringTokenizer;
 
 import de.tubs.cs.iti.jcrypt.chiffre.BigIntegerUtil;
 import de.tubs.cs.iti.jcrypt.chiffre.BlockCipher;
-import de.tubs.cs.iti.jcrypt.chiffre.BlockCipherUtil;
 
 /**
  * Dummy-Klasse für das ElGamal-Public-Key-Verschlüsselungsverfahren.
@@ -203,95 +200,26 @@ public final class ElGamalCipher extends BlockCipher {
     // read ciphertext
     BigInteger C = readCipher(ciphertext);
 
-    System.out.println(C);
-    System.out.println(p);
+    System.out.println("C: "+C);
+    System.out.println("p: "+p);
     
     BigInteger a = C.mod(p);
-    System.out.println(a);
+    System.out.println("a: "+a);
 
     BigInteger b = C.divide(p);
-    System.out.println(b);
+    System.out.println("b: "+b);
 
     BigInteger exponent = p.subtract(BigInteger.ONE).subtract(x);
-    System.out.println(exponent);
+    System.out.println("exponent: "+exponent);
     BigInteger z = a.modPow(exponent, p); // a^(p-1-x) mod p
 
-    System.out.println(z);
+    System.out.println("z: "+z);
 
     BigInteger M = z.multiply(b).mod(p); // M = z * b mod p
 
-    System.out.println(M);
+    System.out.println("M: "+M);
 
     writeClear(cleartext, M);
-  }
-
-  public BigInteger x() {
-    return new BigInteger("12345678901234567890");
-  }
-
-  public BigInteger r(BigInteger k) {
-    BigInteger r = g.modPow(k, p);
-
-    return r;
-  }
-
-  public BigInteger s(BigInteger M, BigInteger r, BigInteger k_inverse) {
-    BigInteger xr = x.multiply(r);
-    BigInteger s = ((M.subtract(xr)).multiply(k_inverse)).mod(p.subtract(BigInteger.ONE));
-
-    return s;
-  }
-
-  public void gammel(String message) {
-
-    // message.length <= 8 . Wenn groesser als 8, dann kommt
-    // was falsches raus o.O
-    BigInteger M = new BigInteger(message.getBytes());
-    BigInteger[] C = encrypt(M);
-
-    BigInteger M2 = decrypt(C);
-
-    String output = new String(M2.toByteArray());
-    System.out.println("Clear: " + output);
-  }
-
-  public BigInteger[] encrypt(BigInteger message) {
-    Random sc = new SecureRandom();
-
-    BigInteger M = message;
-    BigInteger k = new BigInteger(512, sc);
-
-    BigInteger a = g.modPow(k, p);
-    BigInteger b = M.multiply(y.modPow(k, p)).mod(p);
-
-    return new BigInteger[] { a, b };
-  }
-
-  public BigInteger decrypt(BigInteger[] C) {
-
-    BigInteger a = C[0];
-    BigInteger b = C[1];
-
-    BigInteger exponent = (p.subtract(x)).subtract(new BigInteger("1"));
-    BigInteger z = a.modPow(exponent, p);
-    BigInteger M = (z.multiply(b)).mod(p);
-
-    return M;
-  }
-
-  public static String getTextAsString(FileInputStream cleartext) {
-    StringBuffer clearTextBuffer = new StringBuffer();
-
-    try {
-      int ch = 0;
-      while ((ch = cleartext.read()) != -1) {
-        clearTextBuffer.append((char) ch);
-      }
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-
-    return clearTextBuffer.toString();
   }
 
   private void Logger(String event) {
