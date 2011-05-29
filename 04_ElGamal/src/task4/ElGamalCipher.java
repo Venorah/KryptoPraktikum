@@ -13,12 +13,19 @@ package task4;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.Random;
+import java.util.StringTokenizer;
+
 import de.tubs.cs.iti.jcrypt.chiffre.BigIntegerUtil;
 import de.tubs.cs.iti.jcrypt.chiffre.BlockCipher;
 import de.tubs.cs.iti.jcrypt.chiffre.BlockCipherUtil;
@@ -32,6 +39,8 @@ import de.tubs.cs.iti.jcrypt.chiffre.BlockCipherUtil;
 public final class ElGamalCipher extends BlockCipher {
   String publicKey;
   String privateKey;
+  String publicKeyFile;
+  String privateKeyFile;
 
   // public key
   public BigInteger p;
@@ -84,11 +93,36 @@ public final class ElGamalCipher extends BlockCipher {
   }
 
   public void writeKey(BufferedWriter key) {
+    publicKeyFile = "bla.secr.public";
+    privateKeyFile = "bla.secr.private";
+
+    Writer writer = null;
+
     try {
-      key.write(publicKey);
+      writer = new BufferedWriter(new FileWriter(publicKeyFile));
+      writer.write(publicKey);
+      writer.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+    try {
+      writer = new BufferedWriter(new FileWriter(privateKeyFile));
+      writer.write(privateKey);
+      writer.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+    // write reference to files in key.txt
+    try {
+      key.write(publicKeyFile);
+      key.newLine();
+      key.write(privateKeyFile);
 
       Logger("Writing Information: ");
-      Logger("+--Key: " + publicKey);
+      Logger("+--publicKey: " + publicKey);
+      Logger("+--privateKey: " + privateKey);
 
       key.close();
     } catch (IOException e) {
@@ -100,17 +134,38 @@ public final class ElGamalCipher extends BlockCipher {
 
   public void readKey(BufferedReader key) {
     try {
+      publicKeyFile = key.readLine();
+      privateKeyFile = key.readLine();
 
-      // pubkey
-      p = new BigInteger(key.readLine());
-      g = new BigInteger(key.readLine());
-      y = new BigInteger(key.readLine());
+      BufferedReader reader = null;
+      try {
+        reader = new BufferedReader(new FileReader(publicKeyFile));
 
-      // privateKey = p.toString() + "\n" + g.toString() + "\n" + x.toString();
-      publicKey = p.toString() + "\n" + g.toString() + "\n" + y.toString();
+        // pubkey
+        p = new BigInteger(reader.readLine());
+        g = new BigInteger(reader.readLine());
+        y = new BigInteger(reader.readLine());
+
+        publicKey = p.toString() + "\n" + g.toString() + "\n" + y.toString();
+      } catch (FileNotFoundException e) {
+        e.printStackTrace();
+      }
+      try {
+        reader = new BufferedReader(new FileReader(privateKeyFile));
+
+        // privatekey
+        p = new BigInteger(reader.readLine());
+        g = new BigInteger(reader.readLine());
+        x = new BigInteger(reader.readLine());
+
+        privateKey = p.toString() + "\n" + g.toString() + "\n" + x.toString();
+      } catch (FileNotFoundException e) {
+        e.printStackTrace();
+      }
 
       Logger("Reading Information: ");
-      Logger("+--KeyString: " + publicKey);
+      Logger("+--publicKey: " + publicKey);
+      Logger("+--privateKey: " + privateKey);
 
       key.close();
     } catch (IOException e) {
@@ -139,41 +194,35 @@ public final class ElGamalCipher extends BlockCipher {
     BigInteger a = g.modPow(k, p); // g^k mod p
     BigInteger b = M.multiply(y.modPow(k, p)); // M * y^k mod p
 
-    System.out.println("M "+M);
+    BigInteger C = (a.add(b)).multiply(p);
 
-    BigInteger C = a.add(b).multiply(p);
-
-    System.out.println("C "+C);
-    
     writeCipher(ciphertext, C);
   }
 
   public void decipher(FileInputStream ciphertext, FileOutputStream cleartext) {
+    // read ciphertext
+    BigInteger C = readCipher(ciphertext);
 
-    //
-    // // keyGenerator();
-    //
-    // BigInteger[] C = new BigInteger[] { a, b };
-    // BigInteger M = decrypt(C);
-    //
-    // String outputString = new String(M.toByteArray());
-    // System.out.println("Cipher Array: " + C[0] + " " + C[1]);
-    // System.out.println("Clear: " + outputString);
-    // try {
-    // cleartext.write(outputString.getBytes());
-    // } catch (IOException e1) {
-    // System.out.println("Failed at FileOutputStream");
-    // e1.printStackTrace();
-    // }
-    //
-    // try {
-    // cleartext.close();
-    // ciphertext.close();
-    // } catch (IOException e) {
-    // e.printStackTrace();
-    // }
-    // writeClear(cleartext, M);
+    System.out.println(C);
+    System.out.println(p);
+    
+    BigInteger a = C.mod(p);
+    System.out.println(a);
 
+    BigInteger b = C.divide(p);
+    System.out.println(b);
+
+    BigInteger exponent = p.subtract(BigInteger.ONE).subtract(x);
+    System.out.println(exponent);
+    BigInteger z = a.modPow(exponent, p); // a^(p-1-x) mod p
+
+    System.out.println(z);
+
+    BigInteger M = z.multiply(b).mod(p); // M = z * b mod p
+
+    System.out.println(M);
+
+    writeClear(cleartext, M);
   }
 
   public BigInteger x() {
