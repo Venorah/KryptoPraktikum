@@ -20,7 +20,9 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.Random;
 
+import de.tubs.cs.iti.jcrypt.chiffre.BigIntegerUtil;
 import de.tubs.cs.iti.jcrypt.chiffre.BlockCipher;
+import de.tubs.cs.iti.jcrypt.chiffre.BlockCipherUtil;
 
 /**
  * Dummy-Klasse für das ElGamal-Public-Key-Verschlüsselungsverfahren.
@@ -31,7 +33,7 @@ import de.tubs.cs.iti.jcrypt.chiffre.BlockCipher;
 public final class ElGamalCipher extends BlockCipher {
 
   String keyString;
-  
+
   public BigInteger[] pub;
   public BigInteger priv;
 
@@ -42,7 +44,7 @@ public final class ElGamalCipher extends BlockCipher {
   public void readKey(BufferedReader key) {
     try {
 
-      keyString = new String(key.readLine()); //*
+      keyString = new String(key.readLine()); // *
 
       Logger("Reading Information: ");
       Logger("+--KeyString: " + keyString);
@@ -80,11 +82,11 @@ public final class ElGamalCipher extends BlockCipher {
 
     String message = getTextAsString(cleartext);
     BigInteger M = new BigInteger(message.getBytes());
-    
+
     BigInteger[] C = encrypt(M);
 
     String outputString = C[0].toString() + " " + C[1].toString();
-    
+
     System.out.println("message: " + message);
     System.out.println("M: " + M);
     System.out.println("Cipher: " + outputString);
@@ -106,7 +108,7 @@ public final class ElGamalCipher extends BlockCipher {
 
   public void decipher(FileInputStream ciphertext, FileOutputStream cleartext) {
 
-//    keyGenerator();
+    // keyGenerator();
 
     String cipherTextString = getTextAsString(ciphertext);
     String[] cipherStringArray = cipherTextString.split(" ");
@@ -118,7 +120,6 @@ public final class ElGamalCipher extends BlockCipher {
     System.out.println("Cipher: " + cipherTextString);
     System.out.println("Cipher Array: " + C[0] + " " + C[1]);
     System.out.println("Clear: " + outputString);
-
 
     try {
       cleartext.write(outputString.getBytes());
@@ -136,7 +137,7 @@ public final class ElGamalCipher extends BlockCipher {
 
   }
 
-  public BigInteger Fastexp(BigInteger base, BigInteger exp, BigInteger n) {
+  public BigInteger fastExp(BigInteger base, BigInteger exp, BigInteger n) {
     BigInteger res = BigInteger.ONE;
     BigInteger TWO = new BigInteger("2", 10);
 
@@ -153,36 +154,54 @@ public final class ElGamalCipher extends BlockCipher {
     return res;
   }
 
-  public BigInteger p() {
+  public BigInteger randomPrime() {
     Random sc = new SecureRandom();
-    return BigInteger.probablePrime(512, sc);
+//    BigInteger q = new Big
+    
+//    return BigInteger.probablePrime(512, sc);
   }
 
   public BigInteger x() {
     return new BigInteger("12345678901234567890");
   }
 
-  public void keyGenerator() {
+  public BigInteger findGenerator(BigInteger p, BigInteger n) {
+    Random sc = new SecureRandom();
+    BigInteger a = BigIntegerUtil.randomSmallerThan(p, sc);
+    
+    
+  }
 
-    BigInteger p = p();
-    BigInteger g = new BigInteger("3");  //TODO
+  public void keyGenerator() {
+    BigInteger p_1 = null;
+    BigInteger t = null;
+
+    // while(p_1 < t) {
+    BigInteger p = randomPrime();
+    p_1 = p.subtract(BigInteger.ONE);
+
+    // }
+    
+//    BigInteger g = findGenerator(p, n);
+
+    BigInteger g = new BigInteger("3"); // TODO
     BigInteger x = x();
     BigInteger y = g.modPow(x, p);
 
     priv = x;
     pub = new BigInteger[] { p, g, y };
   }
-  
-  public void gammel(String message){
+
+  public void gammel(String message) {
     keyGenerator();
 
     // message.length <= 8 . Wenn groesser als 8, dann kommt
     // was falsches raus o.O
     BigInteger M = new BigInteger(message.getBytes());
     BigInteger[] C = encrypt(M);
-    
+
     BigInteger M2 = decrypt(C);
-    
+
     String output = new String(M2.toByteArray());
     System.out.println("Clear: " + output);
   }
@@ -217,7 +236,7 @@ public final class ElGamalCipher extends BlockCipher {
 
     return M;
   }
-  
+
   public static String getTextAsString(FileInputStream cleartext) {
     StringBuffer clearTextBuffer = new StringBuffer();
 
@@ -232,7 +251,7 @@ public final class ElGamalCipher extends BlockCipher {
 
     return clearTextBuffer.toString();
   }
-  
+
   private void Logger(String event) {
     System.out.println("ElGamal$  " + event);
   }
