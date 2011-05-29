@@ -191,8 +191,7 @@ public final class ElGamalCipher extends BlockCipher {
       BigInteger a = g.modPow(k, p); // g^k mod p
       BigInteger b = M.multiply(y.modPow(k, p)).mod(p); // (M * y^k mod p) mod p
 
-      BigInteger bp = b.multiply(p);
-      BigInteger C = a.add(bp);
+      BigInteger C = a.add(b.multiply(p)); // a + b*p
 
       writeCipher(ciphertext, C);
 
