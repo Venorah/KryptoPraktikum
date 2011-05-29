@@ -184,42 +184,39 @@ public final class ElGamalCipher extends BlockCipher {
 
     // read cleartext
     BigInteger M = readClear(cleartext, L);
+    while (M != null) {
+      // random two <= k < p-1
+      BigInteger k = BigIntegerUtil.randomBetween(BigIntegerUtil.TWO, p.subtract(BigIntegerUtil.ONE), sc);
 
-    // random two <= k < p-1
-    BigInteger k = BigIntegerUtil.randomBetween(BigIntegerUtil.TWO, p.subtract(BigIntegerUtil.ONE), sc);
+      BigInteger a = g.modPow(k, p); // g^k mod p
+      BigInteger b = M.multiply(y.modPow(k, p)).mod(p); // (M * y^k mod p) mod p
 
-    BigInteger a = g.modPow(k, p); // g^k mod p
-    BigInteger b = M.multiply(y.modPow(k, p)); // M * y^k mod p
+      BigInteger bp = b.multiply(p);
+      BigInteger C = a.add(bp);
 
-    BigInteger C = (a.add(b)).multiply(p);
+      writeCipher(ciphertext, C);
 
-    writeCipher(ciphertext, C);
+      M = readClear(cleartext, L);
+    }
+
   }
 
   public void decipher(FileInputStream ciphertext, FileOutputStream cleartext) {
     // read ciphertext
     BigInteger C = readCipher(ciphertext);
+    while (C != null) {
+      BigInteger a = C.mod(p);
+      BigInteger b = C.divide(p);
 
-    System.out.println("C: "+C);
-    System.out.println("p: "+p);
-    
-    BigInteger a = C.mod(p);
-    System.out.println("a: "+a);
+      BigInteger exponent = p.subtract(BigInteger.ONE).subtract(x);
+      BigInteger z = a.modPow(exponent, p); // a^(p-1-x) mod p
 
-    BigInteger b = C.divide(p);
-    System.out.println("b: "+b);
+      BigInteger M = z.multiply(b).mod(p); // M = z * b mod p
 
-    BigInteger exponent = p.subtract(BigInteger.ONE).subtract(x);
-    System.out.println("exponent: "+exponent);
-    BigInteger z = a.modPow(exponent, p); // a^(p-1-x) mod p
-
-    System.out.println("z: "+z);
-
-    BigInteger M = z.multiply(b).mod(p); // M = z * b mod p
-
-    System.out.println("M: "+M);
-
-    writeClear(cleartext, M);
+      writeClear(cleartext, M);
+      
+      C = readCipher(ciphertext);
+    }
   }
 
   private void Logger(String event) {
