@@ -30,38 +30,87 @@ import de.tubs.cs.iti.jcrypt.chiffre.BlockCipherUtil;
  * @version 1.1 - Sat Apr 03 22:06:35 CEST 2010
  */
 public final class ElGamalCipher extends BlockCipher {
-  String keyString;
+  String publicKey;
+  String privateKey;
 
   // public key
   public BigInteger p;
   public BigInteger g;
   public BigInteger y;
-  
+
   // private key
   public BigInteger x;
 
   public void makeKey() {
     Random sc = new SecureRandom();
 
-    choosePrimeAndGenerator();
+    getPrimeAndGenerator();
 
-    // 1 <= x < p-1
+    // private key 1 <= x < p-1
     x = BigIntegerUtil.randomBetween(BigIntegerUtil.ONE, p.subtract(BigIntegerUtil.ONE), sc);
 
-    y = fastExp(g, x, p);
+    y = g.modPow(x, p);
 
-    System.out.println("private key = " + x.toString());
-    System.out.println("public key = (" + p.toString() + ", " + g.toString() + ", " + y.toString());
+    privateKey = p.toString() + "\n" + g.toString() + "\n" + x.toString();
+    publicKey = p.toString() + "\n" + g.toString() + "\n" + y.toString();
 
+    System.out.println("private key = " + privateKey);
+    System.out.println("public key = (" + publicKey + ")");
+
+  }
+
+  public void getPrimeAndGenerator() {
+    Random sc = new SecureRandom();
+    int k = 512; // prime number with k=512 bits
+    int certainty = 100; // The probability that the new BigInteger represents a prime number will
+                         // exceed (1-1/2^certainty)
+
+    p = null;
+    BigInteger q = null;
+    do {
+      q = new BigInteger(k - 1, certainty, sc);
+      p = q.multiply(BigIntegerUtil.TWO).add(BigIntegerUtil.ONE); // secure prime p = 2q+1
+    } while (!p.isProbablePrime(certainty));
+
+    BigInteger MINUS_ONE = BigInteger.ONE.negate().mod(p); // -1 mod p
+
+    g = null;
+    BigInteger factor = null;
+    do {
+      // 2 <= g < p-1
+      g = BigIntegerUtil.randomBetween(BigIntegerUtil.TWO, p.subtract(BigIntegerUtil.ONE), sc);
+      factor = g.modPow(q, p);
+    } while (!factor.equals(MINUS_ONE));
+  }
+
+  public void writeKey(BufferedWriter key) {
+    try {
+      key.write(publicKey);
+
+      Logger("Writing Information: ");
+      Logger("+--Key: " + publicKey);
+
+      key.close();
+    } catch (IOException e) {
+      System.out.println("Abbruch: Fehler beim Schreiben oder Schließen der " + "Schlüsseldatei.");
+      e.printStackTrace();
+      System.exit(1);
+    }
   }
 
   public void readKey(BufferedReader key) {
     try {
 
-      keyString = new String(key.readLine()); // *
+      // pubkey
+      p = new BigInteger(key.readLine());
+      g = new BigInteger(key.readLine());
+      y = new BigInteger(key.readLine());
+
+      // privateKey = p.toString() + "\n" + g.toString() + "\n" + x.toString();
+      publicKey = p.toString() + "\n" + g.toString() + "\n" + y.toString();
 
       Logger("Reading Information: ");
-      Logger("+--KeyString: " + keyString);
+      Logger("+--KeyString: " + publicKey);
 
       key.close();
     } catch (IOException e) {
@@ -75,40 +124,28 @@ public final class ElGamalCipher extends BlockCipher {
     }
   }
 
-  public void writeKey(BufferedWriter key) {
-    try {
-      key.write(keyString);
-
-      Logger("Writing Information: ");
-      Logger("+--Key: " + keyString);
-
-      key.close();
-    } catch (IOException e) {
-      System.out.println("Abbruch: Fehler beim Schreiben oder Schließen der " + "Schlüsseldatei.");
-      e.printStackTrace();
-      System.exit(1);
-    }
-  }
-
   public void encipher(FileInputStream cleartext, FileOutputStream ciphertext) {
+    Random sc = new SecureRandom();
 
-    keyGenerator();
+    int Lp = p.bitLength(); // bitlength of p (512 bit)
+    int L = (Lp - 1) / 8; // blocksize
 
-    String message = getTextAsString(cleartext);
-    BigInteger M = new BigInteger(message.getBytes());
+    // read cleartext
+    BigInteger M = readClear(cleartext, L);
 
-    BigInteger[] C = encrypt(M);
+    // random two <= k < p-1
+    BigInteger k = BigIntegerUtil.randomBetween(BigIntegerUtil.TWO, p.subtract(BigIntegerUtil.ONE), sc);
 
-    String outputString = C[0].toString() + " " + C[1].toString();
+    BigInteger a = g.modPow(k, p); // g^k mod p
+    BigInteger b = M.multiply(y.modPow(k, p)); // M * y^k mod p
 
-    System.out.println("message: " + message);
-    System.out.println("M: " + M);
-    System.out.println("Cipher: " + outputString);
+    System.out.println("M "+M);
 
-    BigInteger cipher = (p.multiply(C[1])).add(C[0]);
+    BigInteger C = a.add(b).multiply(p);
 
-    writeCipher(ciphertext, cipher);
-
+    System.out.println("C "+C);
+    
+    writeCipher(ciphertext, C);
   }
 
   public void decipher(FileInputStream ciphertext, FileOutputStream cleartext) {
@@ -122,28 +159,21 @@ public final class ElGamalCipher extends BlockCipher {
     // String outputString = new String(M.toByteArray());
     // System.out.println("Cipher Array: " + C[0] + " " + C[1]);
     // System.out.println("Clear: " + outputString);
-    try {
-      cleartext.write(outputString.getBytes());
-    } catch (IOException e1) {
-      System.out.println("Failed at FileOutputStream");
-      e1.printStackTrace();
-    }
+    // try {
+    // cleartext.write(outputString.getBytes());
+    // } catch (IOException e1) {
+    // System.out.println("Failed at FileOutputStream");
+    // e1.printStackTrace();
+    // }
+    //
+    // try {
+    // cleartext.close();
+    // ciphertext.close();
+    // } catch (IOException e) {
+    // e.printStackTrace();
+    // }
+    // writeClear(cleartext, M);
 
-    try {
-      cleartext.close();
-      ciphertext.close();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-    writeClear(cleartext, M);
-
-  }
-
-  public BigInteger randomPrime() {
-    Random sc = new SecureRandom();
-    // BigInteger q = new Big
-
-    // return BigInteger.probablePrime(512, sc);
   }
 
   public BigInteger x() {
@@ -163,51 +193,7 @@ public final class ElGamalCipher extends BlockCipher {
     return s;
   }
 
-  public BigInteger fastExp(BigInteger base, BigInteger exp, BigInteger mod) {
-    BigInteger res = BigIntegerUtil.ONE;
-
-    while (!exp.equals(BigIntegerUtil.ZERO)) {
-      while ((exp.mod(BigIntegerUtil.TWO)).equals(BigIntegerUtil.ZERO)) {
-        exp = exp.divide(BigIntegerUtil.TWO);
-        base = base.multiply(base).mod(mod);
-      }
-      exp = exp.subtract(BigIntegerUtil.ONE);
-      res = res.multiply(base).mod(mod);
-    }
-    System.out.println(base.toString() + "^" + exp.toString() + " mod " + exp.toString() + " = " + res);
-
-    return res;
-  }
-
-  /**
-   * fertig
-   */
-  public void choosePrimeAndGenerator() {
-    Random sc = new SecureRandom();
-    int k = 512; // prime number with k=512 bits
-    int certainty = 100; // The probability that the new BigInteger represents a prime number will
-                         // exceed (1-1/2^certainty)
-
-    BigInteger q = null;
-    p = null;
-    do {
-      q = new BigInteger(k - 1, certainty, sc);
-      p = q.multiply(BigIntegerUtil.TWO).add(BigIntegerUtil.ONE); // secure prime p = 2q+1
-    } while (!p.isProbablePrime(certainty));
-
-    BigInteger factor, minusOne = null;
-    g = null;
-    do {
-      // 2 <= g < p-1
-      g = BigIntegerUtil.randomBetween(BigIntegerUtil.TWO, p.subtract(BigIntegerUtil.ONE), sc);
-
-      factor = fastExp(g, q, p);
-      minusOne = new BigInteger("-1", 10).mod(p);
-    } while (factor != minusOne);
-  }
-
   public void gammel(String message) {
-    keyGenerator();
 
     // message.length <= 8 . Wenn groesser als 8, dann kommt
     // was falsches raus o.O
