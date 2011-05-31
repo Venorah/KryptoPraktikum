@@ -17,14 +17,10 @@ import java.io.BufferedWriter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.SecureRandom;
-import java.util.LinkedList;
 import java.util.Random;
-
 import de.tubs.cs.iti.jcrypt.chiffre.BigIntegerUtil;
 import de.tubs.cs.iti.jcrypt.chiffre.HashFunction;
 
@@ -36,81 +32,16 @@ import de.tubs.cs.iti.jcrypt.chiffre.HashFunction;
  */
 public final class Fingerprint extends HashFunction {
 
-  public BigInteger p;
-  public BigInteger g1;
-  public BigInteger g2;
-  String paramString;
-  int Lp = 512;
-  int Lq = 511;
+  private BigInteger ZERO = BigInteger.ZERO;
+  private BigInteger ONE = BigInteger.ONE;
+  private BigInteger TWO = BigIntegerUtil.TWO;
 
-  BigInteger ZERO = BigInteger.ZERO;
-  BigInteger ONE = BigInteger.ONE;
-  BigInteger TWO = BigIntegerUtil.TWO;
-
-  /**
-   * Berechnet den Hash-Wert des durch den FileInputStream <code>cleartext</code> gegebenen
-   * Klartextes und schreibt das Ergebnis in den FileOutputStream <code>ciphertext</code>.
-   * 
-   * @param cleartext
-   *          Der FileInputStream, der den Klartext liefert.
-   * @param ciphertext
-   *          Der FileOutputStream, in den der Hash-Wert geschrieben werden soll.
-   */
-  public void hash(FileInputStream cleartext, FileOutputStream ciphertext) {
-    String message = getTextAsString(cleartext);
-    BigInteger bigIntegerMessage = new BigInteger(message.getBytes());
-
-    System.out.println(bigIntegerMessage.bitLength() + "");
-
-    System.out.println(paramString);
-
-    System.out.println(Lp + "  " + Lq);
-
-    int m = 2 * (Lq - 1);
-    int t = Lp;
-    int n = bigIntegerMessage.bitLength();
-
-    int k = (int) (Math.ceil((double) n / (double) (m - t - 1)));
-
-    int Lx = m - t - 1;
-
-    System.out.println(Lx + "");
-
-    BigInteger[] x = splitMessage(bigIntegerMessage, Lx, k);
-
-    BigInteger[] y = x.clone();
-
-    int Lxk = x[k - 1].bitLength();
-    int d = Lx - Lxk;
-
-    y[k - 1] = x[k - 1].shiftLeft(d);
-
-    BigInteger g[] = new BigInteger[k];
-
-    // g[0] = h();
-    for (int i = 0; i < k; i++) {
-      if (i == k - 1) {
-
-      } else {
-
-      }
-    }
-
-    // for
-
-    System.out.println(k + "");
-
-  }
-
-  public BigInteger h(BigInteger input, int k) {
-    BigInteger x2 = // der rechte teil von input
-    BigInteger x1 = // der linke teil
-    BigInteger g1x1 = g1.modPow(x1, p);
-    BigInteger g2x2 = g2.modPow(x2, p);
-
-    BigInteger hash = g1x1.multiply(g2x2).mod(p);
-    return hash;
-  }
+  private BigInteger p;
+  private BigInteger g1;
+  private BigInteger g2;
+  private String paramString;
+  private int Lp = 512;
+  private int Lq = 511;
 
   /**
    * Erzeugt neue Parameter.
@@ -178,20 +109,6 @@ public final class Fingerprint extends HashFunction {
   }
 
   /**
-   * Berechnet den Hash-Wert des durch den FileInputStream <code>cleartext</code> gegebenen
-   * Klartextes und vergleicht das Ergebnis mit dem durch den FileInputStream
-   * <code>ciphertext</code> gelieferten Wert.
-   * 
-   * @param ciphertext
-   *          Der FileInputStream, der den zu prüfenden Hash-Wert liefert.
-   * @param cleartext
-   *          Der FileInputStream, der den Klartext liefert, dessen Hash-Wert berechnet werden soll.
-   */
-  public void verify(FileInputStream ciphertext, FileInputStream cleartext) {
-
-  }
-
-  /**
    * Schreibt die Parameter mit dem Writer <code>param</code>.
    * 
    * @param param
@@ -208,7 +125,167 @@ public final class Fingerprint extends HashFunction {
     }
   }
 
-  public static String getTextAsString(FileInputStream cleartext) {
+  /**
+   * Berechnet den Hash-Wert des durch den FileInputStream <code>cleartext</code> gegebenen
+   * Klartextes und schreibt das Ergebnis in den FileOutputStream <code>ciphertext</code>.
+   * 
+   * @param cleartext
+   *          Der FileInputStream, der den Klartext liefert.
+   * @param ciphertext
+   *          Der FileOutputStream, in den der Hash-Wert geschrieben werden soll.
+   */
+  public void hash(FileInputStream cleartext, FileOutputStream ciphertext) {
+    String messageString = getTextAsString(cleartext);
+    BigInteger message = new BigInteger(messageString.getBytes());
+
+    Logger("message.bitLength()=" + message.bitLength());
+    // Logger(paramString);
+    Logger("Lp=" + Lp + "  " + " Lq=" + Lq);
+
+    BigInteger hash = computeHash(message);
+    Logger("Hash: " + hash);
+
+  }
+
+  /**
+   * Berechnet den Hash-Wert des durch den FileInputStream <code>cleartext</code> gegebenen
+   * Klartextes und vergleicht das Ergebnis mit dem durch den FileInputStream
+   * <code>ciphertext</code> gelieferten Wert.
+   * 
+   * @param ciphertext
+   *          Der FileInputStream, der den zu prüfenden Hash-Wert liefert.
+   * @param cleartext
+   *          Der FileInputStream, der den Klartext liefert, dessen Hash-Wert berechnet werden soll.
+   */
+  public void verify(FileInputStream ciphertext, FileInputStream cleartext) {
+
+    String hashString = getTextAsString(ciphertext);
+    BigInteger hash = new BigInteger(hashString.getBytes());
+
+    String messageString = getTextAsString(cleartext);
+    BigInteger message = new BigInteger(messageString.getBytes());
+
+    Logger("hash.bitLength()=" + hash.bitLength());
+    Logger("message.bitLength()=" + message.bitLength());
+    // Logger(paramString);
+    Logger("Lp=" + Lp + "  " + " Lq=" + Lq);
+
+    BigInteger hash2 = computeHash(message);
+
+    Logger("Hash1: " + hash);
+    Logger("Hash2: " + hash2);
+
+    if (hash.compareTo(hash2) == 0) {
+      Logger("Message verified");
+    } else {
+      Logger("Message verification failed");
+    }
+
+  }
+
+  /**
+   * 
+   * @param message
+   * @return
+   */
+  private BigInteger computeHash(BigInteger message) {
+    int m = 2 * (Lq - 1);
+    int t = Lp;
+    int n = message.bitLength();
+    int k = (int) (Math.ceil((double) n / (double) (m - t - 1)));
+    int Lx = m - t - 1;
+    Logger("m=" + m + " t=" + t + " n=" + n + " k=" + k + " Lx=" + Lx);
+
+    BigInteger[] x = splitMessage(message, Lx, k);
+    Logger("x :" + ArrayLogger(x));
+
+    /* Part (1) of Algorithm 6.1 */
+    BigInteger[] y = new BigInteger[k + 1]; // y+1 wird noch gebraucht
+    for (int i = 0; i <= k - 2; i++) {
+      y[i] = x[i];
+    }
+    Logger("y0:" + ArrayLogger(x));
+
+    /* Part (2) of Algorithm 6.1 */
+    int Lxk = x[k - 1].bitLength();
+    int d = Lx - Lxk;
+    Logger("Lx=" + Lx + " Lxk=" + Lxk + " d=" + d);
+    BigInteger yk_minus1 = y[k - 1];
+    y[k - 1] = x[k - 1].shiftLeft(d);
+    Logger("BEFORE: y[k-1].bitLength()=" + yk_minus1.bitLength() + "AFTER: y[k-1].bitLength()=" + y[k - 1].bitLength());
+    Logger("y1:" + ArrayLogger(x));
+
+    /* Part (3) of Algorithm 6.1 */
+    y[k] = new BigInteger(d + ""); // y[k+1] ausm Buch
+    Logger("y2:" + ArrayLogger(x));
+
+    /* Part (4) of Algorithm 6.1 */
+    BigInteger g = ZERO; // Kein Array, soll rekursiv sein
+    g = h(y[0], Lx);
+
+    /* Part (5) of Algorithm 6.1 */
+    for (int i = 0; i <= k - 1; i++) {
+      g = (g.shiftLeft(1)).add(ONE);
+      g = (g.shiftLeft(y[i + 1].bitLength())).add(y[i + 1]);
+      g = h(g, Lx);
+    }
+
+    return g;
+  }
+
+  /**
+   * 
+   * @param message
+   * @param k
+   * @return
+   */
+  private BigInteger h(BigInteger message, int k) {
+
+    BigInteger x1 = message.shiftRight(k);
+    BigInteger x2 = message.xor(x1.shiftLeft(k));
+
+    BigInteger g1x1 = g1.modPow(x1, p);
+    BigInteger g2x2 = g2.modPow(x2, p);
+
+    BigInteger hash = (g1x1.multiply(g2x2)).mod(p);
+    return hash;
+  }
+
+  /**
+   * 
+   * @param message
+   * @param blockLength
+   * @param k
+   * @return
+   */
+  private BigInteger[] splitMessage(BigInteger message, int blockLength, int k) {
+    BigInteger[] output = new BigInteger[k];
+
+    int counter = k - 1;
+    while (message.bitLength() > blockLength) {
+
+      // 101 11001100.shiftRight(8) = 101
+      // 101.shiftLeft(8) = 101 000000000
+      // 101 11001100.xor(101 000000000) = 000 11001100
+      BigInteger removedLowestBits = (message.shiftRight(blockLength)).shiftLeft(blockLength);
+      output[counter--] = message.xor(removedLowestBits);
+
+      message = message.shiftRight(blockLength);
+    }
+
+    if (message.bitLength() != 0) {
+      output[counter] = message;
+    }
+
+    return output;
+  }
+
+  /**
+   * 
+   * @param cleartext
+   * @return
+   */
+  private static String getTextAsString(FileInputStream cleartext) {
     StringBuffer clearTextBuffer = new StringBuffer();
 
     try {
@@ -222,60 +299,31 @@ public final class Fingerprint extends HashFunction {
 
     return clearTextBuffer.toString();
   }
-  
-  public BigInteger[] splitMessage(BigInteger message, int blockLength, int k) {
-    BigInteger[] output = new BigInteger[k];
-    BigInteger max = generateMaxBigInteger(blockLength);
 
-    int counter = 0;
-    while (message.bitLength() > blockLength) {
-      output[counter] = message.and(max);
-      message.shiftRight(blockLength);
-    }
-
-    if (message.bitLength() != 0) {
-      output[counter] = message;
-    }
-
-    boolean debug = true;
-    if (debug == true) {
-      String fields = "";
-      for (int i = 0; i < output.length; i++) {
-        fields += output[i] + " ";
-      }
-      System.out.println("splitMessage: message=" + message + " blockLength=" + blockLength + "k=" + k);
-      System.out.println("splitMessage: " + fields);
-    }
-
-    return output;
+  /**
+   * 
+   * @param event
+   */
+  private void Logger(String event) {
+    System.out.println("#$  " + event);
   }
 
-  public static BigInteger generateMaxBigInteger(int bits) {
+  /**
+   * 
+   * @param array
+   * @return
+   */
+  private String ArrayLogger(BigInteger[] array) {
+    String output = "";
+    for (int i = 0; i < array.length; i++) {
+      BigInteger currentValue = array[i];
 
-    int shift = 0;
-    BigInteger output = new BigInteger("0");
-    BigInteger round = new BigInteger("0");
-    BigInteger val = new BigInteger("1");
-
-    for (int i = 0; i < bits; i++) {
-
-      int j = i % 8;
-
-      if (i != 0 && (i % 8) == 0) {
-        round = round.shiftLeft(shift * 8);
-        output = output.add(round);
-
-        round = new BigInteger("0");
-        shift++;
+      if (currentValue == null) {
+        output += "[" + i + "]" + "----  ";
+      } else {
+        output += "[" + i + "]" + currentValue + "  ";
       }
-
-      val = new BigInteger("1");
-      val = val.shiftLeft(j);
-      round = round.add(val);
     }
-
-    round = round.shiftLeft(shift * 8);
-    output = output.add(round);
 
     return output;
   }
