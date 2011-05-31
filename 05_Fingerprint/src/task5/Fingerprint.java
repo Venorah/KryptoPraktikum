@@ -144,6 +144,20 @@ public final class Fingerprint extends HashFunction {
 
     BigInteger hash = computeHash(message);
     Logger("Hash: " + hash);
+    
+    try {
+      ciphertext.write(hash.toString().getBytes());
+    } catch (IOException e1) {
+      System.out.println("Failed at FileOutputStream");
+      e1.printStackTrace();
+    }
+
+    try {
+      cleartext.close();
+      ciphertext.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
 
   }
 
@@ -160,7 +174,7 @@ public final class Fingerprint extends HashFunction {
   public void verify(FileInputStream ciphertext, FileInputStream cleartext) {
 
     String hashString = getTextAsString(ciphertext);
-    BigInteger hash = new BigInteger(hashString.getBytes());
+    BigInteger hash = new BigInteger(hashString);
 
     String messageString = getTextAsString(cleartext);
     BigInteger message = new BigInteger(messageString.getBytes());
@@ -201,10 +215,10 @@ public final class Fingerprint extends HashFunction {
 
     /* Part (1) of Algorithm 6.1 */
     BigInteger[] y = new BigInteger[k + 1]; // y+1 wird noch gebraucht
-    for (int i = 0; i <= k - 2; i++) {
+    for (int i = 0; i <= k - 1; i++) {
       y[i] = x[i];
     }
-    Logger("y0:" + ArrayLogger(x));
+    Logger("y0:" + ArrayLogger(y));
 
     /* Part (2) of Algorithm 6.1 */
     int Lxk = x[k - 1].bitLength();
@@ -212,12 +226,12 @@ public final class Fingerprint extends HashFunction {
     Logger("Lx=" + Lx + " Lxk=" + Lxk + " d=" + d);
     BigInteger yk_minus1 = y[k - 1];
     y[k - 1] = x[k - 1].shiftLeft(d);
-    Logger("BEFORE: y[k-1].bitLength()=" + yk_minus1.bitLength() + "AFTER: y[k-1].bitLength()=" + y[k - 1].bitLength());
-    Logger("y1:" + ArrayLogger(x));
+    Logger("BEFORE: y[k-1].bitLength()=" + yk_minus1.bitLength() + " =.= AFTER: y[k-1].bitLength()=" + y[k - 1].bitLength());
+    Logger("y1:" + ArrayLogger(y));
 
     /* Part (3) of Algorithm 6.1 */
     y[k] = new BigInteger(d + ""); // y[k+1] ausm Buch
-    Logger("y2:" + ArrayLogger(x));
+    Logger("y2:" + ArrayLogger(y));
 
     /* Part (4) of Algorithm 6.1 */
     BigInteger g = ZERO; // Kein Array, soll rekursiv sein
