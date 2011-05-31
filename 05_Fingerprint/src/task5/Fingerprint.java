@@ -40,7 +40,7 @@ public final class Fingerprint extends HashFunction {
   public BigInteger g1;
   public BigInteger g2;
   String paramString;
-  int Lp = p.bitLength();
+  int Lp = 512;
   int Lq = 511;
 
   BigInteger ZERO = BigInteger.ZERO;
@@ -59,9 +59,8 @@ public final class Fingerprint extends HashFunction {
   public void hash(FileInputStream cleartext, FileOutputStream ciphertext) {
     String message = getTextAsString(cleartext);
     BigInteger bigIntegerMessage = new BigInteger(message.getBytes());
-    
-    System.out.println(bigIntegerMessage.bitLength()+"");
-    
+
+    System.out.println(bigIntegerMessage.bitLength() + "");
 
     System.out.println(paramString);
 
@@ -69,8 +68,19 @@ public final class Fingerprint extends HashFunction {
 
     int m = 2 * (Lq - 1);
     int t = Lp;
+    int n = bigIntegerMessage.bitLength();
 
-    System.out.println(m + "  " + t);
+    int k = (int) (Math.ceil((double) n / (double) (m - t - 1)));
+
+    int Lx = m - t - 1;
+    
+    System.out.println(Lx+"");
+    
+    BigInteger[] x = new BigInteger[k];
+    
+//    for 
+
+    System.out.println(k + "");
 
   }
 
@@ -90,7 +100,7 @@ public final class Fingerprint extends HashFunction {
    */
   public void makeParam() {
     Random sc = new SecureRandom();
-    int k = 512; // prime number with k=512 bits
+    int k = Lp; // prime number with k=512 bits
     int certainty = 100; // The probability that the new BigInteger represents a prime number will
                          // exceed (1-1/2^certainty)
 
@@ -158,7 +168,7 @@ public final class Fingerprint extends HashFunction {
    *          Der FileInputStream, der den Klartext liefert, dessen Hash-Wert berechnet werden soll.
    */
   public void verify(FileInputStream ciphertext, FileInputStream cleartext) {
-    
+
   }
 
   /**
@@ -177,7 +187,7 @@ public final class Fingerprint extends HashFunction {
       e.printStackTrace();
     }
   }
-  
+
   public static String getTextAsString(FileInputStream cleartext) {
     StringBuffer clearTextBuffer = new StringBuffer();
 
