@@ -76,7 +76,25 @@ public final class Fingerprint extends HashFunction {
 
     System.out.println(Lx + "");
 
-    BigInteger[] x = new BigInteger[k];
+    BigInteger[] x = splitMessage(bigIntegerMessage, Lx, k);
+
+    BigInteger[] y = x.clone();
+
+    int Lxk = x[k - 1].bitLength();
+    int d = Lx - Lxk;
+
+    y[k - 1] = x[k - 1].shiftLeft(d);
+
+    BigInteger g[] = new BigInteger[k];
+
+    // g[0] = h();
+    for (int i = 0; i < k; i++) {
+      if (i == k - 1) {
+
+      } else {
+
+      }
+    }
 
     // for
 
@@ -84,7 +102,9 @@ public final class Fingerprint extends HashFunction {
 
   }
 
-  public BigInteger h(BigInteger x1, BigInteger x2) {
+  public BigInteger h(BigInteger input, int k) {
+    BigInteger x2 = // der rechte teil von input
+    BigInteger x1 = // der linke teil
     BigInteger g1x1 = g1.modPow(x1, p);
     BigInteger g2x2 = g2.modPow(x2, p);
 
