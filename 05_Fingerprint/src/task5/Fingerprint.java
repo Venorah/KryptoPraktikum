@@ -202,7 +202,7 @@ public final class Fingerprint extends HashFunction {
 
     return clearTextBuffer.toString();
   }
-
+  
   public BigInteger[] splitMessage(BigInteger message, int blockLength, int k) {
     BigInteger[] output = new BigInteger[k];
     BigInteger max = generateMaxBigInteger(blockLength);
