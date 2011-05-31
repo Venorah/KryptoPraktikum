@@ -22,6 +22,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.SecureRandom;
+import java.util.LinkedList;
 import java.util.Random;
 
 import de.tubs.cs.iti.jcrypt.chiffre.BigIntegerUtil;
@@ -190,6 +191,12 @@ public final class Fingerprint extends HashFunction {
     }
 
     return clearTextBuffer.toString();
+  }
+  
+  public LinkedList<BigInteger> splitBigInteger(BigInteger message){
+    LinkedList<BigInteger> output = new LinkedList<BigInteger>();
+    
+    return output;
   }
 
 }
