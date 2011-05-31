@@ -55,6 +55,8 @@ public final class Fingerprint extends HashFunction {
    */
   public void hash(FileInputStream cleartext, FileOutputStream ciphertext) {
     System.out.println(paramString);
+    
+    
   }
 
   /**
@@ -78,6 +80,8 @@ public final class Fingerprint extends HashFunction {
 
     BigInteger MINUS_ONE = ONE.negate().mod(p); // -1 mod p
 
+    long start = System.currentTimeMillis();
+
     g1 = null;
     BigInteger factor = null;
     do {
@@ -86,13 +90,21 @@ public final class Fingerprint extends HashFunction {
       factor = g1.modPow(q, p);
     } while (!factor.equals(MINUS_ONE));
 
+    System.out.println("g1: " + g1);
+
     g2 = null;
     BigInteger factor2 = null;
     do {
-      // 2 <= g < p-1
-      g2 = BigIntegerUtil.randomBetween(TWO, p.subtract(ONE), sc);
-      factor2 = g2.modPow(q, p);
-    } while (!factor2.equals(MINUS_ONE));
+      do {
+        // 2 <= g < p-1
+        g2 = BigIntegerUtil.randomBetween(TWO, p.subtract(ONE), sc);
+        factor2 = g2.modPow(q, p);
+      } while (!factor2.equals(MINUS_ONE));
+    } while (g1.equals(g2));
+
+    long end = System.currentTimeMillis();
+
+    System.out.println("Time: " + (end - start));
 
     paramString = p + "\n" + g1 + "\n" + g2;
   }
