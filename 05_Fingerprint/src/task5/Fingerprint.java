@@ -76,7 +76,7 @@ public final class Fingerprint extends HashFunction {
     
     System.out.println(Lx+"");
     
-    BigInteger[] x = new BigInteger[k];
+    BigInteger[] x = splitMessage(bigIntegerMessage, Lx, k);
     
 //    for 
 
