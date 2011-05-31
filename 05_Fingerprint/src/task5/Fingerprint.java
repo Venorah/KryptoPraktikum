@@ -73,12 +73,12 @@ public final class Fingerprint extends HashFunction {
     int k = (int) (Math.ceil((double) n / (double) (m - t - 1)));
 
     int Lx = m - t - 1;
-    
-    System.out.println(Lx+"");
-    
+
+    System.out.println(Lx + "");
+
     BigInteger[] x = new BigInteger[k];
-    
-//    for 
+
+    // for
 
     System.out.println(k + "");
 
@@ -202,20 +202,34 @@ public final class Fingerprint extends HashFunction {
 
     return clearTextBuffer.toString();
   }
-  
-  public BigInteger[] splitMessage(BigInteger message, int blockLength, int k){
-    LinkedList<BigInteger> list = new LinkedList<BigInteger>();
-    BigInteger[] output = null;
-    
+
+  public BigInteger[] splitMessage(BigInteger message, int blockLength, int k) {
+    BigInteger[] output = new BigInteger[k];
     BigInteger max = generateMaxBigInteger(blockLength);
-    
-    while(message.bitLength() > blockLength){
-      
+
+    int counter = 0;
+    while (message.bitLength() > blockLength) {
+      output[counter] = message.and(max);
+      message.shiftRight(blockLength);
     }
-    
+
+    if (message.bitLength() != 0) {
+      output[counter] = message;
+    }
+
+    boolean debug = true;
+    if (debug == true) {
+      String fields = "";
+      for (int i = 0; i < output.length; i++) {
+        fields += output[i] + " ";
+      }
+      System.out.println("splitMessage: message=" + message + " blockLength=" + blockLength + "k=" + k);
+      System.out.println("splitMessage: " + fields);
+    }
+
     return output;
   }
-  
+
   public static BigInteger generateMaxBigInteger(int bits) {
 
     int shift = 0;
