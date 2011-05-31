@@ -39,6 +39,8 @@ public final class Fingerprint extends HashFunction {
   public BigInteger g1;
   public BigInteger g2;
   String paramString;
+  int Lp = p.bitLength();
+  int Lq = 511;
 
   BigInteger ZERO = BigInteger.ZERO;
   BigInteger ONE = BigInteger.ONE;
@@ -56,11 +58,11 @@ public final class Fingerprint extends HashFunction {
   public void hash(FileInputStream cleartext, FileOutputStream ciphertext) {
     String message = getTextAsString(cleartext);
     BigInteger bigIntegerMessage = new BigInteger(message.getBytes());
+    
+    System.out.println(bigIntegerMessage.bitLength()+"");
+    
 
     System.out.println(paramString);
-    
-    int Lp = p.bitLength();
-    int Lq = 511;
 
     System.out.println(Lp + "  " + Lq);
 
