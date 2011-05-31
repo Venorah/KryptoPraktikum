@@ -54,8 +54,11 @@ public final class Fingerprint extends HashFunction {
    *          Der FileOutputStream, in den der Hash-Wert geschrieben werden soll.
    */
   public void hash(FileInputStream cleartext, FileOutputStream ciphertext) {
-    System.out.println(paramString);
+    String message = getTextAsString(cleartext);
+    BigInteger bigIntegerMessage = new BigInteger(message.getBytes());
 
+    System.out.println(paramString);
+    
     int Lp = p.bitLength();
     int Lq = 511;
 
@@ -152,7 +155,7 @@ public final class Fingerprint extends HashFunction {
    *          Der FileInputStream, der den Klartext liefert, dessen Hash-Wert berechnet werden soll.
    */
   public void verify(FileInputStream ciphertext, FileInputStream cleartext) {
-
+    
   }
 
   /**
@@ -170,6 +173,21 @@ public final class Fingerprint extends HashFunction {
     } catch (IOException e) {
       e.printStackTrace();
     }
+  }
+  
+  public static String getTextAsString(FileInputStream cleartext) {
+    StringBuffer clearTextBuffer = new StringBuffer();
+
+    try {
+      int ch = 0;
+      while ((ch = cleartext.read()) != -1) {
+        clearTextBuffer.append((char) ch);
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+    return clearTextBuffer.toString();
   }
 
 }
