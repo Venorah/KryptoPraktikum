@@ -193,14 +193,13 @@ public final class Fingerprint extends HashFunction {
     return clearTextBuffer.toString();
   }
   
-  public BigInteger[] splitMessage(BigInteger message, int blockLength){
+  public BigInteger[] splitMessage(BigInteger message, int blockLength, int k){
     LinkedList<BigInteger> list = new LinkedList<BigInteger>();
     BigInteger[] output = null;
     
-    int m = 2*(Lq-1);
-    BigInteger max = generateMaxBigInteger(m);
+    BigInteger max = generateMaxBigInteger(blockLength);
     
-    while(message.bitLength() > m){
+    while(message.bitLength() > blockLength){
       
     }
     
