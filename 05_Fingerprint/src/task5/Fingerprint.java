@@ -84,21 +84,18 @@ public final class Fingerprint extends HashFunction {
     int d = Lx - Lxk;
 
     y[k - 1] = x[k - 1].shiftLeft(d);
-    
-    
+
     BigInteger g[] = new BigInteger[k];
-    
-    g[0] = h();
-    for (int i= 0; i<k; i++) {
-      if (i==k-1) {
-        
-      }
-      else {
-        
+
+    // g[0] = h();
+    for (int i = 0; i < k; i++) {
+      if (i == k - 1) {
+
+      } else {
+
       }
     }
-    
-    
+
     // for
 
     System.out.println(k + "");
@@ -227,13 +224,27 @@ public final class Fingerprint extends HashFunction {
   }
 
   public BigInteger[] splitMessage(BigInteger message, int blockLength, int k) {
-    LinkedList<BigInteger> list = new LinkedList<BigInteger>();
-    BigInteger[] output = null;
-
+    BigInteger[] output = new BigInteger[k];
     BigInteger max = generateMaxBigInteger(blockLength);
 
+    int counter = 0;
     while (message.bitLength() > blockLength) {
+      output[counter] = message.and(max);
+      message.shiftRight(blockLength);
+    }
 
+    if (message.bitLength() != 0) {
+      output[counter] = message;
+    }
+
+    boolean debug = true;
+    if (debug == true) {
+      String fields = "";
+      for (int i = 0; i < output.length; i++) {
+        fields += output[i] + " ";
+      }
+      System.out.println("splitMessage: message=" + message + " blockLength=" + blockLength + "k=" + k);
+      System.out.println("splitMessage: " + fields);
     }
 
     return output;
