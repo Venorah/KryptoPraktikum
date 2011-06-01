@@ -146,7 +146,7 @@ public final class Fingerprint extends HashFunction {
     Logger("Hash: " + hash);
     
     try {
-      ciphertext.write(hash.toString().getBytes());
+      ciphertext.write(hash.toString(16).getBytes());
     } catch (IOException e1) {
       System.out.println("Failed at FileOutputStream");
       e1.printStackTrace();
@@ -174,7 +174,7 @@ public final class Fingerprint extends HashFunction {
   public void verify(FileInputStream ciphertext, FileInputStream cleartext) {
 
     String hashString = getTextAsString(ciphertext);
-    BigInteger hash = new BigInteger(hashString);
+    BigInteger hash = new BigInteger(hashString, 16);
 
     String messageString = getTextAsString(cleartext);
     BigInteger message = new BigInteger(messageString.getBytes());
@@ -186,8 +186,8 @@ public final class Fingerprint extends HashFunction {
 
     BigInteger hash2 = computeHash(message);
 
-    Logger("Hash1: " + hash);
-    Logger("Hash2: " + hash2);
+    Logger("Hash1: " + hash.toString(16));
+    Logger("Hash2: " + hash2.toString(16));
 
     if (hash.compareTo(hash2) == 0) {
       Logger("Message verified");
