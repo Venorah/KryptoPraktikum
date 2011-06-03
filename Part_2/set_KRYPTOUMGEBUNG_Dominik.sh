@@ -10,4 +10,4 @@
 #   cp $KRYPTOUMGEBUNG/protokoll/local/* .
 # fi
 
-export KRYPTOUMGEBUNG=/home/ds1/Projekte/Crypto-Praktikum/protokolle/protokoll/local/
+export KRYPTOUMGEBUNG=/home/ds1/Projekte/Crypto-Praktikum/Part_2/local/

@@ -83,7 +83,7 @@ public class ServerThread extends Thread {
         }
     }
 
-    /**liefert die SpielID des zum ServerThread gehörigen Spiels zurueck
+    /**liefert die SpielID des zum ServerThread gehoerigen Spiels zurueck
      * @return <code>int</code> Spiel-ID
     */
     public int getGameID() {

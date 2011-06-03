@@ -8,12 +8,12 @@ package de.tubs.cs.iti.krypto.protokoll;
 /**
  * Diese Klasse stellt mit einem Kommandozeilenclient eine Alternative
  * zu der Framevariante Client bereit. Sie wurde geschaffen, um das 
- * Entwickeln von Protokollen für das Kryptologie-Praktikum zu unterstützen.
+ * Entwickeln von Protokollen fÃ¼r das Kryptologie-Praktikum zu unterstÃ¼tzen.
  * <p>
- * Diese Einschränkung sorgt somit dafür, dass hier nur Protokolle mit einer
- * Teilnehmerzahl von 2 ausgeführt werden können.
+ * Diese EinschrÃ¤nkung sorgt somit dafÃ¼r, dass hier nur Protokolle mit einer
+ * Teilnehmerzahl von 2 ausgefÃ¼hrt werden kÃ¶nnen.
  * <p>
- * Bitte folgendes durchführen, um entsprechendes Protokoll zu testen
+ * Bitte folgendes durchfÃ¼hren, um entsprechendes Protokoll zu testen
  * <ol>
  * <li>Server starten mit
 <pre>
@@ -24,7 +24,7 @@ java de.tubs.cs.iti.krypto.protokoll.Server
 java de.tubs.cs.iti.krypto.protokoll.CmdLineClient PROTOCOL HOST PORT
 </pre>
  * </ol>
- * @author <a href="l.girndt @tu-bs.de">Lars Girndt</a>
+ * @author <a href="l.girndt@@tu-bs.de">Lars Girndt</a>
  *
  */
 public class CmdLineClient implements IClient {

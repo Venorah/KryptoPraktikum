@@ -107,7 +107,7 @@ public class Game {
         return players;
     }
 
-    /**Diese Methode liefert zurück, ob das Spiel voll ist oder nicht
+    /**Diese Methode liefert zurÃ¼ck, ob das Spiel voll ist oder nicht
      * @return <code>boolean</code> boolean
     */
     public boolean isFull() {

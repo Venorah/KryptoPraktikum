@@ -7,7 +7,7 @@ package de.tubs.cs.iti.krypto.protokoll;
  * Das Interface Protocol ist die Schnittstelle, die alle Protokolle(Spiele)
  * implementieren muessen, damit sie auf dem (unserem) Client-Server-Netzwerk
  * laufen. Durch dieses Interface bleibt die Austauschbarkeit
- * der Protokolle gew„hrleistet.
+ * der Protokolle gewÃ¤hrleistet.
  * Es beinhaltet die Methoden, die wichtige Protokolldaten zurueckgeben, wie den
  * Namen des Spieles, sowie die minimale und maximale Anzahl der moeglichen
  * Spieler. Ausserdem muss im Spiel die Methode SetCommunicator() implementiert

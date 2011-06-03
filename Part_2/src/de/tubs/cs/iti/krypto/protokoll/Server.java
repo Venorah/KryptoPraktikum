@@ -144,7 +144,7 @@ public class Server {
      * aufgerufen und schickt die Nachricht ueber den Ziel-ServerThread an das
      * entsprechende Communicator-Objekt des Empfaengers. Die Variable "gameID"
      * (s. Klasse ServerThread) dient der Methode zur Unterscheidung von mehreren
-     * Spielen des gleichen Typs. Au˜erdem werden Meldungen, die an den Server
+     * Spielen des gleichen Typs. Ausserdem werden Meldungen, die an den Server
      * direkt gehen, an die entsprechenden Methoden des Servers weitergeleitet
      * ("Spiel starten" und "Client beendet").
      * Diese Meldungen erkennt die Methode daran, dass die Zieladresse im
