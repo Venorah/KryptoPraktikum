@@ -1,5 +1,5 @@
 .metadata
 *.class
-Part 1/**/*.txt
-Part 2/**/*.txt
+*.txt
+*.log
 *~
