@@ -1,6 +1,6 @@
 ####### Krypto Makefile
 
-classpath =     `pwd`/../../../../../../:`pwd`/../../../../../../../../chiffre/classes.jar:.:$${JAVA_HOME}/lib/classes.zip
+classpath =     `pwd`/../../../../../../:`pwd`/../../../../../../../jCrypt.jar:.:$${JAVA_HOME}/lib/classes.zip
 SHELL  =	/bin/sh
 JAVAC =		javac -classpath $(classpath)
 MAKE =		make
@@ -43,13 +43,6 @@ classes: $(OBJECTS)
 	 chmod a+r classes.jar; \
 	 mv classes.jar ../; \
 	 rm -f .full_list)
-
-#	echo ${PACKAGE} | awk -F '.' '{print $$1"/"$$2"/"$$3"/"$$4"/"$$5}' > .pack_dir
-# awk: $NF = total number of fields in input record
-#	cp -a $(BASEOBJECTS) ../`cat .pack_dir`/
-#	cp -a tabellen/ ../`cat .pack_dir`/
-#	-rm ../classes.zip
-#	(cd ..; zip -r classes.zip `echo ${PACKAGE} | awk -F '.' '{print $$1"/"}'`)
 
 doc:
 	-rm -f ../../../../../../../docs/*.html
