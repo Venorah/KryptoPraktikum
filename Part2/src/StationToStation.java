@@ -1,19 +1,6 @@
-package task6;
-
-/*
- * @(#)Skeleton.java
- */
-
 import de.tubs.cs.iti.krypto.protokoll.*;
 
-/**
- *
- */
-
 public final class StationToStation implements Protocol {
-	/**
-   *
-   */
 
 	static private int MinPlayer = 2; // Minimal number of players
 	static private int MaxPlayer = 2; // Maximal number of players
