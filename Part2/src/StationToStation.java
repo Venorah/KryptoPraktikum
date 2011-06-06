@@ -111,8 +111,6 @@ public final class StationToStation implements Protocol {
       System.out.println("Signatur ist NICHT korrekt! ABBRUCH!");
       System.exit(0);
     }
-    
-    
 
     String S_B_encrypted = new String(Com.receive());
 
@@ -213,13 +211,6 @@ public final class StationToStation implements Protocol {
     boolean isCorrekt = false;
     MessageDigest sha = null;
 
-    TrustedAuthority ta = new TrustedAuthority();
-    BigInteger n_T = ta.getModulus();
-    BigInteger e_T = ta.getPublicExponent();
-
-    byte[] data_T = cert.getData();
-    BigInteger sig_T = cert.getSignature();
-
     // make SHA Hashfunction
     try {
       sha = MessageDigest.getInstance("SHA");
@@ -233,7 +224,12 @@ public final class StationToStation implements Protocol {
     byte[] digest = sha.digest();
     BigInteger hash = new BigInteger(digest);
 
+    TrustedAuthority ta = new TrustedAuthority();
+    BigInteger n_T = ta.getModulus();
+    BigInteger e_T = ta.getPublicExponent();
+
     // RSA signature
+    BigInteger sig_T = cert.getSignature();
     BigInteger M = sig_T.modPow(e_T, n_T);
 
     if (M.equals(hash)) {
