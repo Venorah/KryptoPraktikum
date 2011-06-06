@@ -30,6 +30,7 @@ public final class StationToStation implements Protocol {
 	 * dies die Aktionen von Alice.
 	 */
 	{
+		System.out.println("alice test");
 	}
 
 	public void receiveFirst()
