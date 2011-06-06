@@ -30,19 +30,20 @@ import de.tubs.cs.iti.jcrypt.chiffre.BlockCipher;
  */
 public final class IDEA {
 
-  String keyString;
+  // String keyString;
+  BigInteger keyInteger;
   static BigInteger[][] encKeys;
   static BigInteger[][] decKeys;
 
-  public IDEA(String keyStringWith16Chars) {
-    keyString = keyStringWith16Chars;
+  public IDEA(BigInteger keyInteger) {
+    this.keyInteger = keyInteger;
   }
 
   // public void encipher(FileInputStream cleartext, FileOutputStream ciphertext) {
   public String encipher(String cleartext) {
 
     // generate keys
-    BigInteger keyInteger = Helper.stringToBigInteger(keyString);
+    // BigInteger keyInteger = Helper.stringToBigInteger(keyString);
     BigInteger[] keyArray = Helper.extractValues(keyInteger, 8, 16);
     encKeys = getEncryptionKeys(keyArray);
     decKeys = getDecryptionKeys(encKeys);
@@ -76,7 +77,7 @@ public final class IDEA {
 
   public String decipher(String ciphertext) {
     // generate keys
-    BigInteger keyInteger = Helper.stringToBigInteger(keyString);
+    // BigInteger keyInteger = Helper.stringToBigInteger(keyString);
     BigInteger[] keyArray = Helper.extractValues(keyInteger, 8, 16);
     encKeys = getEncryptionKeys(keyArray);
     decKeys = getDecryptionKeys(encKeys);
@@ -364,6 +365,6 @@ public final class IDEA {
   }
 
   private void Logger(String event) {
-     System.out.println("IDEA$  " + event);
+    System.out.println("IDEA$  " + event);
   }
 }
