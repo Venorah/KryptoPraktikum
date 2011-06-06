@@ -218,12 +218,13 @@ public final class StationToStation implements Protocol {
       System.out.println("Could not create message digest! Exception " + e.toString());
     }
 
-    // Hashwert bestimmen von ID + Data
+    // hash with ID + Data
     sha.update(cert.getID().getBytes());
     sha.update(cert.getData());
     byte[] digest = sha.digest();
     BigInteger hash = new BigInteger(digest);
 
+    // get public key of trusted authority
     TrustedAuthority ta = new TrustedAuthority();
     BigInteger n_T = ta.getModulus();
     BigInteger e_T = ta.getPublicExponent();
