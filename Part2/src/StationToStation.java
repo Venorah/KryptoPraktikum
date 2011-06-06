@@ -16,8 +16,12 @@ public final class StationToStation implements Protocol {
   static private String NameOfTheGame = "Station To Station";
   private Communicator Com;
 
+  BigInteger ZERO = BigIntegerUtil.ZERO;
+  BigInteger ONE = BigIntegerUtil.ONE;
+  BigInteger TWO = BigIntegerUtil.TWO;
+
   BigInteger p, g; // Primzahl p, prim. W. g
-  
+
   BigInteger x, y, S;
   BigInteger x_remote, y_remote, S_remote;
 
@@ -32,36 +36,32 @@ public final class StationToStation implements Protocol {
     BigInteger q = null;
     do {
       q = new BigInteger(k - 1, certainty, sc);
-      p = q.multiply(BigIntegerUtil.TWO).add(BigIntegerUtil.ONE); // secure
+      p = q.multiply(TWO).add(ONE); // secure
       // prime
       // p =
       // 2q+1
     } while (!p.isProbablePrime(certainty));
 
-    BigInteger MINUS_ONE = BigInteger.ONE.negate().mod(p); // -1 mod p
+    BigInteger MINUS_ONE = ONE.negate().mod(p); // -1 mod p
 
     g = null;
     BigInteger factor = null;
     do {
       // 2 <= g < p-1
-      g = BigIntegerUtil.randomBetween(BigIntegerUtil.TWO, p.subtract(BigIntegerUtil.ONE), sc);
+      g = BigIntegerUtil.randomBetween(TWO, p.subtract(ONE), sc);
       factor = g.modPow(q, p);
     } while (!factor.equals(MINUS_ONE));
   }
-
-
 
   public void setCommunicator(Communicator com) {
     Com = com;
   }
 
   /**
-   * Aktionen der beginnenden Partei. Bei den 2-Parteien-Protokollen seien dies die Aktionen von
-   * Alice.
+   * Aktionen der beginnenden Partei. Bei den 2-Parteien-Protokollen seien dies die Aktionen von Alice.
    */
   public void sendFirst() {
-    // (0)
-    // todo: fingerprint werte aus datei auslesen
+    // fingerprint werte aus datei auslesen
     Fingerprint fingerprint = new Fingerprint(new File("HashParameter"));
 
     // alice wählt p und g und sendet diese an bob
@@ -71,13 +71,26 @@ public final class StationToStation implements Protocol {
     Com.sendTo(1, p.toString(16));
     Com.sendTo(1, g.toString(16));
 
-    // alice sendet öffentlichen schlüssel (e_A, n_A) an bob
-    RSA rsaAlice = new RSA();
-    System.out.println("RSA Alice e: "+rsaAlice.e);
-    System.out.println("RSA Alice n: "+rsaAlice.n);
-    System.out.println("RSA Alice d: "+rsaAlice.d);
+    // alice sendet öffentlichen schlüssel an bob
+    RSA rsa_A = new RSA();
+    System.out.println("RSA Alice e: " + rsa_A.e);
+    System.out.println("RSA Alice n: " + rsa_A.n);
+    System.out.println("RSA Alice d: " + rsa_A.d);
+    Com.sendTo(1, rsa_A.e.toString(16));
+    Com.sendTo(1, rsa_A.n.toString(16));
 
-    
+    // alice empfängt öffentlichen schlüssel von bob
+    BigInteger e_B = new BigInteger(Com.receive(), 16);
+    BigInteger n_B = new BigInteger(Com.receive(), 16);
+    System.out.println("Bob e: " + e_B);
+    System.out.println("Bob n: " + n_B);
+
+    // zufällige zahl x_A in {1,...,p-2} -> randomBetween 1 <= x_A < p-1
+    BigInteger x_A = BigIntegerUtil.randomBetween(ONE, p.subtract(ONE));
+    // alice wählt x_A = g^(x_A) mod p
+    BigInteger y_A = g.modPow(x_A, p);
+    // y_A an bob senden
+    Com.sendTo(1, y_A.toString(16));
 
   }
 
@@ -85,13 +98,69 @@ public final class StationToStation implements Protocol {
    * Aktionen der uebrigen Parteien. Bei den 2-Parteien-Protokollen seien dies die Aktionen von Bob.
    */
   public void receiveFirst() {
-    // bob bekommt öffentlichen schlüssel von alice
+    // fingerprint werte aus datei auslesen
+    Fingerprint fingerprint = new Fingerprint(new File("HashParameter"));
+
+    // bob bekommt p und g von alice
     p = new BigInteger(Com.receive(), 16);
     g = new BigInteger(Com.receive(), 16);
     System.out.println("p: " + p);
     System.out.println("g: " + g);
 
-    // bob sendet seinen öffentlichen schlüssel (e_B, n_B)
+    // bob bekommt öffentlichen rsa schlüssel von alice
+    BigInteger e_A = new BigInteger(Com.receive(), 16);
+    BigInteger n_A = new BigInteger(Com.receive(), 16);
+    System.out.println("Alice e: " + e_A);
+    System.out.println("Alice n: " + n_A);
+
+    // bob sendet seinen öffentlichen schlüssel
+    RSA rsa_B = new RSA();
+    System.out.println("RSA Bob e: " + rsa_B.e);
+    System.out.println("RSA Bob n: " + rsa_B.n);
+    System.out.println("RSA Bob d: " + rsa_B.d);
+    Com.sendTo(0, rsa_B.e.toString(16));
+    Com.sendTo(0, rsa_B.n.toString(16));
+
+    // bob empfängt y_A
+    BigInteger y_A = new BigInteger(Com.receive(), 16);
+    System.out.println("y_A: " + y_A);
+
+    // zufällige zahl x_B in {1,...,p-2} -> randomBetween 1 <= x_B < p-1
+    BigInteger x_B = BigIntegerUtil.randomBetween(ONE, p.subtract(ONE));
+    // bob wählt x_B = g^(x_B) mod p
+    BigInteger y_B = g.modPow(x_B, p);
+    // y_B an alice senden
+    Com.sendTo(0, y_B.toString(16));
+
+    // bob bestimmt schlüssel
+    BigInteger k = y_A.modPow(x_B, p);
+    System.out.println("k: "+k.toString());
+
+    // signatur
+    BigInteger m = y_B.multiply(p).add(y_A); // h(y_B,y_A) = y_B * p + y_A laut heft
+    BigInteger hash = fingerprint.hash(m.toString(16));
+    BigInteger S_B = rsa_B.getSignatur(hash); // S_B = hash^d_B mod n_B
+    System.out.println("Signatur S_B: " + S_B);
+    
+    // zertifikat
+    TrustedAuthority ta = new TrustedAuthority();
+    String id = "Bob";
+    byte[] data = id.getBytes();
+    Certificate Z_B = ta.newCertificate(data);
+    
+    // bob sendet 
+    Com.sendTo(0, Z_B.toString());
+    Com.sendTo(0, y_B.toString(16));
+    
+    // enctypted with idea
+    int l = k.bitLength();
+    BigInteger key = k.shiftRight(l-128);
+    System.out.println(key);
+    System.out.println(key.bitLength());
+    IDEA idea = new IDEA(key);
+    
+//    Com.sendTo(0, .toString());
+
   }
 
   public String nameOfTheGame() {

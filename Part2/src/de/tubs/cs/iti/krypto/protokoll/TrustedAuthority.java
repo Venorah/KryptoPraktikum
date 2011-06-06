@@ -4,13 +4,9 @@
 
 package de.tubs.cs.iti.krypto.protokoll;
 
-import java.io.*;
 import java.math.*;
 import java.security.*;
 import java.util.*;
-import de.tubs.cs.iti.jcrypt.chiffre.*;
-
-// import de.tubs.cs.iti.krypto.chiffre.*;
 
 /**
  * This class provides a trusted authority for key exchange protocols.
