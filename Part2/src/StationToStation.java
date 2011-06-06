@@ -9,6 +9,7 @@ import java.security.SecureRandom;
 import java.util.Random;
 import de.tubs.cs.iti.jcrypt.chiffre.BigIntegerUtil;
 import de.tubs.cs.iti.krypto.protokoll.*;
+import java.security.MessageDigest;
 
 public final class StationToStation implements Protocol {
 
@@ -96,15 +97,22 @@ public final class StationToStation implements Protocol {
     // alice empfängt
     BigInteger y_B = new BigInteger(Com.receive(), 16);
 
-    // alice empfängt certificate
-    String ID = new String(Com.receive());
-    byte[] data = Com.receive().getBytes();
-    BigInteger signature = new BigInteger(Com.receive(), 16);
+    // alice empfängt certificate in einzelteilen
+    String ID = new String(Com.receive()); // get ID
+    byte[] data = Com.receive().getBytes(); // get data
+    BigInteger signature = new BigInteger(Com.receive(), 16); // get signature
     // wieder certificate objekt draus machen
     Certificate cert = new Certificate(ID, data, signature);
-    
-    //TODO: check certificate
 
+    // check certificate
+    if (checkSignature(cert) == true) {
+      System.out.println("Signatur ist korrekt!");
+    } else {
+      System.out.println("Signatur ist NICHT korrekt! ABBRUCH!");
+      System.exit(0);
+    }
+    
+    
 
     String S_B_encrypted = new String(Com.receive());
 
@@ -171,10 +179,10 @@ public final class StationToStation implements Protocol {
     byte[] data = (e_A.xor(n_A)).toByteArray();
     Certificate Z_B = ta.newCertificate(data);
 
-    // bob sendet certificate
-    Com.sendTo(0, Z_B.getID().toString()); // ID
-    Com.sendTo(0, Z_B.getData().toString()); // data (pub key)
-    Com.sendTo(0, Z_B.getSignature().toString(16)); // signature
+    // bob sendet certificate in einzelteilen
+    Com.sendTo(0, Z_B.getID().toString()); // send ID
+    Com.sendTo(0, Z_B.getData().toString()); // send data (pub key)
+    Com.sendTo(0, Z_B.getSignature().toString(16)); // send signature
 
     // encrypted S_B with idea
     int l = k.bitLength();
@@ -200,12 +208,38 @@ public final class StationToStation implements Protocol {
   public int maxPlayer() {
     return MaxPlayer;
   }
-  
-  public boolean checkSignature(BigInteger e_A, BigInteger n_A, BigInteger signature){
+
+  public boolean checkSignature(Certificate cert) {
     boolean isCorrekt = false;
+    MessageDigest sha = null;
 
     TrustedAuthority ta = new TrustedAuthority();
-    
+    BigInteger n_T = ta.getModulus();
+    BigInteger e_T = ta.getPublicExponent();
+
+    byte[] data_T = cert.getData();
+    BigInteger sig_T = cert.getSignature();
+
+    // make SHA Hashfunction
+    try {
+      sha = MessageDigest.getInstance("SHA");
+    } catch (Exception e) {
+      System.out.println("Could not create message digest! Exception " + e.toString());
+    }
+
+    // Hashwert bestimmen von ID + Data
+    sha.update(cert.getID().getBytes());
+    sha.update(cert.getData());
+    byte[] digest = sha.digest();
+    BigInteger hash = new BigInteger(digest);
+
+    // RSA signature
+    BigInteger M = sig_T.modPow(e_T, n_T);
+
+    if (M.equals(hash)) {
+      isCorrekt = true;
+    }
+
     return isCorrekt;
   }
 }
