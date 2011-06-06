@@ -14,6 +14,9 @@ public final class StationToStation implements Protocol {
   private Communicator Com;
 
   BigInteger p, g; // Primzahl p, prim. W. g
+  
+  BigInteger x, y, S;
+  BigInteger x_remote, y_remote, S_remote;
 
   public void getPrimeAndGenerator() {
     Random sc = new SecureRandom();
