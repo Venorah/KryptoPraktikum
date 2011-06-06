@@ -133,7 +133,7 @@ public final class Fingerprint {
     }
   }
 
-  public String hash(String cleartext) {
+  public BigInteger hash(String cleartext) {
     String messageString = cleartext;
     BigInteger message = new BigInteger(messageString.getBytes());
 
@@ -143,14 +143,14 @@ public final class Fingerprint {
     BigInteger hash = computeHash(message);
     Logger("Hash: " + hash);
 
-    String output = hash.toString(16);
-    return output;
+    // String output = hash.toString(16);
+    return hash;
 
   }
 
-  public boolean verify(String hashAsHEX, String cleartext) {
+  public boolean verify(BigInteger hash, String cleartext) {
 
-    BigInteger hash = new BigInteger(hashAsHEX, 16);
+    // BigInteger hash = new BigInteger(hashAsHEX, 16);
 
     String messageString = cleartext;
     BigInteger message = new BigInteger(messageString.getBytes());
