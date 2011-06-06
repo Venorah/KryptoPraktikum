@@ -4,6 +4,7 @@ import com.krypto.fingerprint.Fingerprint;
 
 import java.io.File;
 import java.math.BigInteger;
+import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.Random;
 import de.tubs.cs.iti.jcrypt.chiffre.BigIntegerUtil;
@@ -198,5 +199,13 @@ public final class StationToStation implements Protocol {
 
   public int maxPlayer() {
     return MaxPlayer;
+  }
+  
+  public boolean checkSignature(BigInteger e_A, BigInteger n_A, BigInteger signature){
+    boolean isCorrekt = false;
+
+    TrustedAuthority ta = new TrustedAuthority();
+    
+    return isCorrekt;
   }
 }
