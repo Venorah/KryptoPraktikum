@@ -1,5 +1,8 @@
 import com.krypto.idea.IDEA;
 import com.krypto.rsa.RSA;
+import com.krypto.fingerprint.Fingerprint;
+
+import java.io.File;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.Random;
@@ -56,6 +59,7 @@ public final class StationToStation implements Protocol {
   public void sendFirst() {
     // (0)
     // todo: fingerprint werte aus datei auslesen
+    Fingerprint fingerprint = new Fingerprint(new File("HashParameter"));
 
     // alice wählt p und g und sendet diese an bob
     getPrimeAndGenerator();
@@ -70,7 +74,7 @@ public final class StationToStation implements Protocol {
     System.out.println("RSA Alice n: "+rsaAlice.n);
     System.out.println("RSA Alice d: "+rsaAlice.d);
 
-        
+    
 
   }
 
