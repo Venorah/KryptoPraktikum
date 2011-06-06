@@ -91,6 +91,13 @@ public final class StationToStation implements Protocol {
     BigInteger y_A = g.modPow(x_A, p);
     // y_A an bob senden
     Com.sendTo(1, y_A.toString(16));
+    
+    
+    // alice empfängt
+//    BigInteger Z_B = new BigInteger(Com.receive(), 16);
+    
+    BigInteger y_B = new BigInteger(Com.receive(), 16);
+    String S_B_encrypted = new String(Com.receive());
 
   }
 
@@ -148,16 +155,19 @@ public final class StationToStation implements Protocol {
     byte[] data = id.getBytes();
     Certificate Z_B = ta.newCertificate(data);
     
-    // bob sendet 
-    Com.sendTo(0, Z_B.toString());
-    Com.sendTo(0, y_B.toString(16));
-    
-    // enctypted with idea
+    // encrypted S_B with idea
     int l = k.bitLength();
     BigInteger key = k.shiftRight(l-128);
     System.out.println(key);
     System.out.println(key.bitLength());
     IDEA idea = new IDEA(key);
+    String S_B_encrypted = idea.encipher(S_B.toString(16));
+    
+    // bob sendet 
+    Com.sendTo(0, Z_B.toString());
+    Com.sendTo(0, y_B.toString(16));
+    Com.sendTo(0, S_B_encrypted);
+
     
 //    Com.sendTo(0, .toString());
 
