@@ -1,5 +1,5 @@
 import com.krypto.idea.IDEA;
-import com.krypto.rsa.RSA;
+
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.Random;
@@ -14,9 +14,10 @@ public final class StationToStation implements Protocol {
   private Communicator Com;
 
   BigInteger p, g; // Primzahl p, prim. W. g
-  
-  BigInteger x, y, S;
-  BigInteger x_remote, y_remote, S_remote;
+
+  BigInteger e_A, n_A, d_A; // Alice Werte
+
+  BigInteger e_B, n_B, d_B; // Bob Werte
 
   public void getPrimeAndGenerator() {
     Random sc = new SecureRandom();
@@ -46,17 +47,37 @@ public final class StationToStation implements Protocol {
     } while (!factor.equals(MINUS_ONE));
   }
 
+  public void generateRSAKeys() {
+    Random sc = new SecureRandom();
+    int k = 512; // prime number with k=512 bits
+    int certainty = 100; // The probability that the new BigInteger
+    // represents a prime number will
+    // exceed (1-1/2^certainty)
 
+    BigInteger p = new BigInteger(k - 1, certainty, sc);
+    BigInteger q = new BigInteger(k - 1, certainty, sc);
+
+    // n=pq
+    BigInteger n = p.multiply(q);
+
+    // phi(n) = (p-1)(q-1)
+    BigInteger phi = (p.subtract(BigInteger.ONE)).multiply(q.subtract(BigInteger.ONE));
+    
+    
+  }
 
   public void setCommunicator(Communicator com) {
     Com = com;
   }
 
   /**
-   * Aktionen der beginnenden Partei. Bei den 2-Parteien-Protokollen seien dies die Aktionen von
-   * Alice.
+   * Aktionen der beginnenden Partei. Bei den 2-Parteien-Protokollen seien dies die Aktionen von Alice.
    */
   public void sendFirst() {
+    System.out.println("alice test");
+
+    // IDEA idea = new IDEA();
+
     // (0)
     // todo: fingerprint werte aus datei auslesen
 
@@ -68,12 +89,6 @@ public final class StationToStation implements Protocol {
     Com.sendTo(1, g.toString(16));
 
     // alice sendet öffentlichen schlüssel (e_A, n_A) an bob
-    RSA rsaAlice = new RSA();
-    System.out.println("RSA Alice e: "+rsaAlice.e);
-    System.out.println("RSA Alice n: "+rsaAlice.n);
-    System.out.println("RSA Alice d: "+rsaAlice.d);
-
-        
 
   }
 
