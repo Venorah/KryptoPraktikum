@@ -1,3 +1,5 @@
+import com.krypto.idea.IDEA;
+
 import de.tubs.cs.iti.krypto.protokoll.*;
 
 public final class StationToStation implements Protocol {
