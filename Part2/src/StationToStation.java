@@ -17,6 +17,10 @@ public final class StationToStation implements Protocol {
 	 */
 	public void sendFirst() {
 		System.out.println("alice test");
+		
+		
+		IDEA idea = new IDEA();
+		
 	}
 
 	/**
