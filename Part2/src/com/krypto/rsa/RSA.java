@@ -10,10 +10,10 @@ public class RSA {
   public BigInteger e, n, d;
 
   public RSA() {
-    generateRSAKeys();
+    getRSAKeys();
   }
 
-  public void generateRSAKeys() {
+  public void getRSAKeys() {
     Random sc = new SecureRandom();
     int k = 512; // prime number with k=512 bits
     int certainty = 100; // The probability that the new BigInteger
@@ -39,5 +39,11 @@ public class RSA {
 
     // d = e^-1 mod phi(n)
     d = e.modInverse(phi);
+  }
+  
+  public BigInteger getSignatur(BigInteger hash) {
+    BigInteger signatur = hash.modPow(d, n); // S_B = hash^d mod n
+    
+    return signatur;
   }
 }
