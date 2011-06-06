@@ -46,6 +46,25 @@ public final class StationToStation implements Protocol {
     } while (!factor.equals(MINUS_ONE));
   }
 
+  public void generateRSAKeys() {
+    Random sc = new SecureRandom();
+    int k = 512; // prime number with k=512 bits
+    int certainty = 100; // The probability that the new BigInteger
+    // represents a prime number will
+    // exceed (1-1/2^certainty)
+
+    BigInteger p = new BigInteger(k - 1, certainty, sc);
+    BigInteger q = new BigInteger(k - 1, certainty, sc);
+
+    // n=pq
+    BigInteger n = p.multiply(q);
+
+    // phi(n) = (p-1)(q-1)
+    BigInteger phi = (p.subtract(BigInteger.ONE)).multiply(q.subtract(BigInteger.ONE));
+    
+    
+  }
+
   public void setCommunicator(Communicator com) {
     Com = com;
   }
@@ -56,7 +75,7 @@ public final class StationToStation implements Protocol {
   public void sendFirst() {
     System.out.println("alice test");
 
-    IDEA idea = new IDEA();
+    // IDEA idea = new IDEA();
 
     // (0)
     // todo: fingerprint werte aus datei auslesen
