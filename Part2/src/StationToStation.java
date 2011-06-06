@@ -11,21 +11,19 @@ public final class StationToStation implements Protocol {
 		Com = com;
 	}
 
-	public void sendFirst()
 	/**
 	 * Aktionen der beginnenden Partei. Bei den 2-Parteien-Protokollen seien
 	 * dies die Aktionen von Alice.
 	 */
-	{
+	public void sendFirst() {
 		System.out.println("alice test");
 	}
 
-	public void receiveFirst()
 	/**
 	 * Aktionen der uebrigen Parteien. Bei den 2-Parteien-Protokollen seien dies
 	 * die Aktionen von Bob.
 	 */
-	{
+	public void receiveFirst() {
 	}
 
 	public String nameOfTheGame() {
