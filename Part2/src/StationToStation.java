@@ -91,13 +91,26 @@ public final class StationToStation implements Protocol {
     BigInteger y_A = g.modPow(x_A, p);
     // y_A an bob senden
     Com.sendTo(1, y_A.toString(16));
-    
-    
+
     // alice empfängt
-//    BigInteger Z_B = new BigInteger(Com.receive(), 16);
-    
     BigInteger y_B = new BigInteger(Com.receive(), 16);
+
+    // alice empfängt certificate
+    String ID = new String(Com.receive());
+    byte[] data = Com.receive().getBytes();
+    BigInteger signature = new BigInteger(Com.receive(), 16);
+    // wieder certificate objekt draus machen
+    Certificate cert = new Certificate(ID, data, signature);
+    
+    //TODO: check certificate
+
+
     String S_B_encrypted = new String(Com.receive());
+
+    // alice berechnet k
+    BigInteger k = y_B.modPow(x_A, p);
+
+    // TODO: zertifikat überprüfen
 
   }
 
@@ -141,35 +154,37 @@ public final class StationToStation implements Protocol {
 
     // bob bestimmt schlüssel
     BigInteger k = y_A.modPow(x_B, p);
-    System.out.println("k: "+k.toString());
+    System.out.println("k: " + k.toString());
 
     // signatur
     BigInteger m = y_B.multiply(p).add(y_A); // h(y_B,y_A) = y_B * p + y_A laut heft
     BigInteger hash = fingerprint.hash(m.toString(16));
     BigInteger S_B = rsa_B.getSignatur(hash); // S_B = hash^d_B mod n_B
     System.out.println("Signatur S_B: " + S_B);
-    
+
+    // bob sendet y_B
+    Com.sendTo(0, y_B.toString(16));
+
     // zertifikat
     TrustedAuthority ta = new TrustedAuthority();
-    String id = "Bob";
-    byte[] data = id.getBytes();
+    byte[] data = (e_A.xor(n_A)).toByteArray();
     Certificate Z_B = ta.newCertificate(data);
-    
+
+    // bob sendet certificate
+    Com.sendTo(0, Z_B.getID().toString()); // ID
+    Com.sendTo(0, Z_B.getData().toString()); // data (pub key)
+    Com.sendTo(0, Z_B.getSignature().toString(16)); // signature
+
     // encrypted S_B with idea
     int l = k.bitLength();
-    BigInteger key = k.shiftRight(l-128);
+    BigInteger key = k.shiftRight(l - 128);
     System.out.println(key);
     System.out.println(key.bitLength());
     IDEA idea = new IDEA(key);
     String S_B_encrypted = idea.encipher(S_B.toString(16));
-    
-    // bob sendet 
-    Com.sendTo(0, Z_B.toString());
-    Com.sendTo(0, y_B.toString(16));
-    Com.sendTo(0, S_B_encrypted);
 
-    
-//    Com.sendTo(0, .toString());
+    // bob sendet S_B_encrypted
+    Com.sendTo(0, S_B_encrypted);
 
   }
 
