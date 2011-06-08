@@ -124,19 +124,25 @@ public final class StationToStation implements Protocol {
     String S_B_decrypted = idea.decipher(S_B_encrypted);
     BigInteger S_B = new BigInteger(S_B_decrypted, 16);
 
-    // alice überprüft die gültigkeit von S_B
-    // hash (rechte seite der gleichung)
+    // hash h(y_B, y_A) generieren
     BigInteger m = y_B.multiply(p).add(y_A); // h(y_B,y_A) = y_B * p + y_A laut heft
     BigInteger hash = fingerprint.hash(m.toString(16));
+    
+    // left part of equation
     BigInteger left = S_B.modPow(e_B, n_B); // decrypted with pub key (RSA) from bob
 
-    // check hashs
+    // alice überprüft die gültigkeit von S_B
     if (left.equals(hash)) {
       System.out.println("hashs h(y_B, y_A) sind gleich! Alice akzeptiert k!");
     } else {
       System.out.println("Hashs nicht gleich! ABBRUCH!");
       System.exit(0);
     }
+
+    // signatur von alice S_A generieren
+    BigInteger S_A = rsa_A.getSignatur(hash); // S_A = hash^d_A mod n_A
+    System.out.println("Signatur S_A: " + S_A);
+    
     
 
   }
