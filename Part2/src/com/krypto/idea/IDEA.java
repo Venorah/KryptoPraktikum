@@ -80,6 +80,7 @@ public final class IDEA {
 
     int size = (cipherTextString.length() / 16);
     BigInteger[] messageArray = new BigInteger[size];
+    System.out.println(size);
 
     for (int i = 0; i < size; i++) {
       String subString = cipherTextString.substring(0, 16);
