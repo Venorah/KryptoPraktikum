@@ -145,7 +145,7 @@ public final class StationToStation implements Protocol {
     String S_A_encrypted = idea.encipher(S_A.toString(16));
 
     // alice sendet Z_A in einzelteilen
-    Com.sendTo(1, Z_A.getID().toString()); // send ID // S13
+    Com.sendTo(1, Z_A.getID()); // send ID // S13
     String data_send = new String(Z_A.getData());
     Com.sendTo(1, data_send); // send data (pub key) // S14
     Com.sendTo(1, Z_A.getSignature().toString(16)); // send signature // S15
@@ -212,12 +212,8 @@ public final class StationToStation implements Protocol {
 
     byte[] check = Z_B.getData();
     
-    // bob sendet certificate in einzelteilen
-    System.out.println("S8   " + Z_B.getID().toString()); // send ID // S8
-    System.out.println("S9   " + Z_B.getData().toString()); // send data (pub key) // S9
-    System.out.println("S10  " + Z_B.getSignature().toString(16)); // send signature //S10
-    
-    Com.sendTo(0, Z_B.getID().toString()); // send ID // S8
+    // bob sendet certificate in einzelteilen    
+    Com.sendTo(0, Z_B.getID()); // send ID // S8
     String data_send = new String(Z_B.getData());
     Com.sendTo(0, data_send); // send data (pub key) // S9
     Com.sendTo(0, Z_B.getSignature().toString(16)); // send signature //S10
@@ -352,6 +348,23 @@ public final class StationToStation implements Protocol {
   public BigInteger concat(BigInteger leftBlock, BigInteger rightBlock) {
     int rightBlockLength = rightBlock.bitLength();
     return (leftBlock.shiftLeft(rightBlockLength)).add(rightBlock);
+  }
+  
+  public String serialize(byte[] array){
+    String output = "";
+    for(int i=0; i<array.length; i++){
+      output += array[i] + " ";
+    }
+    return output;
+  }
+  
+  public byte[] deserialize(String message){
+    String[] array = message.split(" ");
+    byte[] output = new byte[array.length];
+    for(int i=0; i<array.length; i++){
+      output[i] = Byte.valueOf(array[i]);
+    }
+    return output;
   }
 
 }
