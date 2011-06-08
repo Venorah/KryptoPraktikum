@@ -27,6 +27,8 @@ public final class StationToStation implements Protocol {
   BigInteger x, y, S;
   BigInteger x_remote, y_remote, S_remote;
 
+  Fingerprint fingerprint;
+
   public void getPrimeAndGenerator() {
     Random sc = new SecureRandom();
     int k = 512; // prime number with k=512 bits
@@ -64,7 +66,7 @@ public final class StationToStation implements Protocol {
    */
   public void sendFirst() {
     // fingerprint werte aus datei auslesen
-    Fingerprint fingerprint = new Fingerprint(new File("HashParameter"));
+    fingerprint = new Fingerprint(new File("HashParameter"));
 
     // alice wählt p und g und sendet diese an bob
     getPrimeAndGenerator();
@@ -106,9 +108,9 @@ public final class StationToStation implements Protocol {
 
     // check certificate
     if (checkCertificate(Z_B) == true) {
-      System.out.println("Signatur ist korrekt!");
+      System.out.println("Signatur von Bob ist korrekt!");
     } else {
-      System.out.println("Signatur ist NICHT korrekt! ABBRUCH!");
+      System.out.println("Signatur von Bob ist NICHT korrekt! ABBRUCH!");
       System.exit(0);
     }
 
@@ -118,15 +120,11 @@ public final class StationToStation implements Protocol {
     String S_B_decrypted = idea.decipher(S_B_encrypted);
     BigInteger S_B = new BigInteger(S_B_decrypted, 16);
 
-    // hash h(y_B, y_A) generieren
-    BigInteger m = y_B.multiply(p).add(y_A); // h(y_B,y_A) = y_B * p + y_A laut heft
-    BigInteger hash = fingerprint.hash(m.toString(16));
-
-    // left part of equation
-    BigInteger left = S_B.modPow(e_B, n_B); // decrypted with pub key (RSA) from bob
+    // generate hash
+    BigInteger hash = hash(y_B, y_A);
 
     // alice überprüft die gültigkeit von S_B
-    if (left.equals(hash)) {
+    if (checkSignature(hash, S_B, e_B, n_B) == true) {
       System.out.println("hashs h(y_B, y_A) sind gleich! Alice akzeptiert k!");
     } else {
       System.out.println("Hashs nicht gleich! ABBRUCH!");
@@ -158,7 +156,7 @@ public final class StationToStation implements Protocol {
    */
   public void receiveFirst() {
     // fingerprint werte aus datei auslesen
-    Fingerprint fingerprint = new Fingerprint(new File("HashParameter"));
+    fingerprint = new Fingerprint(new File("HashParameter"));
 
     // bob bekommt p und g von alice
     p = new BigInteger(Com.receive(), 16);
@@ -196,8 +194,7 @@ public final class StationToStation implements Protocol {
     System.out.println("k: " + k.toString());
 
     // signatur
-    BigInteger m = y_B.multiply(p).add(y_A); // h(y_B,y_A) = y_B * p + y_A laut heft
-    BigInteger hash = fingerprint.hash(m.toString(16));
+    BigInteger hash = hash(y_B, y_A);
     BigInteger S_B = rsa_B.getSignatur(hash); // S_B = hash^d_B mod n_B
     System.out.println("Signatur S_B: " + S_B);
 
@@ -223,8 +220,28 @@ public final class StationToStation implements Protocol {
     // bob empfängt certificate in einzelteilen
     Certificate Z_A = buildCertificateBasedOnStrings(Com.receive(), Com.receive(), Com.receive());
 
+    // check certificate
+    if (checkCertificate(Z_A) == true) {
+      System.out.println("Signatur von Alice ist korrekt!");
+    } else {
+      System.out.println("Signatur von Alice ist NICHT korrekt! ABBRUCH!");
+      System.exit(0);
+    }
+
     // bob empfängt S_A_encrypted
     String S_A_encrypted = new String(Com.receive());
+
+    // decrypt S_A_encrypted with idea
+    String S_A_decrypted = idea.decipher(S_A_encrypted);
+    BigInteger S_A = new BigInteger(S_A_decrypted, 16);
+
+    // alice überprüft die gültigkeit von S_B
+    if (checkSignature(hash, S_A, e_A, n_A) == true) {
+      System.out.println("hashs h(y_B, y_A) sind gleich! Bob akzeptiert k!");
+    } else {
+      System.out.println("Hashs nicht gleich! ABBRUCH!");
+      System.exit(0);
+    }
 
   }
 
@@ -254,19 +271,36 @@ public final class StationToStation implements Protocol {
 
     return cert;
   }
-  
+
   private Certificate buildCertificateBasedOnStrings(String ID, String data, String signature) {
     byte[] dataArray = data.getBytes();
     BigInteger signatureInteger = new BigInteger(signature, 16);
     // wieder certificate objekt draus machen
     Certificate cert = new Certificate(ID, dataArray, signatureInteger);
-    
+
     return cert;
   }
 
-  // private boolean checkSignature() {
-  //
-  // }
+  private BigInteger hash(BigInteger y_A, BigInteger y_B) {
+    // hash h(y_B, y_A) generieren
+    BigInteger m = y_B.multiply(p).add(y_A); // h(y_B,y_A) = y_B * p + y_A laut heft
+    BigInteger hash = fingerprint.hash(m.toString(16));
+
+    return hash;
+  }
+
+  private boolean checkSignature(BigInteger hash, BigInteger S, BigInteger e, BigInteger n) {
+    boolean isCorrekt = false;
+
+    // left part of equation
+    BigInteger left = S.modPow(e, n); // decrypted with pub key (RSA)
+
+    if (left.equals(hash)) {
+      isCorrekt = true;
+    }
+
+    return isCorrekt;
+  }
 
   private boolean checkCertificate(Certificate cert) {
     boolean isCorrekt = false;
