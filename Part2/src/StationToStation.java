@@ -117,12 +117,27 @@ public final class StationToStation implements Protocol {
       System.out.println("Signatur ist NICHT korrekt! ABBRUCH!");
       System.exit(0);
     }
-    
-    // decrypted S_B_encrypted with idea
+
+    // decrypt S_B_encrypted with idea
     BigInteger key = getIDEAKeyBasedOnK(k);
     IDEA idea = new IDEA(key);
     String S_B_decrypted = idea.decipher(S_B_encrypted);
+    BigInteger S_B = new BigInteger(S_B_decrypted, 16);
 
+    // alice überprüft die gültigkeit von S_B
+    // hash (rechte seite der gleichung)
+    BigInteger m = y_B.multiply(p).add(y_A); // h(y_B,y_A) = y_B * p + y_A laut heft
+    BigInteger hash = fingerprint.hash(m.toString(16));
+    BigInteger left = S_B.modPow(e_B, n_B); // decrypted with pub key (RSA) from bob
+
+    // check hashs
+    if (left.equals(hash)) {
+      System.out.println("hashs h(y_B, y_A) sind gleich! Alice akzeptiert k!");
+    } else {
+      System.out.println("Hashs nicht gleich! ABBRUCH!");
+      System.exit(0);
+    }
+    
 
   }
 
@@ -207,11 +222,11 @@ public final class StationToStation implements Protocol {
   public int maxPlayer() {
     return MaxPlayer;
   }
-  
+
   private BigInteger getIDEAKeyBasedOnK(BigInteger k) {
     int l = k.bitLength();
     BigInteger key = k.shiftRight(l - 128);
-    
+
     return key;
   }
 
