@@ -95,11 +95,7 @@ public final class StationToStation implements Protocol {
     Com.sendTo(1, y_A.toString(16));
 
     // alice empfängt certificate in einzelteilen
-    String ID_B = new String(Com.receive()); // get ID
-    byte[] data_B = Com.receive().getBytes(); // get data
-    BigInteger signature_B = new BigInteger(Com.receive(), 16); // get signature
-    // wieder certificate objekt draus machen
-    Certificate Z_B = new Certificate(ID_B, data_B, signature_B);
+    Certificate Z_B = buildCertificateBasedOnStrings(Com.receive(), Com.receive(), Com.receive());
 
     // alice empfängt y_B, S_B_encrypted
     BigInteger y_B = new BigInteger(Com.receive(), 16);
@@ -109,7 +105,7 @@ public final class StationToStation implements Protocol {
     BigInteger k = y_B.modPow(x_A, p);
 
     // check certificate
-    if (checkSignature(Z_B) == true) {
+    if (checkCertificate(Z_B) == true) {
       System.out.println("Signatur ist korrekt!");
     } else {
       System.out.println("Signatur ist NICHT korrekt! ABBRUCH!");
@@ -142,9 +138,7 @@ public final class StationToStation implements Protocol {
     System.out.println("Signatur S_A: " + S_A);
 
     // zertifikat generieren
-    BigInteger en_A = concat(rsa_A.e, rsa_A.n);
-    byte[] data_A = en_A.toByteArray();
-    Certificate Z_A = TrustedAuthority.newCertificate(data_A);
+    Certificate Z_A = generateCertificate(rsa_A.e, rsa_A.n);
 
     // signatur encrypted
     String S_A_encrypted = idea.encipher(S_A.toString(16));
@@ -208,9 +202,7 @@ public final class StationToStation implements Protocol {
     System.out.println("Signatur S_B: " + S_B);
 
     // zertifikat generieren
-    BigInteger en_B = concat(rsa_B.e, rsa_B.n);
-    byte[] data_B = en_B.toByteArray();
-    Certificate Z_B = TrustedAuthority.newCertificate(data_B);
+    Certificate Z_B = generateCertificate(rsa_B.e, rsa_B.n);
 
     // encrypted S_B with idea
     BigInteger key = getIDEAKeyBasedOnK(k);
@@ -229,11 +221,7 @@ public final class StationToStation implements Protocol {
     Com.sendTo(0, S_B_encrypted);
 
     // bob empfängt certificate in einzelteilen
-    String ID_A = new String(Com.receive()); // get ID
-    byte[] data_A = Com.receive().getBytes(); // get data
-    BigInteger signature_A = new BigInteger(Com.receive(), 16); // get signature
-    // wieder certificate objekt draus machen
-    Certificate Z_A = new Certificate(ID_A, data_A, signature_A);
+    Certificate Z_A = buildCertificateBasedOnStrings(Com.receive(), Com.receive(), Com.receive());
 
     // bob empfängt S_A_encrypted
     String S_A_encrypted = new String(Com.receive());
@@ -259,7 +247,28 @@ public final class StationToStation implements Protocol {
     return key;
   }
 
-  private boolean checkSignature(Certificate cert) {
+  private Certificate generateCertificate(BigInteger e, BigInteger n) {
+    BigInteger en = concat(e, n);
+    byte[] data = en.toByteArray();
+    Certificate cert = TrustedAuthority.newCertificate(data);
+
+    return cert;
+  }
+  
+  private Certificate buildCertificateBasedOnStrings(String ID, String data, String signature) {
+    byte[] dataArray = data.getBytes();
+    BigInteger signatureInteger = new BigInteger(signature, 16);
+    // wieder certificate objekt draus machen
+    Certificate cert = new Certificate(ID, dataArray, signatureInteger);
+    
+    return cert;
+  }
+
+  // private boolean checkSignature() {
+  //
+  // }
+
+  private boolean checkCertificate(Certificate cert) {
     boolean isCorrekt = false;
     MessageDigest sha = null;
 
