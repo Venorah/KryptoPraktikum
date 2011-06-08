@@ -101,6 +101,8 @@ public final class StationToStation implements Protocol {
 
     // alice empfängt certificate in einzelteilen
     Certificate Z_B = buildCertificateBasedOnStrings(Com.receive(), Com.receive(), Com.receive()); // R8,9,10
+    System.out.println("Z_B");
+    printCertificate(Z_B);
 
     // alice empfängt y_B, S_B_encrypted
     BigInteger y_B = new BigInteger(Com.receive(), 16); // R11
@@ -204,6 +206,8 @@ public final class StationToStation implements Protocol {
 
     // zertifikat generieren
     Certificate Z_B = generateCertificate(rsa_B.e, rsa_B.n);
+    System.out.println("Z_B");
+    printCertificate(Z_B);
 
     // encrypted S_B with idea
     BigInteger key = getIDEAKeyBasedOnK(k);
@@ -211,7 +215,7 @@ public final class StationToStation implements Protocol {
     String S_B_encrypted = idea.encipher(S_B.toString(16));
 
     // bob sendet certificate in einzelteilen
-    Com.sendTo(0, Z_B.getID().toString()); // send ID // S8
+    Com.sendTo(0, Z_B.getID()); // send ID // S8
     String data_send = new String(Z_B.getData());
     Com.sendTo(0, data_send); // send data (pub key) // S9
     Com.sendTo(0, Z_B.getSignature().toString(16)); // send signature //S10
@@ -302,14 +306,20 @@ public final class StationToStation implements Protocol {
     // left part of equation
     BigInteger left = S.modPow(e, n); // decrypted with pub key (RSA)
     
-    System.out.println("checkSig left: "+left);
-    System.out.println("checkSig hash: "+hash);
+    System.out.println("checkSignature left: "+left);
+    System.out.println("checkSignature hash: "+hash);
 
     if (left.equals(hash)) {
       isCorrekt = true;
     }
 
     return isCorrekt;
+  }
+  
+  private void printCertificate(Certificate cert) {
+    System.out.println("printCertificate ID: "+cert.getID());
+    System.out.println("printCertificate Data: "+new String(cert.getData()));
+    System.out.println("printCertificate Signature: "+cert.getSignature());
   }
 
   private boolean checkCertificate(Certificate cert) {
@@ -335,6 +345,10 @@ public final class StationToStation implements Protocol {
 
     // RSA signature
     BigInteger M = cert.getSignature().modPow(e_T, n_T);
+    
+
+    System.out.println("checkCertificate M: "+M);
+    System.out.println("checkCertificate hash: "+hash);
 
     if (M.equals(hash)) {
       isCorrekt = true;
