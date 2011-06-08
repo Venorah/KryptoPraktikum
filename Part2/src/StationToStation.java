@@ -17,16 +17,13 @@ public final class StationToStation implements Protocol {
   static private String NameOfTheGame = "Station To Station";
   private Communicator Com;
 
-  BigInteger ZERO = BigIntegerUtil.ZERO;
-  BigInteger ONE = BigIntegerUtil.ONE;
-  BigInteger TWO = BigIntegerUtil.TWO;
+  private BigInteger ONE = BigIntegerUtil.ONE;
+  private BigInteger TWO = BigIntegerUtil.TWO;
 
-  BigInteger p, g; // Primzahl p, prim. W. g
+  private BigInteger p, g; // Primzahl p, prim. W. g
 
-  BigInteger x, y, S;
-  BigInteger x_remote, y_remote, S_remote;
-
-  Fingerprint fingerprint;
+  private Fingerprint fingerprint;
+  private IDEA idea;
 
   public void getPrimeAndGenerator() {
     Random sc = new SecureRandom();
@@ -121,7 +118,7 @@ public final class StationToStation implements Protocol {
 
     // decrypt S_B_encrypted with idea
     BigInteger key = getIDEAKeyBasedOnK(k);
-    IDEA idea = new IDEA(key);
+    idea = new IDEA(key);
     String S_B_decrypted = idea.decipher(S_B_encrypted);
     BigInteger S_B = new BigInteger(S_B_decrypted, 16);
 
@@ -148,7 +145,7 @@ public final class StationToStation implements Protocol {
 
     // alice sendet Z_A in einzelteilen
     Com.sendTo(1, Z_A.getID()); // send ID // S13
-//    String data_send = new String(Z_A.getData());
+    // String data_send = new String(Z_A.getData());
     String data_send = serialize(Z_A.getData());
     Com.sendTo(1, data_send); // send data (pub key) // S14
     Com.sendTo(1, Z_A.getSignature().toString(16)); // send signature // S15
@@ -212,12 +209,12 @@ public final class StationToStation implements Protocol {
 
     // encrypted S_B with idea
     BigInteger key = getIDEAKeyBasedOnK(k);
-    IDEA idea = new IDEA(key);
+    idea = new IDEA(key);
     String S_B_encrypted = idea.encipher(S_B.toString(16));
 
-    // bob sendet certificate in einzelteilen    
+    // bob sendet certificate in einzelteilen
     Com.sendTo(0, Z_B.getID()); // send ID // S8
-//    String data_send = new String(Z_B.getData());
+    // String data_send = new String(Z_B.getData());
     String data_send = serialize(Z_B.getData());
     Com.sendTo(0, data_send); // send data (pub key) // S9
     Com.sendTo(0, Z_B.getSignature().toString(16)); // send signature //S10
@@ -286,7 +283,7 @@ public final class StationToStation implements Protocol {
   }
 
   private Certificate buildCertificateBasedOnStrings(String ID, String data, String signature) {
-//    byte[] dataArray = data.getBytes();
+    // byte[] dataArray = data.getBytes();
     byte[] dataArray = deserialize(data);
     BigInteger signatureInteger = new BigInteger(signature, 16);
     // wieder certificate objekt draus machen
@@ -308,9 +305,9 @@ public final class StationToStation implements Protocol {
 
     // left part of equation
     BigInteger left = S.modPow(e, n); // decrypted with pub key (RSA)
-    
-    System.out.println("checkSignature left: "+left);
-    System.out.println("checkSignature hash: "+hash);
+
+    System.out.println("checkSignature left: " + left);
+    System.out.println("checkSignature hash: " + hash);
 
     if (left.equals(hash)) {
       isCorrekt = true;
@@ -318,16 +315,20 @@ public final class StationToStation implements Protocol {
 
     return isCorrekt;
   }
-  
+
   private void printCertificate(Certificate cert) {
-    System.out.println("printCertificate ID: "+cert.getID());
-    System.out.println("printCertificate Data: "+new String(cert.getData()));
-    System.out.println("printCertificate Signature: "+cert.getSignature());
+    System.out.println("printCertificate ID: " + cert.getID());
+    System.out.println("printCertificate Data: " + new String(cert.getData()));
+    System.out.println("printCertificate Signature: " + cert.getSignature());
   }
 
   private boolean checkCertificate(Certificate cert) {
     boolean isCorrekt = false;
     MessageDigest sha = null;
+
+    // get public key of trusted authority
+    BigInteger n_T = TrustedAuthority.getModulus();
+    BigInteger e_T = TrustedAuthority.getPublicExponent();
 
     // make SHA Hashfunction
     try {
@@ -340,18 +341,13 @@ public final class StationToStation implements Protocol {
     sha.update(cert.getID().getBytes());
     sha.update(cert.getData());
     byte[] digest = sha.digest();
-    BigInteger hash = new BigInteger(digest);
-
-    // get public key of trusted authority
-    BigInteger n_T = TrustedAuthority.getModulus();
-    BigInteger e_T = TrustedAuthority.getPublicExponent();
+    BigInteger hash = new BigInteger(digest).mod(n_T);
 
     // RSA signature
     BigInteger M = cert.getSignature().modPow(e_T, n_T);
-    
 
-    System.out.println("checkCertificate M: "+M);
-    System.out.println("checkCertificate hash: "+hash);
+    System.out.println("checkCertificate M: " + M);
+    System.out.println("checkCertificate hash: " + hash);
 
     if (M.equals(hash)) {
       isCorrekt = true;
@@ -364,19 +360,19 @@ public final class StationToStation implements Protocol {
     int rightBlockLength = rightBlock.bitLength();
     return (leftBlock.shiftLeft(rightBlockLength)).add(rightBlock);
   }
-  
-  public String serialize(byte[] array){
+
+  public String serialize(byte[] array) {
     String output = "";
-    for(int i=0; i<array.length; i++){
+    for (int i = 0; i < array.length; i++) {
       output += array[i] + " ";
     }
     return output;
   }
-  
-  public byte[] deserialize(String message){
+
+  public byte[] deserialize(String message) {
     String[] array = message.split(" ");
     byte[] output = new byte[array.length];
-    for(int i=0; i<array.length; i++){
+    for (int i = 0; i < array.length; i++) {
       output[i] = Byte.valueOf(array[i]);
     }
     return output;
