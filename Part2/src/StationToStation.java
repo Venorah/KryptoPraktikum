@@ -95,23 +95,21 @@ public final class StationToStation implements Protocol {
     Com.sendTo(1, y_A.toString(16));
 
     // alice empfängt certificate in einzelteilen
-    String ID = new String(Com.receive()); // get ID
-    byte[] data = Com.receive().getBytes(); // get data
-    BigInteger signature = new BigInteger(Com.receive(), 16); // get signature
+    String ID_B = new String(Com.receive()); // get ID
+    byte[] data_B = Com.receive().getBytes(); // get data
+    BigInteger signature_B = new BigInteger(Com.receive(), 16); // get signature
     // wieder certificate objekt draus machen
-    Certificate cert = new Certificate(ID, data, signature);
+    Certificate Z_B = new Certificate(ID_B, data_B, signature_B);
 
-    // alice empfängt
+    // alice empfängt y_B, S_B_encrypted
     BigInteger y_B = new BigInteger(Com.receive(), 16);
-
-    // alice empfängt S_B encrypted
     String S_B_encrypted = new String(Com.receive());
 
     // alice berechnet k
     BigInteger k = y_B.modPow(x_A, p);
 
     // check certificate
-    if (checkSignature(cert) == true) {
+    if (checkSignature(Z_B) == true) {
       System.out.println("Signatur ist korrekt!");
     } else {
       System.out.println("Signatur ist NICHT korrekt! ABBRUCH!");
@@ -127,7 +125,7 @@ public final class StationToStation implements Protocol {
     // hash h(y_B, y_A) generieren
     BigInteger m = y_B.multiply(p).add(y_A); // h(y_B,y_A) = y_B * p + y_A laut heft
     BigInteger hash = fingerprint.hash(m.toString(16));
-    
+
     // left part of equation
     BigInteger left = S_B.modPow(e_B, n_B); // decrypted with pub key (RSA) from bob
 
@@ -142,8 +140,21 @@ public final class StationToStation implements Protocol {
     // signatur von alice S_A generieren
     BigInteger S_A = rsa_A.getSignatur(hash); // S_A = hash^d_A mod n_A
     System.out.println("Signatur S_A: " + S_A);
-    
-    
+
+    // zertifikat generieren
+    byte[] data_A = (rsa_A.e.xor(rsa_A.n)).toByteArray(); // TODO: XOR nehmen?
+    Certificate Z_A = TrustedAuthority.newCertificate(data_A);
+
+    // signatur encrypted
+    String S_A_encrypted = idea.encipher(S_A.toString(16));
+
+    // alice sendet Z_A in einzelteilen
+    Com.sendTo(1, Z_A.getID().toString()); // send ID
+    Com.sendTo(1, Z_A.getData().toString()); // send data (pub key)
+    Com.sendTo(1, Z_A.getSignature().toString(16)); // send signature
+
+    // und S_A_encrypted (ohne y_A, das wurde schon gesendet)
+    Com.sendTo(1, S_A_encrypted);
 
   }
 
@@ -195,9 +206,14 @@ public final class StationToStation implements Protocol {
     BigInteger S_B = rsa_B.getSignatur(hash); // S_B = hash^d_B mod n_B
     System.out.println("Signatur S_B: " + S_B);
 
-    // zertifikat
-    byte[] data = (e_A.xor(n_A)).toByteArray(); // TODO: XOR nehmen?
-    Certificate Z_B = TrustedAuthority.newCertificate(data);
+    // zertifikat generieren
+    byte[] data_B = (e_A.xor(n_A)).toByteArray(); // TODO: XOR nehmen?
+    Certificate Z_B = TrustedAuthority.newCertificate(data_B);
+
+    // encrypted S_B with idea
+    BigInteger key = getIDEAKeyBasedOnK(k);
+    IDEA idea = new IDEA(key);
+    String S_B_encrypted = idea.encipher(S_B.toString(16));
 
     // bob sendet certificate in einzelteilen
     Com.sendTo(0, Z_B.getID().toString()); // send ID
@@ -207,14 +223,20 @@ public final class StationToStation implements Protocol {
     // bob sendet y_B
     Com.sendTo(0, y_B.toString(16));
 
-    // encrypted S_B with idea
-    BigInteger key = getIDEAKeyBasedOnK(k);
-    IDEA idea = new IDEA(key);
-    String S_B_encrypted = idea.encipher(S_B.toString(16));
-
     // bob sendet S_B_encrypted
     Com.sendTo(0, S_B_encrypted);
 
+    // bob empfängt certificate in einzelteilen
+    String ID_A = new String(Com.receive()); // get ID
+    byte[] data_A = Com.receive().getBytes(); // get data
+    BigInteger signature_A = new BigInteger(Com.receive(), 16); // get signature
+    // wieder certificate objekt draus machen
+    Certificate Z_A = new Certificate(ID_A, data_A, signature_A);
+
+    // bob empfängt S_A_encrypted
+    String S_A_encrypted = new String(Com.receive());
+    
+    
   }
 
   public String nameOfTheGame() {
