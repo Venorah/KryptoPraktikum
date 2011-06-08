@@ -29,12 +29,11 @@ import de.tubs.cs.iti.jcrypt.chiffre.BlockCipher;
  * @version 1.1 - Sat Apr 03 21:57:35 CEST 2010
  */
 public final class IDEA {
-
-  // String keyString;
-  BigInteger keyInteger;
   static BigInteger[][] encKeys;
   static BigInteger[][] decKeys;
-  
+
+  // parameters
+  private BigInteger keyInteger;
   private BigInteger iv;
 
   public IDEA(BigInteger keyInteger, BigInteger iv) {
@@ -42,11 +41,8 @@ public final class IDEA {
     this.iv = iv;
   }
 
-  // public void encipher(FileInputStream cleartext, FileOutputStream ciphertext) {
   public String encipher(String cleartext) {
-
     // generate keys
-    // BigInteger keyInteger = Helper.stringToBigInteger(keyString);
     BigInteger[] keyArray = Helper.extractValues(keyInteger, 8, 16);
     encKeys = getEncryptionKeys(keyArray);
     decKeys = getDecryptionKeys(encKeys);
@@ -58,7 +54,7 @@ public final class IDEA {
     for (int i = 0; i < message.length; i++) {
       messageArray[i] = Helper.stringToBigInteger(message[i]);
     }
-    
+
     // Cipher Block Chaining (CBC), output as array with 64bit blocks
     BigInteger output[] = cbcLoop(messageArray, iv, true);
 
@@ -68,21 +64,19 @@ public final class IDEA {
     for (int i = 0; i < output.length; i++) {
       outputString += output[i].toString(16);
     }
-    System.out.println("IDEA ecipher: "+outputString);
+    System.out.println("IDEA ecipher: " + outputString);
 
     return outputString;
   }
 
   public String decipher(String ciphertext) {
     // generate keys
-    // BigInteger keyInteger = Helper.stringToBigInteger(keyString);
     BigInteger[] keyArray = Helper.extractValues(keyInteger, 8, 16);
     encKeys = getEncryptionKeys(keyArray);
     decKeys = getDecryptionKeys(encKeys);
 
     // get message as array with 64bit blocks
     String cipherTextString = ciphertext;
-
 
     int size = (cipherTextString.length() / 16);
     BigInteger[] messageArray = new BigInteger[size];
@@ -100,7 +94,7 @@ public final class IDEA {
     // build output for writing to file
     String outputString = Helper.bigIntegerArrayToString(output);
 
-    System.out.println("IDEA decipher: "+outputString);
+    System.out.println("IDEA decipher: " + outputString);
 
     return outputString;
 
