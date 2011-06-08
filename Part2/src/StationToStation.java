@@ -9,7 +9,6 @@ import java.security.SecureRandom;
 import java.util.Random;
 import de.tubs.cs.iti.jcrypt.chiffre.BigIntegerUtil;
 import de.tubs.cs.iti.krypto.protokoll.*;
-import java.security.MessageDigest;
 
 public final class StationToStation implements Protocol {
 
@@ -65,6 +64,8 @@ public final class StationToStation implements Protocol {
    * Aktionen der beginnenden Partei. Bei den 2-Parteien-Protokollen seien dies die Aktionen von Alice.
    */
   public void sendFirst() {
+    System.out.println("-- Alice --");
+
     // fingerprint werte aus datei auslesen
     fingerprint = new Fingerprint(new File("HashParameter"));
 
@@ -110,9 +111,9 @@ public final class StationToStation implements Protocol {
 
     // check certificate
     if (checkCertificate(Z_B) == true) {
-      System.out.println("Signatur von Bob ist korrekt!");
+      System.out.println("Zertifikat Check: Zertifikat von Bob ist korrekt!");
     } else {
-      System.out.println("Signatur von Bob ist NICHT korrekt! ABBRUCH!");
+      System.out.println("Zertifikat Check: Zertifikat von Bob ist NICHT korrekt! ABBRUCH!");
       System.exit(0);
     }
 
@@ -127,9 +128,9 @@ public final class StationToStation implements Protocol {
 
     // alice überprüft die gültigkeit von S_B
     if (checkSignature(hash, S_B, e_B, n_B) == true) {
-      System.out.println("hashs h(y_B, y_A) sind gleich! Alice akzeptiert k!");
+      System.out.println("Signature Check: hashs h(y_B, y_A) sind gleich! Alice akzeptiert k!");
     } else {
-      System.out.println("Hashs nicht gleich! ABBRUCH!");
+      System.out.println("Signature Check: Hashs nicht gleich! ABBRUCH!");
       System.exit(0);
     }
 
@@ -145,7 +146,8 @@ public final class StationToStation implements Protocol {
 
     // alice sendet Z_A in einzelteilen
     Com.sendTo(1, Z_A.getID().toString()); // send ID // S13
-    Com.sendTo(1, Z_A.getData().toString()); // send data (pub key) // S14
+    String data_send = new String(Z_A.getData());
+    Com.sendTo(1, data_send); // send data (pub key) // S14
     Com.sendTo(1, Z_A.getSignature().toString(16)); // send signature // S15
 
     // und S_A_encrypted (ohne y_A, das wurde schon gesendet)
@@ -157,6 +159,8 @@ public final class StationToStation implements Protocol {
    * Aktionen der uebrigen Parteien. Bei den 2-Parteien-Protokollen seien dies die Aktionen von Bob.
    */
   public void receiveFirst() {
+    System.out.println("-- Bob --");
+
     // fingerprint werte aus datei auslesen
     fingerprint = new Fingerprint(new File("HashParameter"));
 
@@ -214,7 +218,8 @@ public final class StationToStation implements Protocol {
     System.out.println("S10  " + Z_B.getSignature().toString(16)); // send signature //S10
     
     Com.sendTo(0, Z_B.getID().toString()); // send ID // S8
-    Com.sendTo(0, Z_B.getData().toString()); // send data (pub key) // S9
+    String data_send = new String(Z_B.getData());
+    Com.sendTo(0, data_send); // send data (pub key) // S9
     Com.sendTo(0, Z_B.getSignature().toString(16)); // send signature //S10
 
     // bob sendet y_B
@@ -230,9 +235,9 @@ public final class StationToStation implements Protocol {
 
     // check certificate
     if (checkCertificate(Z_A) == true) {
-      System.out.println("Signatur von Alice ist korrekt!");
+      System.out.println("Zertifikat Check: Zertifikat von Alice ist korrekt!");
     } else {
-      System.out.println("Signatur von Alice ist NICHT korrekt! ABBRUCH!");
+      System.out.println("Zertifikat Check: Zertifikat von Alice ist NICHT korrekt! ABBRUCH!");
       System.exit(0);
     }
 
@@ -245,9 +250,9 @@ public final class StationToStation implements Protocol {
 
     // alice überprüft die gültigkeit von S_B
     if (checkSignature(hash, S_A, e_A, n_A) == true) {
-      System.out.println("hashs h(y_B, y_A) sind gleich! Bob akzeptiert k!");
+      System.out.println("Signature Check: hashs h(y_B, y_A) sind gleich! Bob akzeptiert k!");
     } else {
-      System.out.println("Hashs nicht gleich! ABBRUCH!");
+      System.out.println("Signature Check: Hashs nicht gleich! ABBRUCH!");
       System.exit(0);
     }
 
@@ -302,6 +307,9 @@ public final class StationToStation implements Protocol {
 
     // left part of equation
     BigInteger left = S.modPow(e, n); // decrypted with pub key (RSA)
+    
+    System.out.println("checkSig left: "+left);
+    System.out.println("checkSig hash: "+hash);
 
     if (left.equals(hash)) {
       isCorrekt = true;
