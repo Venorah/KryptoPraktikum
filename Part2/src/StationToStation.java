@@ -206,7 +206,13 @@ public final class StationToStation implements Protocol {
     IDEA idea = new IDEA(key);
     String S_B_encrypted = idea.encipher(S_B.toString(16));
 
+    byte[] check = Z_B.getData();
+    
     // bob sendet certificate in einzelteilen
+    System.out.println("S8   " + Z_B.getID().toString()); // send ID // S8
+    System.out.println("S9   " + Z_B.getData().toString()); // send data (pub key) // S9
+    System.out.println("S10  " + Z_B.getSignature().toString(16)); // send signature //S10
+    
     Com.sendTo(0, Z_B.getID().toString()); // send ID // S8
     Com.sendTo(0, Z_B.getData().toString()); // send data (pub key) // S9
     Com.sendTo(0, Z_B.getSignature().toString(16)); // send signature //S10
