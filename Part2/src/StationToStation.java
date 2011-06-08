@@ -141,7 +141,9 @@ public final class StationToStation implements Protocol {
     Certificate Z_A = generateCertificate(rsa_A.e, rsa_A.n);
 
     // signatur encrypted
-    String S_A_encrypted = idea.encipher(S_A.toString(16));
+    String message = S_A.toString(16);
+    String S_A_encrypted = idea.encipher(message);
+    String dec = idea.decipher(S_A_encrypted);
 
     // alice sendet Z_A in einzelteilen
     Com.sendTo(1, Z_A.getID()); // send ID // S13
@@ -209,8 +211,11 @@ public final class StationToStation implements Protocol {
 
     // encrypted S_B with idea
     BigInteger key = getIDEAKeyBasedOnK(k);
-    idea = new IDEA(key);
-    String S_B_encrypted = idea.encipher(S_B.toString(16));
+    IDEA idea = new IDEA(key);
+    
+    String message = S_B.toString(16);
+    String S_B_encrypted = idea.encipher(message);
+    String dec = idea.decipher(S_B_encrypted);
 
     // bob sendet certificate in einzelteilen
     Com.sendTo(0, Z_B.getID()); // send ID // S8
