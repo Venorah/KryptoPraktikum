@@ -142,7 +142,8 @@ public final class StationToStation implements Protocol {
     System.out.println("Signatur S_A: " + S_A);
 
     // zertifikat generieren
-    byte[] data_A = (rsa_A.e.xor(rsa_A.n)).toByteArray(); // TODO: XOR nehmen?
+    BigInteger en_A = concat(rsa_A.e, rsa_A.n);
+    byte[] data_A = en_A.toByteArray();
     Certificate Z_A = TrustedAuthority.newCertificate(data_A);
 
     // signatur encrypted
@@ -207,7 +208,8 @@ public final class StationToStation implements Protocol {
     System.out.println("Signatur S_B: " + S_B);
 
     // zertifikat generieren
-    byte[] data_B = (e_A.xor(n_A)).toByteArray(); // TODO: XOR nehmen?
+    BigInteger en_B = concat(rsa_B.e, rsa_B.n);
+    byte[] data_B = en_B.toByteArray();
     Certificate Z_B = TrustedAuthority.newCertificate(data_B);
 
     // encrypted S_B with idea
@@ -235,8 +237,7 @@ public final class StationToStation implements Protocol {
 
     // bob empfängt S_A_encrypted
     String S_A_encrypted = new String(Com.receive());
-    
-    
+
   }
 
   public String nameOfTheGame() {
@@ -288,4 +289,10 @@ public final class StationToStation implements Protocol {
 
     return isCorrekt;
   }
+
+  public BigInteger concat(BigInteger leftBlock, BigInteger rightBlock) {
+    int rightBlockLength = rightBlock.bitLength();
+    return (leftBlock.shiftLeft(rightBlockLength)).add(rightBlock);
+  }
+
 }
