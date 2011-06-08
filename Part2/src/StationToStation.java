@@ -94,15 +94,21 @@ public final class StationToStation implements Protocol {
     // y_A an bob senden
     Com.sendTo(1, y_A.toString(16));
 
-    // alice empfängt
-    BigInteger y_B = new BigInteger(Com.receive(), 16);
-
     // alice empfängt certificate in einzelteilen
     String ID = new String(Com.receive()); // get ID
     byte[] data = Com.receive().getBytes(); // get data
     BigInteger signature = new BigInteger(Com.receive(), 16); // get signature
     // wieder certificate objekt draus machen
     Certificate cert = new Certificate(ID, data, signature);
+
+    // alice empfängt
+    BigInteger y_B = new BigInteger(Com.receive(), 16);
+
+    // alice empfängt S_B encrypted
+    String S_B_encrypted = new String(Com.receive());
+
+    // alice berechnet k
+    BigInteger k = y_B.modPow(x_A, p);
 
     // check certificate
     if (checkSignature(cert) == true) {
@@ -111,13 +117,12 @@ public final class StationToStation implements Protocol {
       System.out.println("Signatur ist NICHT korrekt! ABBRUCH!");
       System.exit(0);
     }
+    
+    // decrypted S_B_encrypted with idea
+    BigInteger key = getIDEAKeyBasedOnK(k);
+    IDEA idea = new IDEA(key);
+    String S_B_decrypted = idea.decipher(S_B_encrypted);
 
-    String S_B_encrypted = new String(Com.receive());
-
-    // alice berechnet k
-    BigInteger k = y_B.modPow(x_A, p);
-
-    // TODO: zertifikat überprüfen
 
   }
 
@@ -169,11 +174,8 @@ public final class StationToStation implements Protocol {
     BigInteger S_B = rsa_B.getSignatur(hash); // S_B = hash^d_B mod n_B
     System.out.println("Signatur S_B: " + S_B);
 
-    // bob sendet y_B
-    Com.sendTo(0, y_B.toString(16));
-
     // zertifikat
-    byte[] data = (e_A.xor(n_A)).toByteArray();
+    byte[] data = (e_A.xor(n_A)).toByteArray(); // TODO: XOR nehmen?
     Certificate Z_B = TrustedAuthority.newCertificate(data);
 
     // bob sendet certificate in einzelteilen
@@ -181,11 +183,11 @@ public final class StationToStation implements Protocol {
     Com.sendTo(0, Z_B.getData().toString()); // send data (pub key)
     Com.sendTo(0, Z_B.getSignature().toString(16)); // send signature
 
+    // bob sendet y_B
+    Com.sendTo(0, y_B.toString(16));
+
     // encrypted S_B with idea
-    int l = k.bitLength();
-    BigInteger key = k.shiftRight(l - 128);
-    System.out.println(key);
-    System.out.println(key.bitLength());
+    BigInteger key = getIDEAKeyBasedOnK(k);
     IDEA idea = new IDEA(key);
     String S_B_encrypted = idea.encipher(S_B.toString(16));
 
@@ -205,8 +207,15 @@ public final class StationToStation implements Protocol {
   public int maxPlayer() {
     return MaxPlayer;
   }
+  
+  private BigInteger getIDEAKeyBasedOnK(BigInteger k) {
+    int l = k.bitLength();
+    BigInteger key = k.shiftRight(l - 128);
+    
+    return key;
+  }
 
-  public boolean checkSignature(Certificate cert) {
+  private boolean checkSignature(Certificate cert) {
     boolean isCorrekt = false;
     MessageDigest sha = null;
 
