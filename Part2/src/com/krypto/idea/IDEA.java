@@ -1,111 +1,54 @@
 package com.krypto.idea;
 
-/*
- * jCrypt - Programmierumgebung für das Kryptologie-Praktikum
- * Studienarbeit am Institut für Theoretische Informatik der
- * Technischen Universität Braunschweig
- * 
- * Datei:        IDEA.java
- * Beschreibung: Dummy-Implementierung des International Data Encryption
- *               Algorithm (IDEA)
- * Erstellt:     30. März 2010
- * Autor:        Martin Klußmann
- */
-
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.math.BigInteger;
-import java.util.Random;
-import de.tubs.cs.iti.jcrypt.chiffre.BlockCipher;
 
-/**
- * Dummy-Klasse für den International Data Encryption Algorithm (IDEA).
- * 
- * @author Martin Klußmann
- * @version 1.1 - Sat Apr 03 21:57:35 CEST 2010
- */
 public final class IDEA {
+
+  String keyString;
+  BigInteger keyInteger;
   static BigInteger[][] encKeys;
   static BigInteger[][] decKeys;
+  BigInteger iv;
 
-  // parameters
-  private BigInteger keyInteger;
-  private BigInteger iv;
+  // public IDEA(String keyString) {
+  // keyInteger = new BigInteger(keyString.getBytes());
+  // // System.out.println("bitlength: " + keyInteger.bitLength());
+  // BigInteger[] keyArray = Helper.extractValues(keyInteger, 8, 16);
+  // encKeys = getEncryptionKeys(keyArray);
+  // decKeys = getDecryptionKeys(encKeys);
+  // }
 
   public IDEA(BigInteger keyInteger, BigInteger iv) {
     this.keyInteger = keyInteger;
     this.iv = iv;
-  }
-
-  public String encipher(String cleartext) {
-    // generate keys
     BigInteger[] keyArray = Helper.extractValues(keyInteger, 8, 16);
     encKeys = getEncryptionKeys(keyArray);
     decKeys = getDecryptionKeys(encKeys);
+  }
 
-    // get message as array with 64bit blocks
-    String clearTextString = cleartext;
+  public BigInteger[] encipher(String clearTextString) {
+
     String[] message = Helper.getTextAsStringArray(clearTextString, 8);
     BigInteger[] messageArray = new BigInteger[message.length];
+
     for (int i = 0; i < message.length; i++) {
       messageArray[i] = Helper.stringToBigInteger(message[i]);
     }
 
-
-    // Cipher Block Chaining (CBC), output as array with 64bit blocks
     BigInteger output[] = cbcLoop(messageArray, iv, true);
 
-    // build output for writing to file
-
-    String outputString = "";
-    // then ciphertext as hex
-    for (int i = 0; i < output.length; i++) {
-      outputString += output[i].toString(16);
-    }
-    System.out.println("IDEA ecipher: " + outputString);
-
-    return outputString;
+    return output;
   }
 
-  public String decipher(String ciphertext) {
-    // generate keys
-    BigInteger[] keyArray = Helper.extractValues(keyInteger, 8, 16);
-    encKeys = getEncryptionKeys(keyArray);
-    decKeys = getDecryptionKeys(encKeys);
+  public String decipher(BigInteger[] cipher) {
 
-    // get message as array with 64bit blocks
-    String cipherTextString = ciphertext;
-
-    int size = (cipherTextString.length() / 16);
-
-    BigInteger[] messageArray = new BigInteger[size];
-    System.out.println(size);
-
-    for (int i = 0; i < size; i++) {
-      String subString = cipherTextString.substring(0, 16);
-      cipherTextString = cipherTextString.substring(16);
-
-        messageArray[i] = new BigInteger(subString, 16);
-      
-    }
-
-    // Cipher Block Chaining (CBC), output as array with 64bit blocks
-    BigInteger output[] = cbcLoop(messageArray, iv, false);
-
-    // build output for writing to file
+    BigInteger output[] = cbcLoop(cipher, iv, false);
     String outputString = Helper.bigIntegerArrayToString(output);
 
-    System.out.println("IDEA decipher: " + outputString);
-
-    return outputString;
-
+    return outputString.trim();
   }
 
-  private BigInteger cbcBlock(BigInteger message, BigInteger iv, boolean isEncryption) {
+  public BigInteger cbcBlock(BigInteger message, BigInteger iv, boolean isEncryption) {
     BigInteger output = null;
     if (isEncryption) {
       // message xor iv
@@ -124,7 +67,7 @@ public final class IDEA {
     return output;
   }
 
-  private BigInteger[] cbcLoop(BigInteger[] message, BigInteger iv, boolean isEncryption) {
+  public BigInteger[] cbcLoop(BigInteger[] message, BigInteger iv, boolean isEncryption) {
     BigInteger[] outputArray = new BigInteger[message.length];
 
     for (int i = 0; i < message.length; i++) {
@@ -139,7 +82,7 @@ public final class IDEA {
     return outputArray;
   }
 
-  private BigInteger idea(BigInteger input, boolean isEncryption) {
+  public BigInteger idea(BigInteger input, boolean isEncryption) {
     // make 4*16bit block array
     BigInteger[] messagePart = Helper.extractValues(input, 16, 4);
 
@@ -200,7 +143,7 @@ public final class IDEA {
    *          switch for enc/dec
    * @return
    */
-  private BigInteger[] feistelNetwork(BigInteger[] M, BigInteger[] K, int round) {
+  public BigInteger[] feistelNetwork(BigInteger[] M, BigInteger[] K, int round) {
     BigInteger[] output = new BigInteger[4];
 
     if (round < 8) {
@@ -245,7 +188,7 @@ public final class IDEA {
     return output;
   }
 
-  private BigInteger[] getSubBlocks(String textPart) {
+  public BigInteger[] getSubBlocks(String textPart) {
     BigInteger[] array = new BigInteger[(textPart.length()) / 2];
 
     BigInteger[] bigArray = Helper.stringToBigIntegerArray(textPart);
@@ -260,7 +203,7 @@ public final class IDEA {
     return array;
   }
 
-  private BigInteger[][] getEncryptionKeys(BigInteger[] keyArray) {
+  public BigInteger[][] getEncryptionKeys(BigInteger[] keyArray) {
     // String keyString
     BigInteger[] outputArray = new BigInteger[52];
 
@@ -303,7 +246,7 @@ public final class IDEA {
     return nicerArray;
   }
 
-  private BigInteger[][] getDecryptionKeys(BigInteger[][] encryptionKeys) {
+  public BigInteger[][] getDecryptionKeys(BigInteger[][] encryptionKeys) {
     BigInteger[][] dencryptionKeys = new BigInteger[9][6];
 
     // reverse array

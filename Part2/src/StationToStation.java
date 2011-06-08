@@ -104,7 +104,7 @@ public final class StationToStation implements Protocol {
 
     // alice empfängt y_B, S_B_encrypted
     BigInteger y_B = new BigInteger(Com.receive(), 16); // R11
-    String S_B_encrypted = new String(Com.receive()); // R12
+    BigInteger[] S_B_encrypted = deserializeBigIntegerArray(Com.receive()); // R12
 
     // alice berechnet k
     BigInteger k = y_B.modPow(x_A, p);
@@ -144,8 +144,7 @@ public final class StationToStation implements Protocol {
 
     // signatur encrypted
     String message = S_A.toString(16);
-    String S_A_encrypted = idea.encipher(message);
-    String dec = idea.decipher(S_A_encrypted);
+    String S_A_encrypted = serializeBigIntegerArray(idea.encipher(message));
 
     // alice sendet Z_A in einzelteilen
     Com.sendTo(1, Z_A.getID()); // send ID // S13
@@ -216,10 +215,9 @@ public final class StationToStation implements Protocol {
 
     BigInteger iv = new BigInteger("ddc3a8f6c66286d2", 16);
     idea = new IDEA(key, iv);
-    
+
     String message = S_B.toString(16);
-    String S_B_encrypted = idea.encipher(message);
-    String dec = idea.decipher(S_B_encrypted);
+    String S_B_encrypted = serializeBigIntegerArray(idea.encipher(message));
 
     // bob sendet certificate in einzelteilen
     Com.sendTo(0, Z_B.getID()); // send ID // S8
@@ -248,7 +246,7 @@ public final class StationToStation implements Protocol {
     }
 
     // bob empfängt S_A_encrypted
-    String S_A_encrypted = new String(Com.receive()); // R16
+    BigInteger[] S_A_encrypted = deserializeBigIntegerArray(Com.receive()); // R16
 
     // decrypt S_A_encrypted with idea
     String S_A_decrypted = idea.decipher(S_A_encrypted);
@@ -368,6 +366,23 @@ public final class StationToStation implements Protocol {
   public BigInteger concat(BigInteger leftBlock, BigInteger rightBlock) {
     int rightBlockLength = rightBlock.bitLength();
     return (leftBlock.shiftLeft(rightBlockLength)).add(rightBlock);
+  }
+
+  public String serializeBigIntegerArray(BigInteger[] array) {
+    String output = "";
+    for (int i = 0; i < array.length; i++) {
+      output += array[i].toString(16) + " ";
+    }
+    return output;
+  }
+
+  public BigInteger[] deserializeBigIntegerArray(String message) {
+    String[] array = message.split(" ");
+    BigInteger[] output = new BigInteger[array.length];
+    for (int i = 0; i < array.length; i++) {
+      output[i] = new BigInteger(array[i], 16);
+    }
+    return output;
   }
 
   public String serialize(byte[] array) {
