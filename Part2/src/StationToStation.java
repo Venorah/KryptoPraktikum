@@ -58,7 +58,8 @@ public final class StationToStation implements Protocol {
   }
 
   /**
-   * Aktionen der beginnenden Partei. Bei den 2-Parteien-Protokollen seien dies die Aktionen von Alice.
+   * Aktionen der beginnenden Partei. Bei den 2-Parteien-Protokollen seien dies die Aktionen von
+   * Alice.
    */
   public void sendFirst() {
     System.out.println("-- Alice --");
@@ -212,8 +213,9 @@ public final class StationToStation implements Protocol {
     // encrypted S_B with idea
     BigInteger key = getIDEAKeyBasedOnK(k);
     IDEA idea = new IDEA(key);
-    
-    String message = S_B.toString(16);
+
+    // String message = S_B.toString(16);
+    String message = S_B.toString();
     String S_B_encrypted = idea.encipher(message);
     String dec = idea.decipher(S_B_encrypted);
 

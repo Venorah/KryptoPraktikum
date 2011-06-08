@@ -57,17 +57,15 @@ public final class IDEA {
     }
 
     // randomly choose 64bit IV
-    // Random rnd = new Random();
-    // BigInteger iv = new BigInteger(64, rnd);
-    BigInteger iv = new BigInteger("ddc3a8f6c66286d2", 16);
+    Random rnd = new Random();
+    BigInteger iv = new BigInteger(64, rnd);
 
     // Cipher Block Chaining (CBC), output as array with 64bit blocks
     BigInteger output[] = cbcLoop(messageArray, iv, true);
 
     // build output for writing to file
     // first prepend iv to String
-    // String outputString = iv.toString(16);
-    String outputString = new String("");
+    String outputString = iv.toString(16);
     // then ciphertext as hex
     for (int i = 0; i < output.length; i++) {
       outputString += output[i].toString(16);
@@ -90,28 +88,18 @@ public final class IDEA {
     // (message.length - 1) because 0 is iv!
     int size = (cipherTextString.length() / 16);
     BigInteger[] messageArray = new BigInteger[(size - 1)];
-
-    BigInteger iv = new BigInteger("ddc3a8f6c66286d2", 16);
-
+    BigInteger iv = null;
     for (int i = 0; i < size; i++) {
       String subString = cipherTextString.substring(0, 16);
       cipherTextString = cipherTextString.substring(16);
 
-      messageArray[i] = new BigInteger(subString, 16);
-    }
+      if (i == 0) {
+        iv = new BigInteger(subString, 16);
 
-    // BigInteger iv = null;
-    // for (int i = 0; i < size; i++) {
-    // String subString = cipherTextString.substring(0, 16);
-    // cipherTextString = cipherTextString.substring(16);
-    //
-    // if (i == 0) {
-    // iv = new BigInteger(subString, 16);
-    //
-    // } else {
-    // messageArray[i - 1] = new BigInteger(subString, 16);
-    // }
-    // }
+      } else {
+        messageArray[i - 1] = new BigInteger(subString, 16);
+      }
+    }
 
     // Cipher Block Chaining (CBC), output as array with 64bit blocks
     BigInteger output[] = cbcLoop(messageArray, iv, false);
