@@ -72,20 +72,20 @@ public final class StationToStation implements Protocol {
     getPrimeAndGenerator();
     System.out.println("p: " + p);
     System.out.println("g: " + g);
-    Com.sendTo(1, p.toString(16));
-    Com.sendTo(1, g.toString(16));
+    Com.sendTo(1, p.toString(16)); // S1
+    Com.sendTo(1, g.toString(16)); // S2
 
     // alice sendet öffentlichen schlüssel an bob
     RSA rsa_A = new RSA();
     System.out.println("RSA Alice e: " + rsa_A.e);
     System.out.println("RSA Alice n: " + rsa_A.n);
     System.out.println("RSA Alice d: " + rsa_A.d);
-    Com.sendTo(1, rsa_A.e.toString(16));
-    Com.sendTo(1, rsa_A.n.toString(16));
+    Com.sendTo(1, rsa_A.e.toString(16)); // S3
+    Com.sendTo(1, rsa_A.n.toString(16)); // S4
 
     // alice empfängt öffentlichen schlüssel von bob
-    BigInteger e_B = new BigInteger(Com.receive(), 16);
-    BigInteger n_B = new BigInteger(Com.receive(), 16);
+    BigInteger e_B = new BigInteger(Com.receive(), 16); // R5
+    BigInteger n_B = new BigInteger(Com.receive(), 16); // R6
     System.out.println("Bob e: " + e_B);
     System.out.println("Bob n: " + n_B);
 
@@ -94,14 +94,16 @@ public final class StationToStation implements Protocol {
     // alice wählt x_A = g^(x_A) mod p
     BigInteger y_A = g.modPow(x_A, p);
     // y_A an bob senden
-    Com.sendTo(1, y_A.toString(16));
+    Com.sendTo(1, y_A.toString(16)); // S7
+
+    System.out.println("Alice: Receive cert");
 
     // alice empfängt certificate in einzelteilen
-    Certificate Z_B = buildCertificateBasedOnStrings(Com.receive(), Com.receive(), Com.receive());
+    Certificate Z_B = buildCertificateBasedOnStrings(Com.receive(), Com.receive(), Com.receive()); // R8,9,10
 
     // alice empfängt y_B, S_B_encrypted
-    BigInteger y_B = new BigInteger(Com.receive(), 16);
-    String S_B_encrypted = new String(Com.receive());
+    BigInteger y_B = new BigInteger(Com.receive(), 16); // R11
+    String S_B_encrypted = new String(Com.receive()); // R12
 
     // alice berechnet k
     BigInteger k = y_B.modPow(x_A, p);
@@ -142,12 +144,12 @@ public final class StationToStation implements Protocol {
     String S_A_encrypted = idea.encipher(S_A.toString(16));
 
     // alice sendet Z_A in einzelteilen
-    Com.sendTo(1, Z_A.getID().toString()); // send ID
-    Com.sendTo(1, Z_A.getData().toString()); // send data (pub key)
-    Com.sendTo(1, Z_A.getSignature().toString(16)); // send signature
+    Com.sendTo(1, Z_A.getID().toString()); // send ID // S13
+    Com.sendTo(1, Z_A.getData().toString()); // send data (pub key) // S14
+    Com.sendTo(1, Z_A.getSignature().toString(16)); // send signature // S15
 
     // und S_A_encrypted (ohne y_A, das wurde schon gesendet)
-    Com.sendTo(1, S_A_encrypted);
+    Com.sendTo(1, S_A_encrypted); // S16
 
   }
 
@@ -159,14 +161,14 @@ public final class StationToStation implements Protocol {
     fingerprint = new Fingerprint(new File("HashParameter"));
 
     // bob bekommt p und g von alice
-    p = new BigInteger(Com.receive(), 16);
-    g = new BigInteger(Com.receive(), 16);
+    p = new BigInteger(Com.receive(), 16); // R1
+    g = new BigInteger(Com.receive(), 16); // R2
     System.out.println("p: " + p);
     System.out.println("g: " + g);
 
     // bob bekommt öffentlichen rsa schlüssel von alice
-    BigInteger e_A = new BigInteger(Com.receive(), 16);
-    BigInteger n_A = new BigInteger(Com.receive(), 16);
+    BigInteger e_A = new BigInteger(Com.receive(), 16); // R3
+    BigInteger n_A = new BigInteger(Com.receive(), 16); // R4
     System.out.println("Alice e: " + e_A);
     System.out.println("Alice n: " + n_A);
 
@@ -175,19 +177,17 @@ public final class StationToStation implements Protocol {
     System.out.println("RSA Bob e: " + rsa_B.e);
     System.out.println("RSA Bob n: " + rsa_B.n);
     System.out.println("RSA Bob d: " + rsa_B.d);
-    Com.sendTo(0, rsa_B.e.toString(16));
-    Com.sendTo(0, rsa_B.n.toString(16));
+    Com.sendTo(0, rsa_B.e.toString(16)); // S5
+    Com.sendTo(0, rsa_B.n.toString(16)); // S6
 
     // bob empfängt y_A
-    BigInteger y_A = new BigInteger(Com.receive(), 16);
+    BigInteger y_A = new BigInteger(Com.receive(), 16); // R7
     System.out.println("y_A: " + y_A);
 
     // zufällige zahl x_B in {1,...,p-2} -> randomBetween 1 <= x_B < p-1
     BigInteger x_B = BigIntegerUtil.randomBetween(ONE, p.subtract(ONE));
     // bob wählt x_B = g^(x_B) mod p
     BigInteger y_B = g.modPow(x_B, p);
-    // y_B an alice senden
-    Com.sendTo(0, y_B.toString(16));
 
     // bob bestimmt schlüssel
     BigInteger k = y_A.modPow(x_B, p);
@@ -207,18 +207,20 @@ public final class StationToStation implements Protocol {
     String S_B_encrypted = idea.encipher(S_B.toString(16));
 
     // bob sendet certificate in einzelteilen
-    Com.sendTo(0, Z_B.getID().toString()); // send ID
-    Com.sendTo(0, Z_B.getData().toString()); // send data (pub key)
-    Com.sendTo(0, Z_B.getSignature().toString(16)); // send signature
+    Com.sendTo(0, Z_B.getID().toString()); // send ID // S8
+    Com.sendTo(0, Z_B.getData().toString()); // send data (pub key) // S9
+    Com.sendTo(0, Z_B.getSignature().toString(16)); // send signature //S10
 
     // bob sendet y_B
-    Com.sendTo(0, y_B.toString(16));
+    Com.sendTo(0, y_B.toString(16)); // S11
 
     // bob sendet S_B_encrypted
-    Com.sendTo(0, S_B_encrypted);
+    Com.sendTo(0, S_B_encrypted); // S12
+
+    System.out.println("Bob: Receive cert");
 
     // bob empfängt certificate in einzelteilen
-    Certificate Z_A = buildCertificateBasedOnStrings(Com.receive(), Com.receive(), Com.receive());
+    Certificate Z_A = buildCertificateBasedOnStrings(Com.receive(), Com.receive(), Com.receive()); // R13,14,15
 
     // check certificate
     if (checkCertificate(Z_A) == true) {
@@ -229,7 +231,7 @@ public final class StationToStation implements Protocol {
     }
 
     // bob empfängt S_A_encrypted
-    String S_A_encrypted = new String(Com.receive());
+    String S_A_encrypted = new String(Com.receive()); // R16
 
     // decrypt S_A_encrypted with idea
     String S_A_decrypted = idea.decipher(S_A_encrypted);
