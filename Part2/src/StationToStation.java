@@ -119,7 +119,8 @@ public final class StationToStation implements Protocol {
 
     // decrypt S_B_encrypted with idea
     BigInteger key = getIDEAKeyBasedOnK(k);
-    idea = new IDEA(key);
+    BigInteger iv = new BigInteger("ddc3a8f6c66286d2", 16);
+    idea = new IDEA(key, iv);
     String S_B_decrypted = idea.decipher(S_B_encrypted);
     BigInteger S_B = new BigInteger(S_B_decrypted, 16);
 
@@ -212,10 +213,11 @@ public final class StationToStation implements Protocol {
 
     // encrypted S_B with idea
     BigInteger key = getIDEAKeyBasedOnK(k);
-    IDEA idea = new IDEA(key);
 
-    // String message = S_B.toString(16);
-    String message = S_B.toString();
+    BigInteger iv = new BigInteger("ddc3a8f6c66286d2", 16);
+    idea = new IDEA(key, iv);
+    
+    String message = S_B.toString(16);
     String S_B_encrypted = idea.encipher(message);
     String dec = idea.decipher(S_B_encrypted);
 

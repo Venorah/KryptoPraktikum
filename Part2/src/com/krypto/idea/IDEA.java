@@ -29,21 +29,20 @@ import de.tubs.cs.iti.jcrypt.chiffre.BlockCipher;
  * @version 1.1 - Sat Apr 03 21:57:35 CEST 2010
  */
 public final class IDEA {
-
-  // String keyString;
-  BigInteger keyInteger;
   static BigInteger[][] encKeys;
   static BigInteger[][] decKeys;
 
-  public IDEA(BigInteger keyInteger) {
+  // parameters
+  private BigInteger keyInteger;
+  private BigInteger iv;
+
+  public IDEA(BigInteger keyInteger, BigInteger iv) {
     this.keyInteger = keyInteger;
+    this.iv = iv;
   }
 
-  // public void encipher(FileInputStream cleartext, FileOutputStream ciphertext) {
   public String encipher(String cleartext) {
-
     // generate keys
-    // BigInteger keyInteger = Helper.stringToBigInteger(keyString);
     BigInteger[] keyArray = Helper.extractValues(keyInteger, 8, 16);
     encKeys = getEncryptionKeys(keyArray);
     decKeys = getDecryptionKeys(encKeys);
@@ -56,28 +55,24 @@ public final class IDEA {
       messageArray[i] = Helper.stringToBigInteger(message[i]);
     }
 
-    // randomly choose 64bit IV
-    Random rnd = new Random();
-    BigInteger iv = new BigInteger(64, rnd);
 
     // Cipher Block Chaining (CBC), output as array with 64bit blocks
     BigInteger output[] = cbcLoop(messageArray, iv, true);
 
     // build output for writing to file
-    // first prepend iv to String
-    String outputString = iv.toString(16);
+
+    String outputString = "";
     // then ciphertext as hex
     for (int i = 0; i < output.length; i++) {
       outputString += output[i].toString(16);
     }
-    // System.out.println(outputString);
+    System.out.println("IDEA ecipher: " + outputString);
 
     return outputString;
   }
 
   public String decipher(String ciphertext) {
     // generate keys
-    // BigInteger keyInteger = Helper.stringToBigInteger(keyString);
     BigInteger[] keyArray = Helper.extractValues(keyInteger, 8, 16);
     encKeys = getEncryptionKeys(keyArray);
     decKeys = getDecryptionKeys(encKeys);
@@ -85,20 +80,17 @@ public final class IDEA {
     // get message as array with 64bit blocks
     String cipherTextString = ciphertext;
 
-    // (message.length - 1) because 0 is iv!
     int size = (cipherTextString.length() / 16);
-    BigInteger[] messageArray = new BigInteger[(size - 1)];
-    BigInteger iv = null;
+
+    BigInteger[] messageArray = new BigInteger[size];
+    System.out.println(size);
+
     for (int i = 0; i < size; i++) {
       String subString = cipherTextString.substring(0, 16);
       cipherTextString = cipherTextString.substring(16);
 
-      if (i == 0) {
-        iv = new BigInteger(subString, 16);
-
-      } else {
-        messageArray[i - 1] = new BigInteger(subString, 16);
-      }
+        messageArray[i] = new BigInteger(subString, 16);
+      
     }
 
     // Cipher Block Chaining (CBC), output as array with 64bit blocks
@@ -107,7 +99,7 @@ public final class IDEA {
     // build output for writing to file
     String outputString = Helper.bigIntegerArrayToString(output);
 
-    // System.out.println(outputString);
+    System.out.println("IDEA decipher: " + outputString);
 
     return outputString;
 
