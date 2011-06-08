@@ -173,9 +173,8 @@ public final class StationToStation implements Protocol {
     Com.sendTo(0, y_B.toString(16));
 
     // zertifikat
-    TrustedAuthority ta = new TrustedAuthority();
     byte[] data = (e_A.xor(n_A)).toByteArray();
-    Certificate Z_B = ta.newCertificate(data);
+    Certificate Z_B = TrustedAuthority.newCertificate(data);
 
     // bob sendet certificate in einzelteilen
     Com.sendTo(0, Z_B.getID().toString()); // send ID
@@ -225,13 +224,11 @@ public final class StationToStation implements Protocol {
     BigInteger hash = new BigInteger(digest);
 
     // get public key of trusted authority
-    TrustedAuthority ta = new TrustedAuthority();
-    BigInteger n_T = ta.getModulus();
-    BigInteger e_T = ta.getPublicExponent();
+    BigInteger n_T = TrustedAuthority.getModulus();
+    BigInteger e_T = TrustedAuthority.getPublicExponent();
 
     // RSA signature
-    BigInteger sig_T = cert.getSignature();
-    BigInteger M = sig_T.modPow(e_T, n_T);
+    BigInteger M = cert.getSignature().modPow(e_T, n_T);
 
     if (M.equals(hash)) {
       isCorrekt = true;
