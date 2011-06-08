@@ -146,7 +146,8 @@ public final class StationToStation implements Protocol {
 
     // alice sendet Z_A in einzelteilen
     Com.sendTo(1, Z_A.getID().toString()); // send ID // S13
-    Com.sendTo(1, Z_A.getData().toString()); // send data (pub key) // S14
+    String data_send = new String(Z_A.getData());
+    Com.sendTo(1, data_send); // send data (pub key) // S14
     Com.sendTo(1, Z_A.getSignature().toString(16)); // send signature // S15
 
     // und S_A_encrypted (ohne y_A, das wurde schon gesendet)
@@ -211,7 +212,8 @@ public final class StationToStation implements Protocol {
 
     // bob sendet certificate in einzelteilen
     Com.sendTo(0, Z_B.getID().toString()); // send ID // S8
-    Com.sendTo(0, Z_B.getData().toString()); // send data (pub key) // S9
+    String data_send = new String(Z_B.getData());
+    Com.sendTo(0, data_send); // send data (pub key) // S9
     Com.sendTo(0, Z_B.getSignature().toString(16)); // send signature //S10
 
     // bob sendet y_B
@@ -278,7 +280,7 @@ public final class StationToStation implements Protocol {
   }
 
   private Certificate buildCertificateBasedOnStrings(String ID, String data, String signature) {
-    byte[] dataArray = data. getBytes();
+    byte[] dataArray = data.getBytes();
     BigInteger signatureInteger = new BigInteger(signature, 16);
     // wieder certificate objekt draus machen
     Certificate cert = new Certificate(ID, dataArray, signatureInteger);
