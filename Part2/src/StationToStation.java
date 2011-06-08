@@ -60,7 +60,8 @@ public final class StationToStation implements Protocol {
   }
 
   /**
-   * Aktionen der beginnenden Partei. Bei den 2-Parteien-Protokollen seien dies die Aktionen von Alice.
+   * Aktionen der beginnenden Partei. Bei den 2-Parteien-Protokollen seien dies die Aktionen von
+   * Alice.
    */
   public void sendFirst() {
     // fingerprint werte aus datei auslesen
@@ -127,7 +128,7 @@ public final class StationToStation implements Protocol {
     // hash h(y_B, y_A) generieren
     BigInteger m = y_B.multiply(p).add(y_A); // h(y_B,y_A) = y_B * p + y_A laut heft
     BigInteger hash = fingerprint.hash(m.toString(16));
-    
+
     // left part of equation
     BigInteger left = S_B.modPow(e_B, n_B); // decrypted with pub key (RSA) from bob
 
@@ -142,8 +143,6 @@ public final class StationToStation implements Protocol {
     // signatur von alice S_A generieren
     BigInteger S_A = rsa_A.getSignatur(hash); // S_A = hash^d_A mod n_A
     System.out.println("Signatur S_A: " + S_A);
-    
-    
 
   }
 
@@ -196,7 +195,8 @@ public final class StationToStation implements Protocol {
     System.out.println("Signatur S_B: " + S_B);
 
     // zertifikat
-    byte[] data = (e_A.xor(n_A)).toByteArray(); // TODO: XOR nehmen?
+    BigInteger en_A = concat(e_A, n_A);
+    byte[] data = en_A.toByteArray();
     Certificate Z_B = TrustedAuthority.newCertificate(data);
 
     // bob sendet certificate in einzelteilen
@@ -266,4 +266,10 @@ public final class StationToStation implements Protocol {
 
     return isCorrekt;
   }
+
+  public BigInteger concat(BigInteger leftBlock, BigInteger rightBlock) {
+    int rightBlockLength = rightBlock.bitLength();
+    return (leftBlock.shiftLeft(rightBlockLength)).add(rightBlock);
+  }
+  
 }
