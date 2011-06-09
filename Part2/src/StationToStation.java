@@ -31,7 +31,7 @@ public final class StationToStation implements Protocol {
   private Fingerprint fingerprint;
   private IDEA idea;
 
-  private boolean MitM = true;
+  private boolean MitM = false;
 
   public void getPrimeAndGenerator() {
     Random sc = new SecureRandom();
