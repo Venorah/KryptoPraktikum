@@ -22,6 +22,9 @@ public final class StationToStation implements Protocol {
 
   private BigInteger ONE = BigIntegerUtil.ONE;
   private BigInteger TWO = BigIntegerUtil.TWO;
+  
+  // IV for IDEA
+  static private String IV = "ddc3a8f6c66286d2";
 
   private BigInteger p, g; // Primzahl p, prim. W. g
 
@@ -108,7 +111,7 @@ public final class StationToStation implements Protocol {
 
     // alice empfängt y_B, S_B_encrypted
     BigInteger y_B = new BigInteger(Com.receive(), 16); // R11
-    BigInteger S_B_encrypted = new BigInteger(Com.receive(),16); // R12
+    BigInteger S_B_encrypted = new BigInteger(Com.receive(), 16); // R12
 
     // alice berechnet k
     BigInteger k = y_B.modPow(x_A, p);
@@ -123,10 +126,9 @@ public final class StationToStation implements Protocol {
 
     // decrypt S_B_encrypted with idea
     BigInteger key = getIDEAKeyBasedOnK(k);
-    BigInteger iv = new BigInteger("ddc3a8f6c66286d2", 16);
+    BigInteger iv = new BigInteger(IV, 16);
     idea = new IDEA(key, iv);
-    String S_B_decrypted = idea.decipher(S_B_encrypted);
-    BigInteger S_B = new BigInteger(S_B_decrypted, 16);
+    BigInteger S_B = idea.decipher(S_B_encrypted);
 
     // generate hash
     BigInteger hash = hash(y_B, y_A);
@@ -149,8 +151,7 @@ public final class StationToStation implements Protocol {
     Certificate Z_A = generateCertificate(rsa_A.e, rsa_A.n);
 
     // signatur encrypted
-    String message = S_A.toString(16);
-    String S_A_encrypted = (idea.encipher(message)).toString(16);
+    BigInteger S_A_encrypted = idea.encipher(S_A);
 
     // alice sendet Z_A in einzelteilen
     Com.sendTo(1, Z_A.getID()); // send ID // S13
@@ -161,7 +162,7 @@ public final class StationToStation implements Protocol {
     Com.sendTo(1, Z_A.getSignature().toString(16)); // send signature // S15
 
     // und S_A_encrypted (ohne y_A, das wurde schon gesendet)
-    Com.sendTo(1, S_A_encrypted); // S16
+    Com.sendTo(1, S_A_encrypted.toString(16)); // S16
 
     // Chat Start
     BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
@@ -244,12 +245,9 @@ public final class StationToStation implements Protocol {
 
     // encrypted S_B with idea
     BigInteger key = getIDEAKeyBasedOnK(k);
-
-    BigInteger iv = new BigInteger("ddc3a8f6c66286d2", 16);
+    BigInteger iv = new BigInteger(IV, 16);
     idea = new IDEA(key, iv);
-
-    String message = S_B.toString(16);
-    String S_B_encrypted = (idea.encipher(message)).toString(16);
+    BigInteger S_B_encrypted = idea.encipher(S_B);
 
     // bob sendet certificate in einzelteilen
     Com.sendTo(0, Z_B.getID()); // send ID // S8
@@ -263,7 +261,7 @@ public final class StationToStation implements Protocol {
     Com.sendTo(0, y_B.toString(16)); // S11
 
     // bob sendet S_B_encrypted
-    Com.sendTo(0, S_B_encrypted); // S12
+    Com.sendTo(0, S_B_encrypted.toString(16)); // S12
 
     System.out.println("Bob: Receive cert");
 
@@ -279,11 +277,10 @@ public final class StationToStation implements Protocol {
     }
 
     // bob empfängt S_A_encrypted
-    BigInteger S_A_encrypted = new BigInteger(Com.receive(),16); // R16
+    BigInteger S_A_encrypted = new BigInteger(Com.receive(), 16); // R16
 
     // decrypt S_A_encrypted with idea
-    String S_A_decrypted = idea.decipher(S_A_encrypted);
-    BigInteger S_A = new BigInteger(S_A_decrypted, 16);
+    BigInteger S_A = idea.decipher(S_A_encrypted);
 
     // bob überprüft die gültigkeit von S_B
     BigInteger hash2 = hash(y_A, y_B);
@@ -349,7 +346,7 @@ public final class StationToStation implements Protocol {
 
   private Certificate buildCertificateBasedOnStrings(String ID, String data, String signature) {
     // byte[] dataArray = data.getBytes();
-    System.out.println("data received: "+data);
+    System.out.println("data received: " + data);
     byte[] dataArray = deserialize(data);
     BigInteger signatureInteger = new BigInteger(signature, 16);
     // wieder certificate objekt draus machen
@@ -427,38 +424,16 @@ public final class StationToStation implements Protocol {
     return (leftBlock.shiftLeft(rightBlockLength)).add(rightBlock);
   }
 
-  public String serializeBigIntegerArray(BigInteger[] array) {
-    String output = "";
-    for (int i = 0; i < array.length; i++) {
-      output += array[i].toString(16) + " ";
-    }
-    return output;
-  }
-
-  public BigInteger[] deserializeBigIntegerArray(String message) {
-    String[] array = message.split(" ");
-    BigInteger[] output = new BigInteger[array.length];
-    for (int i = 0; i < array.length; i++) {
-      output[i] = new BigInteger(array[i], 16);
-    }
-    return output;
-  }
-
   public String serialize(byte[] array) {
-    String output = "";
-    for (int i = 0; i < array.length; i++) {
-      output += array[i] + " ";
-    }
-    return output;
+    BigInteger out = new BigInteger(array);
+
+    return out.toString(16);
   }
 
   public byte[] deserialize(String message) {
-    String[] array = message.split(" ");
-    byte[] output = new byte[array.length];
-    for (int i = 0; i < array.length; i++) {
-      output[i] = Byte.valueOf(array[i]);
-    }
-    return output;
+    BigInteger out = new BigInteger(message, 16);
+
+    return out.toByteArray();
   }
 
 }
