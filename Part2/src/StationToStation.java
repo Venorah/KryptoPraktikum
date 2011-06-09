@@ -2,7 +2,10 @@ import com.krypto.idea.IDEA;
 import com.krypto.rsa.RSA;
 import com.krypto.fingerprint.Fingerprint;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
@@ -40,6 +43,7 @@ public final class StationToStation implements Protocol {
       // prime
       // p =
       // 2q+1
+      System.out.println("searching for p");
     } while (!p.isProbablePrime(certainty));
 
     BigInteger MINUS_ONE = ONE.negate().mod(p); // -1 mod p
@@ -50,6 +54,7 @@ public final class StationToStation implements Protocol {
       // 2 <= g < p-1
       g = BigIntegerUtil.randomBetween(TWO, p.subtract(ONE), sc);
       factor = g.modPow(q, p);
+      System.out.println("searching for g");
     } while (!factor.equals(MINUS_ONE));
   }
 
@@ -58,8 +63,7 @@ public final class StationToStation implements Protocol {
   }
 
   /**
-   * Aktionen der beginnenden Partei. Bei den 2-Parteien-Protokollen seien dies die Aktionen von
-   * Alice.
+   * Aktionen der beginnenden Partei. Bei den 2-Parteien-Protokollen seien dies die Aktionen von Alice.
    */
   public void sendFirst() {
     System.out.println("-- Alice --");
@@ -158,6 +162,31 @@ public final class StationToStation implements Protocol {
     // und S_A_encrypted (ohne y_A, das wurde schon gesendet)
     Com.sendTo(1, S_A_encrypted); // S16
 
+    // Chat Start
+    BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
+    String input = "";
+
+    while (true) {
+      System.out.print("Enter your message (Enter q for quit): ");
+      System.out.flush(); // empties buffer, before you input text
+      try {
+        input = stdin.readLine();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+
+      System.out.println("Your message: " + input);
+
+      if (input == "q") {
+        System.exit(0);
+      }
+
+      Com.sendTo(1, input);
+      
+      String receive = Com.receive();
+      System.out.println("Message from Bob: " + receive);
+    }
+
   }
 
   /**
@@ -225,6 +254,7 @@ public final class StationToStation implements Protocol {
     Com.sendTo(0, Z_B.getID()); // send ID // S8
     // String data_send = new String(Z_B.getData());
     String data_send = serialize(Z_B.getData());
+    System.out.println("data send"+data_send);
     Com.sendTo(0, data_send); // send data (pub key) // S9
     Com.sendTo(0, Z_B.getSignature().toString(16)); // send signature //S10
 
@@ -261,6 +291,31 @@ public final class StationToStation implements Protocol {
     } else {
       System.out.println("Signature Check: Hashs nicht gleich! ABBRUCH!");
       System.exit(0);
+    }
+    
+    // Chat Start
+    BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
+    String input = "";
+    while (true) {
+      String receive = Com.receive();
+      System.out.println("Message from Alice: " + receive);
+      
+      
+      System.out.print("Enter your message (Enter q for quit): ");
+      System.out.flush(); // empties buffer, before you input text
+      try {
+        input = stdin.readLine();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+
+      System.out.println("Your message: " + input);
+
+      if (input == "q") {
+        System.exit(0);
+      }
+
+      Com.sendTo(0, input);
     }
 
   }
