@@ -40,25 +40,34 @@ public final class StationToStation implements Protocol {
 
     p = null;
     BigInteger q = null;
+    String search1 = "";
+    System.out.println("Suche p:");
     do {
       q = new BigInteger(k - 1, certainty, sc);
       p = q.multiply(TWO).add(ONE); // secure
       // prime
       // p =
       // 2q+1
-      System.out.println("searching for p");
+      search1 += ".";
+      System.out.printf(search1);
     } while (!p.isProbablePrime(certainty));
+    search1 += "\n";
 
     BigInteger MINUS_ONE = ONE.negate().mod(p); // -1 mod p
 
     g = null;
     BigInteger factor = null;
+    String search2 = "";
+    System.out.println("Suche g:");
     do {
       // 2 <= g < p-1
       g = BigIntegerUtil.randomBetween(TWO, p.subtract(ONE), sc);
       factor = g.modPow(q, p);
-      System.out.println("searching for g");
+      search2 += ".";
+      System.out.printf(search2);
     } while (!factor.equals(MINUS_ONE));
+    search2 += "\n";
+
   }
 
   public void setCommunicator(Communicator com) {
@@ -66,7 +75,8 @@ public final class StationToStation implements Protocol {
   }
 
   /**
-   * Aktionen der beginnenden Partei. Bei den 2-Parteien-Protokollen seien dies die Aktionen von Alice.
+   * Aktionen der beginnenden Partei. Bei den 2-Parteien-Protokollen seien dies die Aktionen von
+   * Alice.
    */
   public void sendFirst() {
     System.out.println("-- Alice --");
