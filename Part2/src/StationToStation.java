@@ -116,8 +116,9 @@ public final class StationToStation implements Protocol {
     // y_A an bob senden
 
     BigInteger y_W = null;
+    BigInteger x_W = null;
     if (MitM) {
-      BigInteger x_W = BigIntegerUtil.randomBetween(ONE, p.subtract(ONE)); // x_W in {1,...,p-2}
+      x_W = BigIntegerUtil.randomBetween(ONE, p.subtract(ONE)); // x_W in {1,...,p-2}
       y_W = g.modPow(x_W, p);
       Com.sendTo(1, y_W.toString(16)); // S7
     } else {
@@ -137,7 +138,11 @@ public final class StationToStation implements Protocol {
 
     // alice berechnet k
     BigInteger k = y_B.modPow(x_A, p);
-
+    
+    if (MitM) {
+      k = y_B.modPow(x_W, p);
+    }
+    
     // check certificate
     if (checkCertificate(Z_B) == true) {
       System.out.println("Zertifikat Check: Zertifikat von Bob ist korrekt!");
@@ -154,6 +159,10 @@ public final class StationToStation implements Protocol {
 
     // generate hash
     BigInteger hash = hash(y_B, y_A);
+
+    if (MitM) {
+      hash = hash(y_B, y_W);
+    }
 
     // alice überprüft die gültigkeit von S_B
     if (checkSignature(hash, S_B, e_B, n_B) == true) {
