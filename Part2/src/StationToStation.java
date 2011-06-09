@@ -22,7 +22,7 @@ public final class StationToStation implements Protocol {
 
   private BigInteger ONE = BigIntegerUtil.ONE;
   private BigInteger TWO = BigIntegerUtil.TWO;
-  
+
   // IV for IDEA
   static private String IV = "ddc3a8f6c66286d2";
 
@@ -183,10 +183,16 @@ public final class StationToStation implements Protocol {
         System.exit(0);
       }
 
-      Com.sendTo(1, input);
+      BigInteger inputInteger = new BigInteger(input.getBytes());
+      BigInteger inputInteger_encrypted = idea.encipher(inputInteger);
+
+      Com.sendTo(1, inputInteger_encrypted.toString(16));
 
       String receive = Com.receive();
-      System.out.println("Message from Bob: " + receive);
+      BigInteger receiveInteger = new BigInteger(receive, 16);
+      BigInteger receiveInteger_decrypted = idea.decipher(receiveInteger);
+
+      System.out.println("Message from Bob: " + new String(receiveInteger_decrypted.toByteArray()));
     }
 
   }
@@ -295,8 +301,12 @@ public final class StationToStation implements Protocol {
     BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
     String input = "";
     while (true) {
+
       String receive = Com.receive();
-      System.out.println("Message from Alice: " + receive);
+      BigInteger receiveInteger = new BigInteger(receive, 16);
+      BigInteger receiveInteger_decrypted = idea.decipher(receiveInteger);
+
+      System.out.println("Message from Alice: " + new String(receiveInteger_decrypted.toByteArray()));
 
       System.out.print("Enter your message (Enter q for quit): ");
       System.out.flush(); // empties buffer, before you input text
@@ -312,7 +322,10 @@ public final class StationToStation implements Protocol {
         System.exit(0);
       }
 
-      Com.sendTo(0, input);
+      BigInteger inputInteger = new BigInteger(input.getBytes());
+      BigInteger inputInteger_encrypted = idea.encipher(inputInteger);
+
+      Com.sendTo(0, inputInteger_encrypted.toString(16));
     }
 
   }
