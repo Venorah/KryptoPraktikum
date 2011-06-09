@@ -156,6 +156,7 @@ public final class StationToStation implements Protocol {
     Com.sendTo(1, Z_A.getID()); // send ID // S13
     // String data_send = new String(Z_A.getData());
     String data_send = serialize(Z_A.getData());
+    System.out.println("data send: " + data_send);
     Com.sendTo(1, data_send); // send data (pub key) // S14
     Com.sendTo(1, Z_A.getSignature().toString(16)); // send signature // S15
 
@@ -177,12 +178,12 @@ public final class StationToStation implements Protocol {
 
       System.out.println("Your message: " + input);
 
-      if (input == "q") {
+      if (input.equalsIgnoreCase("q")) {
         System.exit(0);
       }
 
       Com.sendTo(1, input);
-      
+
       String receive = Com.receive();
       System.out.println("Message from Bob: " + receive);
     }
@@ -254,7 +255,7 @@ public final class StationToStation implements Protocol {
     Com.sendTo(0, Z_B.getID()); // send ID // S8
     // String data_send = new String(Z_B.getData());
     String data_send = serialize(Z_B.getData());
-    System.out.println("data send"+data_send);
+    System.out.println("data send: " + data_send);
     Com.sendTo(0, data_send); // send data (pub key) // S9
     Com.sendTo(0, Z_B.getSignature().toString(16)); // send signature //S10
 
@@ -292,15 +293,14 @@ public final class StationToStation implements Protocol {
       System.out.println("Signature Check: Hashs nicht gleich! ABBRUCH!");
       System.exit(0);
     }
-    
+
     // Chat Start
     BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
     String input = "";
     while (true) {
       String receive = Com.receive();
       System.out.println("Message from Alice: " + receive);
-      
-      
+
       System.out.print("Enter your message (Enter q for quit): ");
       System.out.flush(); // empties buffer, before you input text
       try {
@@ -311,7 +311,7 @@ public final class StationToStation implements Protocol {
 
       System.out.println("Your message: " + input);
 
-      if (input == "q") {
+      if (input.equalsIgnoreCase("q")) {
         System.exit(0);
       }
 
@@ -349,6 +349,7 @@ public final class StationToStation implements Protocol {
 
   private Certificate buildCertificateBasedOnStrings(String ID, String data, String signature) {
     // byte[] dataArray = data.getBytes();
+    System.out.println("data received: "+data);
     byte[] dataArray = deserialize(data);
     BigInteger signatureInteger = new BigInteger(signature, 16);
     // wieder certificate objekt draus machen
