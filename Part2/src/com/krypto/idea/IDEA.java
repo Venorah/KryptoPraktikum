@@ -299,6 +299,33 @@ public final class IDEA {
     return dencryptionKeys;
   }
 
+  public BigInteger merge(BigInteger[] array) {
+    BigInteger output = new BigInteger("0");
+
+    for (int i = 0; i < array.length; i++) {
+      int shifting = 64;
+      if (i == 0) {
+        shifting = 0;
+      }
+      output = output.shiftLeft(shifting);
+      output = output.add(array[i]);
+    }
+
+    return output;
+  }
+
+  public BigInteger[] unmerge(BigInteger message) {
+    BigInteger max = new BigInteger("18446744073709551615");
+    BigInteger[] output = new BigInteger[6];
+
+    for (int i = 5; i >= 0; i--) {
+      output[i] = message.and(max);
+      message = message.shiftRight(64);
+    }
+
+    return output;
+  }
+
   private void Logger(String event) {
     System.out.println("IDEA$  " + event);
   }
