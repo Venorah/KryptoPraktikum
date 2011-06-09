@@ -136,7 +136,9 @@ public final class StationToStation implements Protocol {
     }
 
     // signatur von alice S_A generieren
-    BigInteger S_A = rsa_A.getSignatur(hash); // S_A = hash^d_A mod n_A
+    // generate hash
+    BigInteger hash2 = hash(y_A, y_B);
+    BigInteger S_A = rsa_A.getSignatur(hash2); // S_A = hash^d_A mod n_A
     System.out.println("Signatur S_A: " + S_A);
 
     // zertifikat generieren
@@ -252,9 +254,10 @@ public final class StationToStation implements Protocol {
     String S_A_decrypted = idea.decipher(S_A_encrypted);
     BigInteger S_A = new BigInteger(S_A_decrypted, 16);
 
-    // alice überprüft die gültigkeit von S_B
-    if (checkSignature(hash, S_A, e_A, n_A) == true) {
-      System.out.println("Signature Check: hashs h(y_B, y_A) sind gleich! Bob akzeptiert k!");
+    // bob überprüft die gültigkeit von S_B
+    BigInteger hash2 = hash(y_A, y_B);
+    if (checkSignature(hash2, S_A, e_A, n_A) == true) {
+      System.out.println("Signature Check: hashs h(y_A, y_B) sind gleich! Bob akzeptiert k!");
     } else {
       System.out.println("Signature Check: Hashs nicht gleich! ABBRUCH!");
       System.exit(0);
