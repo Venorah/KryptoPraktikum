@@ -1,6 +1,8 @@
 package com.krypto.idea;
 
 import java.math.BigInteger;
+import java.util.Iterator;
+import java.util.LinkedList;
 
 public final class IDEA {
 
@@ -26,30 +28,23 @@ public final class IDEA {
     decKeys = getDecryptionKeys(encKeys);
   }
 
-  public BigInteger encipher(String clearTextString) {
+  public BigInteger encipher(BigInteger clear) {
 
-    String[] message = Helper.getTextAsStringArray(clearTextString, 8);
-    BigInteger[] messageArray = new BigInteger[message.length];
-
-    for (int i = 0; i < message.length; i++) {
-      messageArray[i] = Helper.stringToBigInteger(message[i]);
-    }
-
+    BigInteger[] messageArray = unmerge(clear);
     BigInteger output[] = cbcLoop(messageArray, iv, true);
-
     BigInteger out = merge(output);
 
     return out;
   }
 
-  public String decipher(BigInteger cipher) {
+  public BigInteger decipher(BigInteger cipher) {
 
     BigInteger[] cipherArray = unmerge(cipher);
 
     BigInteger output[] = cbcLoop(cipherArray, iv, false);
-    String outputString = Helper.bigIntegerArrayToString(output);
-
-    return outputString.trim();
+    
+    BigInteger out = merge(output);
+    return out;
   }
 
   public BigInteger cbcBlock(BigInteger message, BigInteger iv, boolean isEncryption) {
@@ -318,15 +313,23 @@ public final class IDEA {
     return output;
   }
 
-  public BigInteger[] unmerge(BigInteger message) {
+  public BigInteger[] unmerge(BigInteger msg) {
     BigInteger max = new BigInteger("18446744073709551615");
-    BigInteger[] output = new BigInteger[6];
+    LinkedList<BigInteger> list = new LinkedList<BigInteger>();
 
-    for (int i = 5; i >= 0; i--) {
-      output[i] = message.and(max);
+    BigInteger message = new BigInteger(msg.toString());
+    while (message.bitLength() > 0) {
+      list.addFirst(message.and(max));
       message = message.shiftRight(64);
     }
 
+    BigInteger[] output = new BigInteger[list.size()];
+    Iterator<BigInteger> it = list.iterator();
+    int i=  0;
+    while(it.hasNext()) {
+      output[i] = it.next();
+      i++;
+    }
     return output;
   }
 
