@@ -12,14 +12,6 @@ public final class IDEA {
   static BigInteger[][] decKeys;
   BigInteger iv;
 
-  // public IDEA(String keyString) {
-  // keyInteger = new BigInteger(keyString.getBytes());
-  // // System.out.println("bitlength: " + keyInteger.bitLength());
-  // BigInteger[] keyArray = Helper.extractValues(keyInteger, 8, 16);
-  // encKeys = getEncryptionKeys(keyArray);
-  // decKeys = getDecryptionKeys(encKeys);
-  // }
-
   public IDEA(BigInteger keyInteger, BigInteger iv) {
     this.keyInteger = keyInteger;
     this.iv = iv;

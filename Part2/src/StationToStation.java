@@ -31,6 +31,8 @@ public final class StationToStation implements Protocol {
   private Fingerprint fingerprint;
   private IDEA idea;
 
+  private boolean MitM = true;
+
   public void getPrimeAndGenerator() {
     Random sc = new SecureRandom();
     int k = 512; // prime number with k=512 bits
@@ -75,11 +77,13 @@ public final class StationToStation implements Protocol {
   }
 
   /**
-   * Aktionen der beginnenden Partei. Bei den 2-Parteien-Protokollen seien dies die Aktionen von
-   * Alice.
+   * Aktionen der beginnenden Partei. Bei den 2-Parteien-Protokollen seien dies die Aktionen von Alice.
    */
   public void sendFirst() {
     System.out.println("-- Alice --");
+    if (MitM) {
+      System.out.println("ACHTUNG: MitM aktiv!!!");
+    }
 
     // fingerprint werte aus datei auslesen
     fingerprint = new Fingerprint(new File("HashParameter"));
@@ -110,7 +114,15 @@ public final class StationToStation implements Protocol {
     // alice wählt x_A = g^(x_A) mod p
     BigInteger y_A = g.modPow(x_A, p);
     // y_A an bob senden
-    Com.sendTo(1, y_A.toString(16)); // S7
+
+    BigInteger y_W = null;
+    if (MitM) {
+      BigInteger x_W = BigIntegerUtil.randomBetween(ONE, p.subtract(ONE)); // x_W in {1,...,p-2}
+      y_W = g.modPow(x_W, p);
+      Com.sendTo(1, y_W.toString(16)); // S7
+    } else {
+      Com.sendTo(1, y_A.toString(16)); // S7
+    }
 
     System.out.println("Alice: Receive cert");
 
@@ -155,6 +167,14 @@ public final class StationToStation implements Protocol {
     // generate hash
     BigInteger hash2 = hash(y_A, y_B);
     BigInteger S_A = rsa_A.getSignatur(hash2); // S_A = hash^d_A mod n_A
+
+    if (MitM) {
+      BigInteger hash_W = hash(y_W, y_B);
+      // BigInteger S_W = rsa_A.getSignatur(hash_W); // Wolfgang hat rsa_A nicht!!!
+      System.out.println("Hier scheitert der MitM, da er den privaten key d für die Signatur nicht kennt!");
+      System.exit(0);
+    }
+
     System.out.println("Signatur S_A: " + S_A);
 
     // zertifikat generieren
@@ -212,6 +232,9 @@ public final class StationToStation implements Protocol {
    */
   public void receiveFirst() {
     System.out.println("-- Bob --");
+    if (MitM) {
+      System.out.println("ACHTUNG: MitM aktiv!!!");
+    }
 
     // fingerprint werte aus datei auslesen
     fingerprint = new Fingerprint(new File("HashParameter"));
