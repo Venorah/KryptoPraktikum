@@ -108,7 +108,7 @@ public final class StationToStation implements Protocol {
 
     // alice empfängt y_B, S_B_encrypted
     BigInteger y_B = new BigInteger(Com.receive(), 16); // R11
-    BigInteger[] S_B_encrypted = deserializeBigIntegerArray(Com.receive()); // R12
+    BigInteger S_B_encrypted = new BigInteger(Com.receive(),16); // R12
 
     // alice berechnet k
     BigInteger k = y_B.modPow(x_A, p);
@@ -150,7 +150,7 @@ public final class StationToStation implements Protocol {
 
     // signatur encrypted
     String message = S_A.toString(16);
-    String S_A_encrypted = serializeBigIntegerArray(idea.encipher(message));
+    String S_A_encrypted = (idea.encipher(message)).toString(16);
 
     // alice sendet Z_A in einzelteilen
     Com.sendTo(1, Z_A.getID()); // send ID // S13
@@ -248,7 +248,7 @@ public final class StationToStation implements Protocol {
     idea = new IDEA(key, iv);
 
     String message = S_B.toString(16);
-    String S_B_encrypted = serializeBigIntegerArray(idea.encipher(message));
+    String S_B_encrypted = (idea.encipher(message)).toString(16);
 
     // bob sendet certificate in einzelteilen
     Com.sendTo(0, Z_B.getID()); // send ID // S8
@@ -278,7 +278,7 @@ public final class StationToStation implements Protocol {
     }
 
     // bob empfängt S_A_encrypted
-    BigInteger[] S_A_encrypted = deserializeBigIntegerArray(Com.receive()); // R16
+    BigInteger S_A_encrypted = new BigInteger(Com.receive(),16); // R16
 
     // decrypt S_A_encrypted with idea
     String S_A_decrypted = idea.decipher(S_A_encrypted);

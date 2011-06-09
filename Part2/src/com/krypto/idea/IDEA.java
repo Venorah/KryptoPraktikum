@@ -26,7 +26,7 @@ public final class IDEA {
     decKeys = getDecryptionKeys(encKeys);
   }
 
-  public BigInteger[] encipher(String clearTextString) {
+  public BigInteger encipher(String clearTextString) {
 
     String[] message = Helper.getTextAsStringArray(clearTextString, 8);
     BigInteger[] messageArray = new BigInteger[message.length];
@@ -37,12 +37,16 @@ public final class IDEA {
 
     BigInteger output[] = cbcLoop(messageArray, iv, true);
 
-    return output;
+    BigInteger out = merge(output);
+
+    return out;
   }
 
-  public String decipher(BigInteger[] cipher) {
+  public String decipher(BigInteger cipher) {
 
-    BigInteger output[] = cbcLoop(cipher, iv, false);
+    BigInteger[] cipherArray = unmerge(cipher);
+
+    BigInteger output[] = cbcLoop(cipherArray, iv, false);
     String outputString = Helper.bigIntegerArrayToString(output);
 
     return outputString.trim();
