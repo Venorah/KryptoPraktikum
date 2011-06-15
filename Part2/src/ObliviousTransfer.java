@@ -1,16 +1,6 @@
-import com.krypto.idea.IDEA;
-import com.krypto.rsa.RSA;
 import com.krypto.elGamal.ElGamal;
-import com.krypto.fingerprint.Fingerprint;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.math.BigInteger;
-import java.security.MessageDigest;
-import java.security.SecureRandom;
-import java.util.Random;
 import de.tubs.cs.iti.jcrypt.chiffre.BigIntegerUtil;
 import de.tubs.cs.iti.krypto.protokoll.*;
 
@@ -100,7 +90,6 @@ public final class ObliviousTransfer implements Protocol {
     Com.sendTo(1, s + ""); // S9
     Com.sendTo(1, S[0].toString(16)); // S10
     Com.sendTo(1, S[1].toString(16)); // S11
-
   }
 
   /**
@@ -168,7 +157,6 @@ public final class ObliviousTransfer implements Protocol {
     }
 
     System.out.println("Message choosen: M_" + t + ": " + M.toString());
-
   }
 
   public String nameOfTheGame() {
