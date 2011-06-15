@@ -1,6 +1,6 @@
 import com.krypto.idea.IDEA;
 import com.krypto.rsa.RSA;
-import com.krypto.elGamal.ElGamalCipher;
+import com.krypto.elGamal.ElGamal;
 import com.krypto.fingerprint.Fingerprint;
 
 import java.io.BufferedReader;
@@ -52,7 +52,7 @@ public final class ObliviousTransfer implements Protocol {
     // private:
     BigInteger x_A = new BigInteger("8408731721182017680099031010877093001204025969158347812072520791359337488056415633917552133990647980002619034528133832546926963071036452214551633046614916");
     // Objekt initialisieren mit priv key
-    ElGamalCipher elGamal_A = new ElGamalCipher(p_A, g_A, y_A, x_A);
+    ElGamal elGamal_A = new ElGamal(p_A, g_A, y_A, x_A);
 
     // Alice sendet ElGamal public key an Bob
     Com.sendTo(1, elGamal_A.p.toString(16)); // S1
@@ -110,7 +110,7 @@ public final class ObliviousTransfer implements Protocol {
     BigInteger g_A = new BigInteger(Com.receive(), 16); // R2
     BigInteger y_A = new BigInteger(Com.receive(), 16); // R3
     // ElGamal Objekt ohne priv key bauen
-    ElGamalCipher elGamal_A = new ElGamalCipher(p_A, g_A, y_A);
+    ElGamal elGamal_A = new ElGamal(p_A, g_A, y_A);
 
     // Bob empfängt m_0 und m_1
     BigInteger[] m = new BigInteger[2];
