@@ -46,6 +46,7 @@ public final class ObliviousTransfer implements Protocol {
     BigInteger y_A = new BigInteger("2779459789810637390587020096873488006835520565965769469851626928825192486936358410902751431979129618418717414793278325979795486789867808134854812793606315");
     // private:
     BigInteger x_A = new BigInteger("8408731721182017680099031010877093001204025969158347812072520791359337488056415633917552133990647980002619034528133832546926963071036452214551633046614916");
+    // Objekt initialisieren mit priv key
     ElGamalCipher elGamal_A = new ElGamalCipher(p_A, g_A, y_A, x_A);
 
     // Alice sendet el gammel public key an Bob
@@ -72,11 +73,13 @@ public final class ObliviousTransfer implements Protocol {
       System.out.println("ACHTUNG: Betrugsmodus aktiv!!!");
     }
 
-    // Bob empfängt Alice el gammel pub key
+    // Bob empfängt Alice ElGammel pub key
     BigInteger p_A = new BigInteger(Com.receive(), 16); // R1
     BigInteger g_A = new BigInteger(Com.receive(), 16); // R2
     BigInteger y_A = new BigInteger(Com.receive(), 16); // R3
 
+    // ElGammel Objekt ohne priv key bauen
+    ElGamalCipher elGamal_A = new ElGamalCipher(p_A, g_A, y_A);
 
     // Bob wählt zufällig ein r in {0,1} und k in Z_p
     BigInteger r = BigIntegerUtil.randomBetween(ZERO, TWO);

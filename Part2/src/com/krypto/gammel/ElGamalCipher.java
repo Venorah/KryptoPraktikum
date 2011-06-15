@@ -25,6 +25,12 @@ public final class ElGamalCipher {
     this.y = y;
     this.x = x;
   }
+  
+  public ElGamalCipher(BigInteger p, BigInteger g, BigInteger y) {
+    this.p = p;
+    this.g = g;
+    this.y = y;
+  }
 
   public void getPrimeAndGenerator() {
     Random sc = new SecureRandom();
