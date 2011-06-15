@@ -1,7 +1,7 @@
 import com.krypto.idea.IDEA;
 import com.krypto.rsa.RSA;
+import com.krypto.elGamal.ElGamalCipher;
 import com.krypto.fingerprint.Fingerprint;
-import com.krypto.gammel.ElGamalCipher;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -40,7 +40,7 @@ public final class ObliviousTransfer implements Protocol {
       System.out.println("ACHTUNG: Betrugsmodus aktiv!!!");
     }
 
-    // Hard coded ElGammel
+    // Hard coded ElGamal
     BigInteger p_A = new BigInteger("9529724065946661791619214607058571455523501317487241243976232835925891360305980300387951706129488838265474360650203061294036271683018196103397777779653383");
     BigInteger g_A = new BigInteger("1903807535454217102284567533195568004730442229592280053615111688429468626330712656899587676318279710558858454415018302802562437699598642215407022395224935");
     BigInteger y_A = new BigInteger("2779459789810637390587020096873488006835520565965769469851626928825192486936358410902751431979129618418717414793278325979795486789867808134854812793606315");
@@ -49,7 +49,7 @@ public final class ObliviousTransfer implements Protocol {
     // Objekt initialisieren mit priv key
     ElGamalCipher elGamal_A = new ElGamalCipher(p_A, g_A, y_A, x_A);
 
-    // Alice sendet el gammel public key an Bob
+    // Alice sendet ElGamal public key an Bob
     Com.sendTo(1, elGamal_A.p.toString(16)); // S1
     Com.sendTo(1, elGamal_A.g.toString(16)); // S2
     Com.sendTo(1, elGamal_A.y.toString(16)); // S3
@@ -73,12 +73,12 @@ public final class ObliviousTransfer implements Protocol {
       System.out.println("ACHTUNG: Betrugsmodus aktiv!!!");
     }
 
-    // Bob empfängt Alice ElGammel pub key
+    // Bob empfängt Alice ElGamal pub key
     BigInteger p_A = new BigInteger(Com.receive(), 16); // R1
     BigInteger g_A = new BigInteger(Com.receive(), 16); // R2
     BigInteger y_A = new BigInteger(Com.receive(), 16); // R3
 
-    // ElGammel Objekt ohne priv key bauen
+    // ElGamal Objekt ohne priv key bauen
     ElGamalCipher elGamal_A = new ElGamalCipher(p_A, g_A, y_A);
 
     // Bob wählt zufällig ein r in {0,1} und k in Z_p

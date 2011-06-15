@@ -9,7 +9,7 @@
  * Autor:        Martin Klußmann
  */
 
-package com.krypto.gammel;
+package com.krypto.elGamal;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

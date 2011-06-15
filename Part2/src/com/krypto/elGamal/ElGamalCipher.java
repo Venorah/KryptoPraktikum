@@ -1,4 +1,4 @@
-package com.krypto.gammel;
+package com.krypto.elGamal;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
