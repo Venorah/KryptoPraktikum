@@ -152,7 +152,7 @@ public final class ObliviousTransfer implements Protocol {
       M = (alpha.mod(elGamal_A.p.subtract(k))).mod(elGamal_A.p);
 
       k_dach = (beta.mod(elGamal_A.p.subtract(M))).mod(elGamal_A.p);
-    } else if (r == 1) { // nimm beta
+    } else { // t == 1 -> nimm beta
       M = (beta.mod(elGamal_A.p.subtract(k))).mod(elGamal_A.p);
 
       k_dach = (alpha.mod(elGamal_A.p.subtract(M))).mod(elGamal_A.p);
