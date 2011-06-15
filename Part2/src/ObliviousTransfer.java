@@ -54,13 +54,18 @@ public final class ObliviousTransfer implements Protocol {
     Com.sendTo(1, elGamal_A.g.toString(16)); // S2
     Com.sendTo(1, elGamal_A.y.toString(16)); // S3
 
-    // Alice wählt zufällig zwei Nachrichten m_o, m_1 in Z_p, 1 <= m < p
-    BigInteger m_0 = BigIntegerUtil.randomBetween(ONE, elGamal_A.p);
-    BigInteger m_1 = BigIntegerUtil.randomBetween(ONE, elGamal_A.p);
+    // Alice wählt zufällig zwei Nachrichten m_0, m_1 in Z_p, 1 <= m < p
+    BigInteger[] m = new BigInteger[2];
+    m[0] = BigIntegerUtil.randomBetween(ONE, elGamal_A.p);
+    m[1] = BigIntegerUtil.randomBetween(ONE, elGamal_A.p);
 
     // Alice sendet m_0, m_1 an Bob
-    Com.sendTo(1, m_0.toString(16)); // S4
-    Com.sendTo(1, m_1.toString(16)); // S5
+    Com.sendTo(1, m[0].toString(16)); // S4
+    Com.sendTo(1, m[1].toString(16)); // S5
+    
+    // Alice empfängt q
+    BigInteger q = new BigInteger(Com.receive(), 16); // R6
+
 
   }
 
@@ -77,15 +82,25 @@ public final class ObliviousTransfer implements Protocol {
     BigInteger p_A = new BigInteger(Com.receive(), 16); // R1
     BigInteger g_A = new BigInteger(Com.receive(), 16); // R2
     BigInteger y_A = new BigInteger(Com.receive(), 16); // R3
-
     // ElGamal Objekt ohne priv key bauen
     ElGamalCipher elGamal_A = new ElGamalCipher(p_A, g_A, y_A);
 
+    // Bob empfängt m_0 und m_1
+    BigInteger[] m = new BigInteger[2];
+    m[0] = new BigInteger(Com.receive(), 16); // R4
+    m[1] = new BigInteger(Com.receive(), 16); // R5
+
     // Bob wählt zufällig ein r in {0,1} und k in Z_p
-    BigInteger r = BigIntegerUtil.randomBetween(ZERO, TWO);
+    int r = BigIntegerUtil.randomBetween(ZERO, TWO).intValue();
     BigInteger k = BigIntegerUtil.randomBetween(ONE, p_A);
 
-    // BigInteger q =
+    // Bob berechnet q
+    BigInteger q = elGamal_A.encipher(k).add(m[r]); // E_A(k) + m_r
+    q = q.mod(elGamal_A.p.pow(2)); // mod p^2
+    
+    // Bob sendet q
+    Com.sendTo(0, q.toString(16)); // S6
+    
 
   }
 
