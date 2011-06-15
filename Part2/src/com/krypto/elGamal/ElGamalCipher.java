@@ -1,5 +1,7 @@
 package com.krypto.elGamal;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.Random;
@@ -25,7 +27,7 @@ public final class ElGamalCipher {
     this.y = y;
     this.x = x;
   }
-  
+
   public ElGamalCipher(BigInteger p, BigInteger g, BigInteger y) {
     this.p = p;
     this.g = g;
@@ -92,6 +94,64 @@ public final class ElGamalCipher {
 
   private void Logger(String event) {
     System.out.println("ElGamal$  " + event);
+  }
+
+  public BigInteger sign(BigInteger message) {
+    Random sc = new SecureRandom();
+
+    int Lp = p.bitLength(); // bitlength of p (512 bit)
+    int L = (Lp - 1) / 8; // blocksize
+
+    BigInteger M = message;
+
+    // random k with gcd(k, p-1) = 1
+    BigInteger k = BigIntegerUtil.randomBetween(BigIntegerUtil.TWO, p.subtract(BigIntegerUtil.ONE), sc);
+    while (!k.gcd(p.subtract(BigInteger.ONE)).equals(BigInteger.ONE)) {
+      // random two <= k < p-1
+      k = BigIntegerUtil.randomBetween(BigIntegerUtil.TWO, p.subtract(BigIntegerUtil.ONE), sc);
+    }
+
+    BigInteger r = g.modPow(k, p);
+    BigInteger t = k.modInverse(p.subtract(BigInteger.ONE)); // t = k^-1 mod p-1
+    BigInteger s = (M.subtract(x.multiply(r))).multiply(t); // (M-xr)k^-1
+    s = s.mod(p.subtract(BigInteger.ONE)); // mod (p-1)
+
+    BigInteger C = r.add(s.multiply(p)); // r + s*p
+
+    return C;
+  }
+
+  public boolean verify(BigInteger message, BigInteger cipher) {
+    int Lp = p.bitLength(); // bitlength of p (512 bit)
+    int L = (Lp - 1) / 8; // blocksize
+
+    // read ciphertext
+    BigInteger C = cipher;
+    BigInteger M = message;
+
+    Boolean verified = true;
+
+    BigInteger r = C.mod(p);
+    BigInteger s = C.divide(p);
+
+    if ((r.compareTo(BigInteger.ONE) >= 0) && (r.compareTo(p.subtract(BigInteger.ONE)) <= 0)) {
+      BigInteger yr = y.modPow(r, p); // y^r mod p
+      BigInteger rs = r.modPow(s, p); // r^s mod p
+
+      BigInteger v1 = yr.multiply(rs).mod(p); // y^r * r^s mod p
+
+      BigInteger v2 = g.modPow(M, p);
+
+      if (!v1.equals(v2)) {
+        verified = false;
+      }
+    } else {
+      System.out.println("Abbruch, da r >= 1 oder r <= p-1 nicht erfüllt ist!");
+      verified = false;
+    }
+
+    return verified;
+
   }
 
 }
