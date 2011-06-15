@@ -39,7 +39,7 @@ public final class ObliviousTransfer implements Protocol {
     if (betray) {
       System.out.println("ACHTUNG: Betrugsmodus aktiv!!!");
     }
-    
+
     // Hard coded messages M_0 and M_1
     BigInteger[] M = new BigInteger[2];
     M[0] = new BigInteger("158571455523501317487241243976232835925891360305980300387951706129488838265474360650203061294036271683018196103397777779653383");
@@ -78,22 +78,28 @@ public final class ObliviousTransfer implements Protocol {
       temp = (q.subtract(m[i])).mod(elGamal_A.p.pow(2)); // (q-m_i) mod p^2
       k_A[i] = elGamal_A.decipher(temp);
     }
-    
+
     // zufällig s wählen
     int s = BigIntegerUtil.randomBetween(ZERO, TWO).intValue();
-    
+
     BigInteger alpha = (M[0].add(k_A[s])).mod(elGamal_A.p);
-    BigInteger beta = (M[1].add(k_A[s^1])).mod(elGamal_A.p);
-    
+    BigInteger beta = (M[1].add(k_A[s ^ 1])).mod(elGamal_A.p);
+
     // Signatur berechnen
     BigInteger[] S = new BigInteger[2];
     for (int i = 0; i < 2; i++) {
-      temp = (q.subtract(m[i])).mod(elGamal_A.p.pow(2)); // (q-m_i) mod p^2
-      k_A[i] = elGamal_A.decipher(temp);
+      S[i] = elGamal_A.sign(k_A[i]);
     }
 
-    
-    
+    // Alice sendet alpha, beta, s, S[0], S[1]
+    Com.sendTo(1, alpha.toString(16)); // S7
+    Com.sendTo(1, beta.toString(16)); // S8
+    Com.sendTo(1, s+""); // S9
+    Com.sendTo(1, S[0].toString(16)); // S10
+    Com.sendTo(1, S[1].toString(16)); // S11
+
+
+
   }
 
   /**
@@ -127,6 +133,14 @@ public final class ObliviousTransfer implements Protocol {
 
     // Bob sendet q
     Com.sendTo(0, q.toString(16)); // S6
+    
+    // Bob empfängt alpha, beta, s, S[0], S[1]
+    BigInteger alpha = new BigInteger(Com.receive(), 16); // R7
+    BigInteger beta = new BigInteger(Com.receive(), 16); // R8
+    int s = Integer.valueOf(Com.receive()); // R9
+    BigInteger[] S = new BigInteger[2];
+    S[0] = new BigInteger(Com.receive(), 16); // R10
+    S[1] = new BigInteger(Com.receive(), 16); // R11
 
   }
 
