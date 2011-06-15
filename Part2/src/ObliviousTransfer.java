@@ -42,7 +42,7 @@ public final class ObliviousTransfer implements Protocol {
 
     // Hard coded messages M_0 and M_1
     BigInteger[] M = new BigInteger[2];
-    M[0] = new BigInteger("000000");
+    M[0] = new BigInteger("666666");
     M[1] = new BigInteger("111111");
 
     // Hard coded ElGamal
@@ -155,6 +155,9 @@ public final class ObliviousTransfer implements Protocol {
       k_dach = alpha.mod(elGamal_A.p.subtract(M));
       k_dach = k_dach.mod(elGamal_A.p);
     }
+    
+    System.out.println("S[r^1]: "+S[r^1]);
+    System.out.println("k_dach: "+k_dach);
 
     if (elGamal_A.verify(S[r ^ 1], k_dach) == true) {
       System.out.println("Betrug");
