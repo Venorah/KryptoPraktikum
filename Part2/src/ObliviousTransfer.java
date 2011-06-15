@@ -94,11 +94,9 @@ public final class ObliviousTransfer implements Protocol {
     // Alice sendet alpha, beta, s, S[0], S[1]
     Com.sendTo(1, alpha.toString(16)); // S7
     Com.sendTo(1, beta.toString(16)); // S8
-    Com.sendTo(1, s+""); // S9
+    Com.sendTo(1, s + ""); // S9
     Com.sendTo(1, S[0].toString(16)); // S10
     Com.sendTo(1, S[1].toString(16)); // S11
-
-
 
   }
 
@@ -133,7 +131,7 @@ public final class ObliviousTransfer implements Protocol {
 
     // Bob sendet q
     Com.sendTo(0, q.toString(16)); // S6
-    
+
     // Bob empfängt alpha, beta, s, S[0], S[1]
     BigInteger alpha = new BigInteger(Com.receive(), 16); // R7
     BigInteger beta = new BigInteger(Com.receive(), 16); // R8
@@ -141,6 +139,30 @@ public final class ObliviousTransfer implements Protocol {
     BigInteger[] S = new BigInteger[2];
     S[0] = new BigInteger(Com.receive(), 16); // R10
     S[1] = new BigInteger(Com.receive(), 16); // R11
+
+    int t = s ^ r;
+
+    BigInteger M = null;
+    BigInteger k_dach = null; // k_dach_{r xor 1}
+    if (t == 0) { // nimm alpha
+      M = alpha.mod(elGamal_A.p.subtract(k)).mod(elGamal_A.p);
+
+      k_dach = beta.mod(elGamal_A.p.subtract(M));
+      k_dach = k_dach.mod(elGamal_A.p);
+    } else if (r == 1) { // nimm beta
+      M = beta.mod(elGamal_A.p.subtract(k)).mod(elGamal_A.p);
+
+      k_dach = alpha.mod(elGamal_A.p.subtract(M));
+      k_dach = k_dach.mod(elGamal_A.p);
+    }
+
+    if (elGamal_A.verify(S[r ^ 1], k_dach) == true) {
+      System.out.println("Betrug");
+    } else {
+      System.out.println("OK");
+    }
+
+    System.out.println("Message choosen: M_" + t + ": " + M.toString());
 
   }
 
