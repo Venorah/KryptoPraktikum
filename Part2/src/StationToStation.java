@@ -31,7 +31,7 @@ public final class StationToStation implements Protocol {
   private Fingerprint fingerprint;
   private IDEA idea;
 
-  private boolean MitM = false;
+  private boolean MitM = true;
 
   public void getPrimeAndGenerator() {
     Random sc = new SecureRandom();
@@ -138,11 +138,11 @@ public final class StationToStation implements Protocol {
 
     // alice berechnet k
     BigInteger k = y_B.modPow(x_A, p);
-    
+
     if (MitM) {
       k = y_B.modPow(x_W, p);
     }
-    
+
     // check certificate
     if (checkCertificate(Z_B) == true) {
       System.out.println("Zertifikat Check: Zertifikat von Bob ist korrekt!");
@@ -176,13 +176,6 @@ public final class StationToStation implements Protocol {
     // generate hash
     BigInteger hash2 = hash(y_A, y_B);
     BigInteger S_A = rsa_A.getSignatur(hash2); // S_A = hash^d_A mod n_A
-
-    if (MitM) {
-      BigInteger hash_W = hash(y_W, y_B);
-      // BigInteger S_W = rsa_A.getSignatur(hash_W); // Wolfgang hat rsa_A nicht!!!
-      System.out.println("Hier scheitert der MitM, da er den privaten key d für die Signatur nicht kennt!");
-      System.exit(0);
-    }
 
     System.out.println("Signatur S_A: " + S_A);
 
