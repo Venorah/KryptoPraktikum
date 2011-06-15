@@ -39,6 +39,11 @@ public final class ObliviousTransfer implements Protocol {
     if (betray) {
       System.out.println("ACHTUNG: Betrugsmodus aktiv!!!");
     }
+    
+    // Hard coded messages M_0 and M_1
+    BigInteger[] M = new BigInteger[2];
+    M[0] = new BigInteger("158571455523501317487241243976232835925891360305980300387951706129488838265474360650203061294036271683018196103397777779653383");
+    M[1] = new BigInteger("258571455523501317487241243976232835925891360305980300387951706129488838265474360650203061294036271683018196103397777779653383");
 
     // Hard coded ElGamal
     BigInteger p_A = new BigInteger("9529724065946661791619214607058571455523501317487241243976232835925891360305980300387951706129488838265474360650203061294036271683018196103397777779653383");
@@ -62,11 +67,33 @@ public final class ObliviousTransfer implements Protocol {
     // Alice sendet m_0, m_1 an Bob
     Com.sendTo(1, m[0].toString(16)); // S4
     Com.sendTo(1, m[1].toString(16)); // S5
-    
+
     // Alice empfängt q
     BigInteger q = new BigInteger(Com.receive(), 16); // R6
 
+    // Alice berechnet k_0', k_1', hier k_A[0] und k_A[1] genannt
+    BigInteger[] k_A = new BigInteger[2];
+    BigInteger temp;
+    for (int i = 0; i < 2; i++) {
+      temp = (q.subtract(m[i])).mod(elGamal_A.p.pow(2)); // (q-m_i) mod p^2
+      k_A[i] = elGamal_A.decipher(temp);
+    }
+    
+    // zufällig s wählen
+    int s = BigIntegerUtil.randomBetween(ZERO, TWO).intValue();
+    
+    BigInteger alpha = (M[0].add(k_A[s])).mod(elGamal_A.p);
+    BigInteger beta = (M[1].add(k_A[s^1])).mod(elGamal_A.p);
+    
+    // Signatur berechnen
+    BigInteger[] S = new BigInteger[2];
+    for (int i = 0; i < 2; i++) {
+      temp = (q.subtract(m[i])).mod(elGamal_A.p.pow(2)); // (q-m_i) mod p^2
+      k_A[i] = elGamal_A.decipher(temp);
+    }
 
+    
+    
   }
 
   /**
@@ -97,10 +124,9 @@ public final class ObliviousTransfer implements Protocol {
     // Bob berechnet q
     BigInteger q = elGamal_A.encipher(k).add(m[r]); // E_A(k) + m_r
     q = q.mod(elGamal_A.p.pow(2)); // mod p^2
-    
+
     // Bob sendet q
     Com.sendTo(0, q.toString(16)); // S6
-    
 
   }
 
