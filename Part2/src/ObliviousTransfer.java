@@ -128,7 +128,7 @@ public final class ObliviousTransfer implements Protocol {
 
     // Bob empfängt alpha, beta, s, S[0], S[1]
     BigInteger[] send = new BigInteger[2];
-    send[0] = new BigInteger(Com.receive(), 16); // R7
+    send[0] = new BigInteger(Com.receive(), 16); // R7 // abhängig von s! send[0] hat s=0!
     send[1] = new BigInteger(Com.receive(), 16); // R8
     int s = Integer.valueOf(Com.receive()); // R9
     BigInteger[] S = new BigInteger[2];
