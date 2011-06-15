@@ -42,8 +42,8 @@ public final class ObliviousTransfer implements Protocol {
 
     // Hard coded messages M_0 and M_1
     BigInteger[] M = new BigInteger[2];
-    M[0] = new BigInteger("666666");
-    M[1] = new BigInteger("111111");
+    M[0] = new BigInteger("6666666666666666666666666666666666666666666666666666666666666");
+    M[1] = new BigInteger("11111111111111111111111111111111111111111111111111111111111");
 
     // Hard coded ElGamal
     BigInteger p_A = new BigInteger("9529724065946661791619214607058571455523501317487241243976232835925891360305980300387951706129488838265474360650203061294036271683018196103397777779653383");
@@ -73,14 +73,17 @@ public final class ObliviousTransfer implements Protocol {
 
     // Alice berechnet k_0', k_1', hier k_A[0] und k_A[1] genannt
     BigInteger[] k_A = new BigInteger[2];
-    BigInteger temp;
+    BigInteger temp = null;
     for (int i = 0; i < 2; i++) {
       temp = (q.subtract(m[i])).mod(elGamal_A.p.pow(2)); // (q-m_i) mod p^2
       k_A[i] = elGamal_A.decipher(temp);
     }
+    System.out.println("k_A[0]: " + k_A[0]);
+    System.out.println("k_A[1]: " + k_A[1]);
 
     // zufällig s wählen
     int s = BigIntegerUtil.randomBetween(ZERO, TWO).intValue();
+    System.out.println("s: " + s);
 
     BigInteger alpha = (M[0].add(k_A[s])).mod(elGamal_A.p);
     BigInteger beta = (M[1].add(k_A[s ^ 1])).mod(elGamal_A.p);
@@ -123,12 +126,13 @@ public final class ObliviousTransfer implements Protocol {
 
     // Bob wählt zufällig ein r in {0,1} und k in Z_p
     int r = BigIntegerUtil.randomBetween(ZERO, TWO).intValue();
+    System.out.println("r: " + r);
     BigInteger k = BigIntegerUtil.randomBetween(ONE, p_A);
 
     // Bob berechnet q
     BigInteger q = elGamal_A.encipher(k).add(m[r]); // E_A(k) + m_r
     q = q.mod(elGamal_A.p.pow(2)); // mod p^2
-
+    System.out.println("q: " + q);
     // Bob sendet q
     Com.sendTo(0, q.toString(16)); // S6
 
@@ -145,19 +149,17 @@ public final class ObliviousTransfer implements Protocol {
     BigInteger M = null;
     BigInteger k_dach = null; // k_dach_{r xor 1}
     if (t == 0) { // nimm alpha
-      M = alpha.mod(elGamal_A.p.subtract(k)).mod(elGamal_A.p);
+      M = (alpha.mod(elGamal_A.p.subtract(k))).mod(elGamal_A.p);
 
-      k_dach = beta.mod(elGamal_A.p.subtract(M));
-      k_dach = k_dach.mod(elGamal_A.p);
+      k_dach = (beta.mod(elGamal_A.p.subtract(M))).mod(elGamal_A.p);
     } else if (r == 1) { // nimm beta
-      M = beta.mod(elGamal_A.p.subtract(k)).mod(elGamal_A.p);
+      M = (beta.mod(elGamal_A.p.subtract(k))).mod(elGamal_A.p);
 
-      k_dach = alpha.mod(elGamal_A.p.subtract(M));
-      k_dach = k_dach.mod(elGamal_A.p);
+      k_dach = (alpha.mod(elGamal_A.p.subtract(M))).mod(elGamal_A.p);
     }
-    
-    System.out.println("S[r^1]: "+S[r^1]);
-    System.out.println("k_dach: "+k_dach);
+
+    System.out.println("S[r^1]: " + S[r ^ 1]);
+    System.out.println("k_dach: " + k_dach);
 
     if (elGamal_A.verify(S[r ^ 1], k_dach) == true) {
       System.out.println("Betrug");
