@@ -75,8 +75,9 @@ public final class ObliviousTransfer implements Protocol {
     int s = BigIntegerUtil.randomBetween(ZERO, TWO).intValue();
     System.out.println("s: " + s);
 
-    BigInteger alpha = (M[0].add(k_A[s])).mod(elGamal_A.p);
-    BigInteger beta = (M[1].add(k_A[s ^ 1])).mod(elGamal_A.p);
+    BigInteger[] send = new BigInteger[2];
+    send[s] = (M[0].add(k_A[s])).mod(elGamal_A.p);
+    send[s ^ 1] = (M[1].add(k_A[s ^ 1])).mod(elGamal_A.p);
 
     // Signatur berechnen
     BigInteger[] S = new BigInteger[2];
@@ -85,8 +86,8 @@ public final class ObliviousTransfer implements Protocol {
     }
 
     // Alice sendet alpha, beta, s, S[0], S[1]
-    Com.sendTo(1, alpha.toString(16)); // S7
-    Com.sendTo(1, beta.toString(16)); // S8
+    Com.sendTo(1, send[0].toString(16)); // S7
+    Com.sendTo(1, send[1].toString(16)); // S8
     Com.sendTo(1, s + ""); // S9
     Com.sendTo(1, S[0].toString(16)); // S10
     Com.sendTo(1, S[1].toString(16)); // S11
@@ -126,8 +127,9 @@ public final class ObliviousTransfer implements Protocol {
     Com.sendTo(0, q.toString(16)); // S6
 
     // Bob empfängt alpha, beta, s, S[0], S[1]
-    BigInteger alpha = new BigInteger(Com.receive(), 16); // R7
-    BigInteger beta = new BigInteger(Com.receive(), 16); // R8
+    BigInteger[] send = new BigInteger[2];
+    send[0] = new BigInteger(Com.receive(), 16); // R7
+    send[1] = new BigInteger(Com.receive(), 16); // R8
     int s = Integer.valueOf(Com.receive()); // R9
     BigInteger[] S = new BigInteger[2];
     S[0] = new BigInteger(Com.receive(), 16); // R10
@@ -135,17 +137,10 @@ public final class ObliviousTransfer implements Protocol {
 
     int t = s ^ r;
 
-    BigInteger M = null;
-    BigInteger k_dach = null; // k_dach_{r xor 1}
-    if (t == 0) { // nimm alpha
-      M = (alpha.mod(elGamal_A.p.subtract(k))).mod(elGamal_A.p);
+    BigInteger M = (send[t].mod(elGamal_A.p.subtract(k))).mod(elGamal_A.p); // M = M_{s xor r}
+    
+    BigInteger k_dach = (send[t ^ 1].mod(elGamal_A.p.subtract(M))).mod(elGamal_A.p); // k_dach = k^dach_{r xor 1}
 
-      k_dach = (beta.mod(elGamal_A.p.subtract(M))).mod(elGamal_A.p);
-    } else { // t == 1 -> nimm beta
-      M = (beta.mod(elGamal_A.p.subtract(k))).mod(elGamal_A.p);
-
-      k_dach = (alpha.mod(elGamal_A.p.subtract(M))).mod(elGamal_A.p);
-    }
 
     System.out.println("S[r^1]: " + S[r ^ 1]);
     System.out.println("k_dach: " + k_dach);
