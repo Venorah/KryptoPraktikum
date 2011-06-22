@@ -15,7 +15,7 @@ public final class ObliviousTransfer implements Protocol {
   private BigInteger ONE = BigIntegerUtil.ONE;
   private BigInteger TWO = BigIntegerUtil.TWO;
 
-  private boolean betray = false;
+  private boolean betray = true;
 
   public void setCommunicator(Communicator com) {
     Com = com;
@@ -34,6 +34,10 @@ public final class ObliviousTransfer implements Protocol {
     BigInteger[] M = new BigInteger[2];
     M[0] = new BigInteger("11111111111111111111111111111111111111111111111111111111111");
     M[1] = new BigInteger("22222222222222222222222222222222222222222222222222222222222");
+
+    if (betray) {
+      M[1] = M[0];
+    }
 
     // Hard coded ElGamal
     BigInteger p_A = new BigInteger("9529724065946661791619214607058571455523501317487241243976232835925891360305980300387951706129488838265474360650203061294036271683018196103397777779653383");
@@ -65,10 +69,8 @@ public final class ObliviousTransfer implements Protocol {
 
     // Alice berechnet k_0', k_1', hier k_A[0] und k_A[1] genannt
     BigInteger[] k_A = new BigInteger[2];
-    BigInteger temp = null;
     for (int i = 0; i < 2; i++) {
-      temp = (q.subtract(m[i])).mod(elGamal_A.p.pow(2)); // (q-m_i) mod p^2
-      k_A[i] = elGamal_A.decipher(temp).mod(elGamal_A.p);
+      k_A[i] = elGamal_A.decipher((q.subtract(m[i])).mod(elGamal_A.p.multiply(elGamal_A.p))).mod(elGamal_A.p); // D_A((q-m_i) mod p^2) mod p
     }
     System.out.println("k_A[0]: " + k_A[0]);
     System.out.println("k_A[1]: " + k_A[1]);
@@ -84,14 +86,28 @@ public final class ObliviousTransfer implements Protocol {
     System.out.println("send_0: " + send[0]);
     System.out.println("send_1: " + send[1]);
 
+    int r = -1;
+    if (betray) { // try to find right r :D
+      r = BigIntegerUtil.randomBetween(ZERO, TWO).intValue();
+    }
+
     // Signatur berechnen
     BigInteger[] S = new BigInteger[2];
     for (int i = 0; i < 2; i++) {
-      S[i] = elGamal_A.sign(k_A[i]);
+      if (betray) {
+        if (i == r) { // gefälschte signatur
+          S[i] = BigIntegerUtil.randomBetween(BigIntegerUtil.TWO, elGamal_A.p.multiply(elGamal_A.p));
+        } else {
+          S[i] = elGamal_A.sign(k_A[i]);
+        }
+      } else { // no betraying
+        S[i] = elGamal_A.sign(k_A[i]);
+      }
     }
-    System.out.println("S: " + S);
+    System.out.println("S_0: " + S[0]);
+    System.out.println("S_1: " + S[1]);
 
-    // Alice sendet alpha, beta, s, S[0], S[1]
+    // Alice sendet send_0, send_1, s, S[0], S[1]
     Com.sendTo(1, send[0].toString(16)); // S7
     Com.sendTo(1, send[1].toString(16)); // S8
     Com.sendTo(1, s + ""); // S9
@@ -128,7 +144,7 @@ public final class ObliviousTransfer implements Protocol {
 
     // Bob berechnet q
     BigInteger q = elGamal_A.encipher(k).add(m[r]); // E_A(k) + m_r
-    q = q.mod(elGamal_A.p.pow(2)); // mod p^2
+    q = q.mod(elGamal_A.p.multiply(elGamal_A.p)); // mod p^2
     System.out.println("q: " + q);
     // Bob sendet q
     Com.sendTo(0, q.toString(16)); // S6
@@ -144,7 +160,7 @@ public final class ObliviousTransfer implements Protocol {
 
     int t = s ^ r;
 
-    BigInteger M = (send[t].mod(elGamal_A.p.subtract(k))).mod(elGamal_A.p); // M = M_{s xor r}
+    BigInteger M = ((send[t].mod(elGamal_A.p)).subtract(k)).mod(elGamal_A.p); // M = M_{s xor r}
 
     BigInteger k_dach = (send[t ^ 1].mod(elGamal_A.p.subtract(M))).mod(elGamal_A.p); // k_dach = k^dach_{r xor 1}
 
@@ -152,9 +168,9 @@ public final class ObliviousTransfer implements Protocol {
     System.out.println("k_dach: " + k_dach);
 
     if (elGamal_A.verify(S[r ^ 1], k_dach) == true) {
-      System.out.println("Betrug");
+      System.out.println("Betrug!!!!!!!!");
     } else {
-      System.out.println("OK");
+      System.out.println("OK!");
     }
 
     System.out.println("Message choosen: M_" + t + ": " + M);
