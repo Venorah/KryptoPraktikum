@@ -36,7 +36,7 @@ public final class ObliviousTransfer implements Protocol {
     M[1] = new BigInteger("22222222222222222222222222222222222222222222222222222222222");
 
     if (betray) {
-      M[1] = new BigInteger("11111111111111111111111111111111111111111111111111111111111");
+      M[1] = M[0];
     }
 
     // Hard coded ElGamal
@@ -162,7 +162,7 @@ public final class ObliviousTransfer implements Protocol {
 
     BigInteger M = ((send[t].mod(elGamal_A.p)).subtract(k)).mod(elGamal_A.p); // M = M_{s xor r}
 
-    BigInteger k_dach = (send[t ^ 1].mod(elGamal_A.p.subtract(M))).mod(elGamal_A.p); // k_dach = k^dach_{r xor 1}
+    BigInteger k_dach = send[t ^ 1].subtract(M).mod(elGamal_A.p);
 
     System.out.println("S[r^1]: " + S[r ^ 1]);
     System.out.println("k_dach: " + k_dach);
