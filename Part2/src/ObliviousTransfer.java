@@ -53,6 +53,8 @@ public final class ObliviousTransfer implements Protocol {
     BigInteger[] m = new BigInteger[2];
     m[0] = BigIntegerUtil.randomBetween(ONE, elGamal_A.p);
     m[1] = BigIntegerUtil.randomBetween(ONE, elGamal_A.p);
+    System.out.println("m_0: " + m[0]);
+    System.out.println("m_1: " + m[1]);
 
     // Alice sendet m_0, m_1 an Bob
     Com.sendTo(1, m[0].toString(16)); // S4
@@ -66,7 +68,7 @@ public final class ObliviousTransfer implements Protocol {
     BigInteger temp = null;
     for (int i = 0; i < 2; i++) {
       temp = (q.subtract(m[i])).mod(elGamal_A.p.pow(2)); // (q-m_i) mod p^2
-      k_A[i] = elGamal_A.decipher(temp);
+      k_A[i] = elGamal_A.decipher(temp).mod(elGamal_A.p);
     }
     System.out.println("k_A[0]: " + k_A[0]);
     System.out.println("k_A[1]: " + k_A[1]);
@@ -79,11 +81,15 @@ public final class ObliviousTransfer implements Protocol {
     send[0] = (M[0].add(k_A[s])).mod(elGamal_A.p);
     send[1] = (M[1].add(k_A[s ^ 1])).mod(elGamal_A.p);
 
+    System.out.println("send_0: " + send[0]);
+    System.out.println("send_1: " + send[1]);
+
     // Signatur berechnen
     BigInteger[] S = new BigInteger[2];
     for (int i = 0; i < 2; i++) {
       S[i] = elGamal_A.sign(k_A[i]);
     }
+    System.out.println("S: " + S);
 
     // Alice sendet alpha, beta, s, S[0], S[1]
     Com.sendTo(1, send[0].toString(16)); // S7
@@ -117,7 +123,8 @@ public final class ObliviousTransfer implements Protocol {
     // Bob wählt zufällig ein r in {0,1} und k in Z_p
     int r = BigIntegerUtil.randomBetween(ZERO, TWO).intValue();
     System.out.println("r: " + r);
-    BigInteger k = BigIntegerUtil.randomBetween(ONE, p_A);
+    BigInteger k = BigIntegerUtil.randomBetween(ONE, elGamal_A.p);
+    System.out.println("k: " + k);
 
     // Bob berechnet q
     BigInteger q = elGamal_A.encipher(k).add(m[r]); // E_A(k) + m_r
@@ -126,7 +133,7 @@ public final class ObliviousTransfer implements Protocol {
     // Bob sendet q
     Com.sendTo(0, q.toString(16)); // S6
 
-    // Bob empfängt alpha, beta, s, S[0], S[1]
+    // Bob empfängt send_0, send_1, s, S[0], S[1]
     BigInteger[] send = new BigInteger[2];
     send[0] = new BigInteger(Com.receive(), 16); // R7
     send[1] = new BigInteger(Com.receive(), 16); // R8
@@ -138,9 +145,8 @@ public final class ObliviousTransfer implements Protocol {
     int t = s ^ r;
 
     BigInteger M = (send[t].mod(elGamal_A.p.subtract(k))).mod(elGamal_A.p); // M = M_{s xor r}
-    
-    BigInteger k_dach = (send[t ^ 1].mod(elGamal_A.p.subtract(M))).mod(elGamal_A.p); // k_dach = k^dach_{r xor 1}
 
+    BigInteger k_dach = (send[t ^ 1].mod(elGamal_A.p.subtract(M))).mod(elGamal_A.p); // k_dach = k^dach_{r xor 1}
 
     System.out.println("S[r^1]: " + S[r ^ 1]);
     System.out.println("k_dach: " + k_dach);
@@ -151,7 +157,7 @@ public final class ObliviousTransfer implements Protocol {
       System.out.println("OK");
     }
 
-    System.out.println("Message choosen: M_" + t + ": " + M.toString());
+    System.out.println("Message choosen: M_" + t + ": " + M);
   }
 
   public String nameOfTheGame() {
