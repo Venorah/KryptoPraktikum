@@ -162,12 +162,12 @@ public final class ObliviousTransfer implements Protocol {
 
     BigInteger M = ((send[t].mod(elGamal_A.p)).subtract(k)).mod(elGamal_A.p); // M = M_{s xor r}
 
-    BigInteger k_dach = send[t ^ 1].subtract(M).mod(elGamal_A.p);
+    BigInteger k_dach = ((send[t ^ 1].mod(elGamal_A.p)).subtract(M)).mod(elGamal_A.p);
 
     System.out.println("S[r^1]: " + S[r ^ 1]);
     System.out.println("k_dach: " + k_dach);
 
-    if (elGamal_A.verify(S[r ^ 1], k_dach)) {
+    if (elGamal_A.verify(S[r^1], k_dach)) {
       System.out.println("Betrug!!!!!!!!");
     } else {
       System.out.println("OK!");
