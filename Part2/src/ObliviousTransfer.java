@@ -32,8 +32,8 @@ public final class ObliviousTransfer implements Protocol {
 
     // Hard coded messages M_0 and M_1
     BigInteger[] M = new BigInteger[2];
-    M[0] = new BigInteger("6666666666666666666666666666666666666666666666666666666666666");
-    M[1] = new BigInteger("11111111111111111111111111111111111111111111111111111111111");
+    M[0] = new BigInteger("11111111111111111111111111111111111111111111111111111111111");
+    M[1] = new BigInteger("22222222222222222222222222222222222222222222222222222222222");
 
     // Hard coded ElGamal
     BigInteger p_A = new BigInteger("9529724065946661791619214607058571455523501317487241243976232835925891360305980300387951706129488838265474360650203061294036271683018196103397777779653383");
@@ -76,8 +76,8 @@ public final class ObliviousTransfer implements Protocol {
     System.out.println("s: " + s);
 
     BigInteger[] send = new BigInteger[2];
-    send[s] = (M[0].add(k_A[s])).mod(elGamal_A.p);
-    send[s ^ 1] = (M[1].add(k_A[s ^ 1])).mod(elGamal_A.p);
+    send[0] = (M[0].add(k_A[s])).mod(elGamal_A.p);
+    send[1] = (M[1].add(k_A[s ^ 1])).mod(elGamal_A.p);
 
     // Signatur berechnen
     BigInteger[] S = new BigInteger[2];
@@ -128,7 +128,7 @@ public final class ObliviousTransfer implements Protocol {
 
     // Bob empfängt alpha, beta, s, S[0], S[1]
     BigInteger[] send = new BigInteger[2];
-    send[0] = new BigInteger(Com.receive(), 16); // R7 // abhängig von s! send[0] hat s=0!
+    send[0] = new BigInteger(Com.receive(), 16); // R7
     send[1] = new BigInteger(Com.receive(), 16); // R8
     int s = Integer.valueOf(Com.receive()); // R9
     BigInteger[] S = new BigInteger[2];
