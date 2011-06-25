@@ -91,11 +91,7 @@ public final class ElGamal {
 
     return M;
   }
-
-  private void Logger(String event) {
-    System.out.println("ElGamal$  " + event);
-  }
-
+  
   public BigInteger sign(BigInteger message) {
     Random sc = new SecureRandom();
 
@@ -121,12 +117,12 @@ public final class ElGamal {
     return C;
   }
 
-  public boolean verify(BigInteger message, BigInteger cipher) {
+  public boolean verify(BigInteger message, BigInteger signature) {
     int Lp = p.bitLength(); // bitlength of p (512 bit)
     int L = (Lp - 1) / 8; // blocksize
 
     // read ciphertext
-    BigInteger C = cipher;
+    BigInteger C = signature;
     BigInteger M = message;
 
     Boolean verified = true;
