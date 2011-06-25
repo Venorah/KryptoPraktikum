@@ -70,7 +70,7 @@ public final class ObliviousTransfer implements Protocol {
     // Alice berechnet k_0', k_1', hier k_A[0] und k_A[1] genannt
     BigInteger[] k_strich = new BigInteger[2];
     for (int i = 0; i < 2; i++) {
-      k_strich[i] = elGamal_A.decipher((q.subtract(m[i])).mod(elGamal_A.p.multiply(elGamal_A.p))); // D_A((q-m_i) mod p^2) mod p
+      k_strich[i] = elGamal_A.decipher((q.subtract(m[i])).mod(elGamal_A.p.multiply(elGamal_A.p))); // D_A((q-m_i) mod p^2)
     }
     System.out.println("k_A[0]: " + k_strich[0]);
     System.out.println("k_A[1]: " + k_strich[1]);
@@ -167,6 +167,8 @@ public final class ObliviousTransfer implements Protocol {
     BigInteger M = send[s ^ r].subtract(k).mod(elGamal_A.p); // M = M_{s xor r}
 
     BigInteger k_quer = send[s ^ r ^ 1].subtract(M).mod(elGamal_A.p);
+    
+    BigInteger k_quer2 = send[s ^ r].subtract(M).mod(elGamal_A.p);
 
     System.out.println("S[r^1]: " + S[r ^ 1]);
     System.out.println("k_dach: " + k_quer);
@@ -177,7 +179,7 @@ public final class ObliviousTransfer implements Protocol {
     } else {
       // System.out.println("OK!");
 
-      if (elGamal_A.verify(S[r], k_quer)) {
+      if (elGamal_A.verify(S[r], k_quer2)) {
         System.out.println("OK!");
       } else {
         System.out.println("Betrug!!!!!!!!");
