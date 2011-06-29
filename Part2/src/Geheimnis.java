@@ -1,6 +1,7 @@
 import com.krypto.elGamal.ElGamal;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 import de.tubs.cs.iti.jcrypt.chiffre.BigIntegerUtil;
@@ -50,10 +51,10 @@ public final class Geheimnis implements Protocol {
 //    BigInteger test = new BigInteger("1239abz", 36);
 //    System.out.println(test.toString(36));
     
-    LinkedList<BigInteger> prefixe = a[0][0].getPrefixe();
+    ArrayList<BigInteger> prefixe = a[0][0].getBinaries();
     
-
-    a[0][0].printPrefixe();
+    
+    
     
     
     // beide senden je 1 von 2 geheimnissen eines jeden geheimnispaars gemäß oblivious transfer

@@ -1,20 +1,20 @@
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.ListIterator;
+import java.util.Random;
 
 public class Secret {
-  private LinkedList<BigInteger> prefixe;
+  private ArrayList<BigInteger> binaries;
   private BigInteger word;
 
   private int k;
 
-  public LinkedList<BigInteger> getPrefixe() {
-    return prefixe;
+  public ArrayList<BigInteger> getBinaries() {
+    return binaries;
   }
 
-  public void setPrefixe(LinkedList<BigInteger> prefixe) {
-    this.prefixe = prefixe;
+  public void setPrefixe(ArrayList<BigInteger> binaries) {
+    this.binaries = binaries;
   }
 
   public BigInteger getWord() {
@@ -29,53 +29,66 @@ public class Secret {
     this.word = word;
     this.k = k;
 
-    this.prefixe = new LinkedList<BigInteger>();
+    this.binaries = new ArrayList<BigInteger>();
 
-    makePrefixe();
+    makeBinaries();
   }
 
-  private void makePrefixe() {
+  private void makeBinaries() {
     int n = (int) Math.pow(2, k + 1); // number of prefixes
 
     BigInteger counter = new BigInteger("0");
     for (int i = 0; i < n; i++) {
-      prefixe.add(counter);
+      binaries.add(counter);
 
       counter = counter.add(BigInteger.ONE);
     }
   }
 
-  public boolean isPrefix(BigInteger prefix) {
+  private boolean isPrefix(BigInteger binary) {
     System.out.println("isPrefix: word: " + word.toString(2));
-    System.out.println("isPrefix: prefix: " + prefix.toString(2));
+    System.out.println("isPrefix: binary: " + binary.toString(2));
 
     BigInteger testWord = word;
     boolean isPrefix = false;
     while (testWord.bitLength() != 0) {
-      if (testWord.equals(prefix)) {
+      if (testWord.equals(binary)) {
         isPrefix = true;
       }
 
       testWord = testWord.shiftRight(1);
     }
-    
-    System.out.println("isPrefix: return: "+ isPrefix);
+
+    System.out.println("isPrefix: return: " + isPrefix);
     return isPrefix;
   }
 
-  public void printPrefixe() {
-    Iterator<BigInteger> it = prefixe.iterator();
+  public String binariesToString() {
+    Iterator<BigInteger> it = binaries.iterator();
 
+    String output = "";
     while (it.hasNext()) {
       BigInteger current = it.next();
-      System.out.print(current.toString(2) + ", ");
+      output += current.toString(2) + ", ";
     }
-    System.out.println();
+
+    return output;
   }
 
-  public void removeRandomPrefix() {
+  public int removeRandomPrefix() {
+    Random rnd = new Random();
 
+    // remove only those binarys that are no prefix of the word!!!
+    int rndIndex = rnd.nextInt(binaries.size());
+    while (isPrefix(binaries.get(rndIndex))) {
+      rndIndex = rnd.nextInt(binaries.size());
+    }
+
+    System.out.println("removeRandomPrefix: binary removed: " + binaries.get(rndIndex).toString(2));
+    System.out.println("removeRandomPrefix: remaining binaries: " + binariesToString());
+
+    binaries.remove(rndIndex);
+
+    return rndIndex;
   }
-
-  // removeRandomPrefix
 }
