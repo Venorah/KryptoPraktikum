@@ -8,14 +8,14 @@ public final class ObliviousTransfer implements Protocol {
 
   static private int MinPlayer = 2; // Minimal number of players
   static private int MaxPlayer = 2; // Maximal number of players
-  static private String NameOfTheGame = "Station To Station";
+  static private String NameOfTheGame = "1 of 2 Oblivious Transfer";
   private Communicator Com;
 
   private BigInteger ZERO = BigIntegerUtil.ZERO;
   private BigInteger ONE = BigIntegerUtil.ONE;
   private BigInteger TWO = BigIntegerUtil.TWO;
 
-  private boolean betray = true;
+  private boolean betray = false;
 
   public void setCommunicator(Communicator com) {
     Com = com;
