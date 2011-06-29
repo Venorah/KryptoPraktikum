@@ -1,6 +1,8 @@
 import com.krypto.elGamal.ElGamal;
 
 import java.math.BigInteger;
+import java.util.LinkedList;
+
 import de.tubs.cs.iti.jcrypt.chiffre.BigIntegerUtil;
 import de.tubs.cs.iti.krypto.protokoll.*;
 
@@ -37,23 +39,23 @@ public final class Geheimnis implements Protocol {
     Com.sendTo(1, Integer.toHexString(n)); // S1
     Com.sendTo(1, Integer.toHexString(k)); // S2
 
-    BigInteger[][][] a = new BigInteger[n][2][(int) Math.pow(2, k+1)];
     
-    BigInteger[][] w = new BigInteger[n][2];
+    Secret[][] a = new Secret[n][2];
     
-    BigInteger[][] t = new ArrayList<BigInteger>[n][2];
-
-//    a[0][0] = new BigInteger("12345");
-    
-    
-    
-    BigInteger counter = new BigInteger("0");
-    for (int i = 0; i < n; i++) {
-      a[i][0]= counter;
-      
-      counter = counter.add(ONE);
+    // fülle mit words
+    for (int i=0; i<n;i++) {
+      a[i][0] = new Secret(new BigInteger("001000", 2), k);
     }
+    
+//    BigInteger test = new BigInteger("1239abz", 36);
+//    System.out.println(test.toString(36));
+    
+    LinkedList<BigInteger> prefixe = a[0][0].getPrefixe();
+    
 
+    a[0][0].printPrefixe();
+    
+    
     // beide senden je 1 von 2 geheimnissen eines jeden geheimnispaars gemäß oblivious transfer
 
   }
