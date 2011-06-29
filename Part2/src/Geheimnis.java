@@ -30,15 +30,24 @@ public final class Geheimnis implements Protocol {
       System.out.println("ACHTUNG: Betrugsmodus aktiv!!!");
     }
 
-    BigInteger k = new BigInteger("2"); // k in {0,...,7}
-    BigInteger n = new BigInteger("2"); // n in {1,...,10}
+    int n = 2; // n in {1,...,10}
+    int k = 2; // k in {0,...,7}
 
-    // k und n an Bob
-    Com.sendTo(1, k.toString(16)); // S1
-    Com.sendTo(1, n.toString(16)); // S2
+    // n und k an Bob
+    Com.sendTo(1, Integer.toHexString(n)); // S1
+    Com.sendTo(1, Integer.toHexString(k)); // S2
+
+    BigInteger[][] a = new BigInteger[n][2];
+
+    BigInteger counter = new BigInteger("0");
+    for (int i = 0; i < n; i++) {
+      a[i][0]= counter;
+      
+      counter = counter.add(ONE);
+    }
 
     // beide senden je 1 von 2 geheimnissen eines jeden geheimnispaars gemäß oblivious transfer
-    
+
   }
 
   /**
@@ -51,8 +60,8 @@ public final class Geheimnis implements Protocol {
     }
 
     // k und n von Alice
-    BigInteger k = new BigInteger(Com.receive(), 16); // R1
-    BigInteger n = new BigInteger(Com.receive(), 16); // R2
+    int n = Integer.parseInt(Com.receive(), 16);// R1
+    int k = Integer.parseInt(Com.receive(), 16); // R2
 
   }
 
