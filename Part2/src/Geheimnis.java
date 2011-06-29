@@ -37,8 +37,16 @@ public final class Geheimnis implements Protocol {
     Com.sendTo(1, Integer.toHexString(n)); // S1
     Com.sendTo(1, Integer.toHexString(k)); // S2
 
-    BigInteger[][] a = new BigInteger[n][2];
+    BigInteger[][][] a = new BigInteger[n][2][(int) Math.pow(2, k+1)];
+    
+    BigInteger[][] w = new BigInteger[n][2];
+    
+    BigInteger[][] t = new ArrayList<BigInteger>[n][2];
 
+//    a[0][0] = new BigInteger("12345");
+    
+    
+    
     BigInteger counter = new BigInteger("0");
     for (int i = 0; i < n; i++) {
       a[i][0]= counter;
