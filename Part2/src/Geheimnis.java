@@ -16,7 +16,6 @@ public final class Geheimnis implements Protocol {
   private BigInteger TWO = BigIntegerUtil.TWO;
 
   private boolean betray = false;
-  
 
   public void setCommunicator(Communicator com) {
     Com = com;
@@ -30,15 +29,16 @@ public final class Geheimnis implements Protocol {
     if (betray) {
       System.out.println("ACHTUNG: Betrugsmodus aktiv!!!");
     }
-    
+
     BigInteger k = new BigInteger("2"); // k in {0,...,7}
     BigInteger n = new BigInteger("2"); // n in {1,...,10}
-    
+
     // k und n an Bob
     Com.sendTo(1, k.toString(16)); // S1
     Com.sendTo(1, n.toString(16)); // S2
-    
+
     // beide senden je 1 von 2 geheimnissen eines jeden geheimnispaars gemäß oblivious transfer
+    
   }
 
   /**
@@ -53,15 +53,11 @@ public final class Geheimnis implements Protocol {
     // k und n von Alice
     BigInteger k = new BigInteger(Com.receive(), 16); // R1
     BigInteger n = new BigInteger(Com.receive(), 16); // R2
-    
-    
+
   }
-  
+
   public void obliviousSend(BigInteger M_0, BigInteger M_1) {
-    System.out.println("-- Alice --");
-    if (betray) {
-      System.out.println("ACHTUNG: Betrugsmodus aktiv!!!");
-    }
+    System.out.println("Oblivios Transfer");
 
     // Hard coded messages M_0 and M_1
     BigInteger[] M = new BigInteger[2];
@@ -80,7 +76,7 @@ public final class Geheimnis implements Protocol {
     BigInteger x_A = new BigInteger("3396148360179732969395840357777168909721385739804535508222449486018759668590512304433229713789117927644143586092277750293910884717312503836910153525557232");
     // Objekt initialisieren mit priv key
     ElGamal elGamal_A = new ElGamal(p_A, g_A, y_A, x_A);
-    
+
     BigInteger p = elGamal_A.p;
 
     // Alice sendet ElGamal public key an Bob
@@ -92,8 +88,8 @@ public final class Geheimnis implements Protocol {
     BigInteger[] m = new BigInteger[2];
     m[0] = BigIntegerUtil.randomBetween(ONE, p);
     m[1] = BigIntegerUtil.randomBetween(ONE, p);
-    System.out.println("m_0: " + m[0]);
-    System.out.println("m_1: " + m[1]);
+    // System.out.println("m_0: " + m[0]);
+    // System.out.println("m_1: " + m[1]);
 
     // Alice sendet m_0, m_1 an Bob
     Com.sendTo(1, m[0].toString(16)); // S4
@@ -107,19 +103,19 @@ public final class Geheimnis implements Protocol {
     for (int i = 0; i < 2; i++) {
       k_strich[i] = elGamal_A.decipher((q.subtract(m[i])).mod(p.multiply(p))); // D_A((q-m_i) mod p^2)
     }
-    System.out.println("k_strich[0]: " + k_strich[0]);
-    System.out.println("k_strich[1]: " + k_strich[1]);
+    // System.out.println("k_strich[0]: " + k_strich[0]);
+    // System.out.println("k_strich[1]: " + k_strich[1]);
 
     // zufällig s wählen
     int s = BigIntegerUtil.randomBetween(ZERO, TWO).intValue();
-    System.out.println("s: " + s);
+    // System.out.println("s: " + s);
 
     BigInteger[] send = new BigInteger[2];
     send[0] = M[0].add(k_strich[s]).mod(p);
     send[1] = M[1].add(k_strich[s ^ 1]).mod(p);
 
-    System.out.println("send_0: " + send[0]);
-    System.out.println("send_1: " + send[1]);
+    // System.out.println("send_0: " + send[0]);
+    // System.out.println("send_1: " + send[1]);
 
     int r = -1;
     if (betray) { // try to find right r :D
@@ -140,8 +136,8 @@ public final class Geheimnis implements Protocol {
         S[i] = elGamal_A.sign(k_strich[i]);
       }
     }
-    System.out.println("S_0: " + S[0]);
-    System.out.println("S_1: " + S[1]);
+    // System.out.println("S_0: " + S[0]);
+    // System.out.println("S_1: " + S[1]);
 
     // Alice sendet send_0, send_1, s, S[0], S[1]
     Com.sendTo(1, send[0].toString(16)); // S7
@@ -150,12 +146,9 @@ public final class Geheimnis implements Protocol {
     Com.sendTo(1, S[0].toString(16)); // S10
     Com.sendTo(1, S[1].toString(16)); // S11
   }
-  
+
   public BigInteger obliviousReceive() {
-    System.out.println("-- Bob --");
-    if (betray) {
-      System.out.println("ACHTUNG: Betrugsmodus aktiv!!!");
-    }
+    System.out.println("Oblivios Transfer");
 
     // Bob empfängt Alice ElGamal pub key
     BigInteger p_A = new BigInteger(Com.receive(), 16); // R1
@@ -163,7 +156,7 @@ public final class Geheimnis implements Protocol {
     BigInteger y_A = new BigInteger(Com.receive(), 16); // R3
     // ElGamal Objekt ohne priv key bauen
     ElGamal elGamal_A = new ElGamal(p_A, g_A, y_A);
-    
+
     BigInteger p = elGamal_A.p;
 
     // Bob empfängt m_0 und m_1
@@ -173,14 +166,14 @@ public final class Geheimnis implements Protocol {
 
     // Bob wählt zufällig ein r in {0,1} und k in Z_p
     int r = BigIntegerUtil.randomBetween(ZERO, TWO).intValue();
-    System.out.println("r: " + r);
+    // System.out.println("r: " + r);
     BigInteger k = BigIntegerUtil.randomBetween(ONE, p);
-    System.out.println("k: " + k);
+    // System.out.println("k: " + k);
 
     // Bob berechnet q
     BigInteger q = elGamal_A.encipher(k).add(m[r]); // E_A(k) + m_r
     q = q.mod(p.multiply(p)); // mod p^2
-    System.out.println("q: " + q);
+    // System.out.println("q: " + q);
     // Bob sendet q
     Com.sendTo(0, q.toString(16)); // S6
 
@@ -192,25 +185,25 @@ public final class Geheimnis implements Protocol {
     BigInteger[] S = new BigInteger[2];
     S[0] = new BigInteger(Com.receive(), 16); // R10
     S[1] = new BigInteger(Com.receive(), 16); // R11
-    System.out.println("S_0: " + S[0]);
-    System.out.println("S_1: " + S[1]);
+    // System.out.println("S_0: " + S[0]);
+    // System.out.println("S_1: " + S[1]);
 
-    System.out.println("s: " + s);
-    System.out.println("r: " + r);
+    // System.out.println("s: " + s);
+    // System.out.println("r: " + r);
 
     BigInteger M = send[s ^ r].subtract(k).mod(p); // M = M_{s xor r}
 
     BigInteger k_quer = send[s ^ r ^ 1].subtract(M).mod(p);
-    
+
     BigInteger k_quer2 = send[s ^ r].subtract(M).mod(p);
 
-    System.out.println("S[r^1]: " + S[r ^ 1]);
-    System.out.println("k_dach: " + k_quer);
+    // System.out.println("S[r^1]: " + S[r ^ 1]);
+    // System.out.println("k_dach: " + k_quer);
 
     if (elGamal_A.verify(k_quer, S[r ^ 1])) {
       System.out.println("Betrug!!!!!!!!");
       System.exit(0);
-      
+
       return null;
     } else {
       if (elGamal_A.verify(k_quer2, S[r])) {
@@ -221,7 +214,7 @@ public final class Geheimnis implements Protocol {
       } else {
         System.out.println("Betrug!!!!!!!!");
         System.exit(0);
-        
+
         return null;
       }
     }
