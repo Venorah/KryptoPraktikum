@@ -8,6 +8,7 @@ public class Secret {
   private BigInteger word;
 
   private int k;
+  private int m;
 
   public ArrayList<BigInteger> getBinaries() {
     return binaries;
@@ -25,9 +26,10 @@ public class Secret {
     this.word = word;
   }
 
-  public Secret(BigInteger word, int k) {
+  public Secret(BigInteger word, int k, int m) {
     this.word = word;
     this.k = k;
+    this.m = m;
 
     this.binaries = new ArrayList<BigInteger>();
 
@@ -49,6 +51,7 @@ public class Secret {
     System.out.println("isPrefix: word: " + word.toString(2));
     System.out.println("isPrefix: binary: " + binary.toString(2));
 
+    // shift through all possible words and check if it is equal to the binary
     BigInteger testWord = word;
     boolean isPrefix = false;
     while (testWord.bitLength() != 0) {
@@ -63,8 +66,8 @@ public class Secret {
     return isPrefix;
   }
 
-  public String binariesToString() {
-    Iterator<BigInteger> it = binaries.iterator();
+  public String binariesToString(ArrayList<BigInteger> myBinaries) {
+    Iterator<BigInteger> it = myBinaries.iterator();
 
     String output = "";
     while (it.hasNext()) {
@@ -78,17 +81,47 @@ public class Secret {
   public int removeRandomPrefix() {
     Random rnd = new Random();
 
-    // remove only those binarys that are no prefix of the word!!!
+    // remove only those binaries that are no prefix of the word!!!
     int rndIndex = rnd.nextInt(binaries.size());
     while (isPrefix(binaries.get(rndIndex))) {
       rndIndex = rnd.nextInt(binaries.size());
     }
 
     System.out.println("removeRandomPrefix: binary removed: " + binaries.get(rndIndex).toString(2));
-    System.out.println("removeRandomPrefix: remaining binaries: " + binariesToString());
+    System.out.println("removeRandomPrefix: remaining binaries: " + binariesToString(binaries));
 
     binaries.remove(rndIndex);
 
     return rndIndex;
+  }
+
+  private ArrayList<BigInteger> generateNewBinaries(ArrayList<BigInteger> myBinaries) {
+    ArrayList<BigInteger> oldBinaries = myBinaries;
+    ArrayList<BigInteger> newBinaries = new ArrayList<BigInteger>();
+
+    Iterator<BigInteger> it = oldBinaries.iterator();
+    while (it.hasNext()) {
+      BigInteger current = it.next();
+
+      BigInteger new1 = current.shiftLeft(1); // append 0 from right
+      BigInteger new2 = current.shiftLeft(1).add(BigInteger.ONE); // append 1 from right
+
+      System.out.println("old: " + current.toString(2));
+      System.out.println("new1: " + new1.toString(2));
+      System.out.println("new2: " + new2.toString(2));
+
+      newBinaries.add(new1);
+      newBinaries.add(new2);
+    }
+
+    System.out.println("old binaries: " + binariesToString(oldBinaries));
+    System.out.println("new binaries: " + binariesToString(newBinaries));
+
+    return newBinaries;
+  }
+
+  public void expandBinaries() {
+    binaries = generateNewBinaries(binaries);
+//    k += 1;
   }
 }

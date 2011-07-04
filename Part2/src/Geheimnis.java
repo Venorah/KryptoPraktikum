@@ -35,6 +35,8 @@ public final class Geheimnis implements Protocol {
 
     int n = 2; // n in {1,...,10}
     int k = 2; // k in {0,...,7}
+    
+    int m = 52; // m in {1,...10}
 
     // n und k an Bob
     Com.sendTo(1, Integer.toHexString(n)); // S1
@@ -45,7 +47,7 @@ public final class Geheimnis implements Protocol {
     
     // fülle mit words
     for (int i=0; i<n;i++) {
-      a[i][0] = new Secret(new BigInteger("001000", 2), k);
+      a[i][0] = new Secret(new BigInteger("001000", 2), k, m);
     }
     
 //    BigInteger test = new BigInteger("1239abz", 36);
@@ -53,7 +55,7 @@ public final class Geheimnis implements Protocol {
     
     ArrayList<BigInteger> prefixe = a[0][0].getBinaries();
     
-    
+    a[0][0].expandBinaries();
     
     
     
