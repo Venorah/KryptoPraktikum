@@ -26,15 +26,6 @@ public class Secret {
     this.word = word;
   }
 
-  public Secret(int k, int m) {
-    this.k = k;
-    this.m = m;
-
-    this.binaries = new ArrayList<BigInteger>();
-
-    makeBinaries();
-  }
-
   public Secret(BigInteger word, int k, int m) {
     this.word = word;
     this.k = k;
@@ -68,11 +59,11 @@ public class Secret {
     boolean isWord = false;
     Iterator<BigInteger> it = binaries.iterator();
     while (it.hasNext()) {
-      if (it.equals(word)) {
+      BigInteger current = it.next();
+
+      if (current.equals(word)) {
         isWord = true;
       }
-
-      it.next();
     }
 
     return isWord;

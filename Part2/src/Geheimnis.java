@@ -1,7 +1,6 @@
 import com.krypto.elGamal.ElGamal;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
 
 import de.tubs.cs.iti.jcrypt.chiffre.BigIntegerUtil;
 import de.tubs.cs.iti.krypto.protokoll.*;
@@ -56,13 +55,6 @@ public final class Geheimnis implements Protocol {
       }
     }
 
-    // fülle b[i][j] mit binaries
-    // for (int i = 0; i < n; i++) {
-    // for (int j = 0; j < 2; j++) {
-    // b[i][j] = new Secret(k, m);
-    // }
-    // }
-
     // 1-OF-2-OBLIVIOUS
     // --------------------------------------------------------------------
     // send
@@ -108,10 +100,12 @@ public final class Geheimnis implements Protocol {
       }
 
       // expandiere alle
-      for (int i = 0; i < n; i++) {
-        for (int j = 0; j < 2; j++) {
-          a[i][j].expandBinaries();
-          b[i][j].expandBinaries();
+      if (binaryBits < m) {
+        for (int i = 0; i < n; i++) {
+          for (int j = 0; j < 2; j++) {
+            a[i][j].expandBinaries();
+            b[i][j].expandBinaries();
+          }
         }
       }
     }
@@ -119,8 +113,7 @@ public final class Geheimnis implements Protocol {
     System.out.println("------------------------------------ Ende der Hauptschleife!");
 
     // am ende noch alle nicht-prefixe schicken
-    int end = (int) (Math.pow(2, k + 1) - 1);
-    for (int round = 0; round < end; round++) {
+    for (int round = 0; round < (half - 1); round++) {
       for (int i = 0; i < n; i++) {
         for (int j = 0; j < 2; j++) {
           System.out.println("A:");
@@ -132,7 +125,7 @@ public final class Geheimnis implements Protocol {
     }
 
     // streiche prefixe aus b mit empfangenem index weg
-    for (int round = 0; round < end; round++) {
+    for (int round = 0; round < (half - 1); round++) {
       for (int i = 0; i < n; i++) {
         for (int j = 0; j < 2; j++) {
           System.out.println("B:");
@@ -196,13 +189,6 @@ public final class Geheimnis implements Protocol {
       }
     }
 
-    // fülle a[i][j] mit binaries
-    // for (int i = 0; i < n; i++) {
-    // for (int j = 0; j < 2; j++) {
-    // a[i][j] = new Secret(k, m);
-    // }
-    // }
-
     // 1-OF-2-OBLIVIOUS
     // --------------------------------------------------------------------
     // receive
@@ -225,10 +211,9 @@ public final class Geheimnis implements Protocol {
     int half = (int) (Math.pow(2, k + 1) / 2);
 
     for (int binaryBits = k + 1; binaryBits <= m; binaryBits++) {
-
       // lösche solange round in {0,...,2^(k+1))
       for (int round = 0; round < half; round++) {
-        // streiche prefixe aus b mit empfangenem index weg
+        // streiche prefixe aus a mit empfangenem index weg
         for (int i = 0; i < n; i++) {
           for (int j = 0; j < 2; j++) {
             a[i][j].removeBinary(Integer.parseInt(Com.receive(), 16));
@@ -240,17 +225,19 @@ public final class Geheimnis implements Protocol {
         for (int i = 0; i < n; i++) {
           for (int j = 0; j < 2; j++) {
             int index = b[i][j].removeRandomBinary();
-            b[i][j].debug();
             Com.sendTo(0, Integer.toHexString(index));
+            b[i][j].debug();
           }
         }
       }
 
       // expandiere alle
-      for (int i = 0; i < n; i++) {
-        for (int j = 0; j < 2; j++) {
-          a[i][j].expandBinaries();
-          b[i][j].expandBinaries();
+      if (binaryBits < m) {
+        for (int i = 0; i < n; i++) {
+          for (int j = 0; j < 2; j++) {
+            a[i][j].expandBinaries();
+            b[i][j].expandBinaries();
+          }
         }
       }
     }
@@ -258,8 +245,7 @@ public final class Geheimnis implements Protocol {
     System.out.println("------------------------------------ Ende der Hauptschleife!");
 
     // am ende noch alle nicht-prefixe schicken
-    int end = (int) (Math.pow(2, k + 1) - 1);
-    for (int round = 0; round < end; round++) {
+    for (int round = 0; round < (half - 1); round++) {
       for (int i = 0; i < n; i++) {
         for (int j = 0; j < 2; j++) {
           System.out.println("B:");
@@ -271,7 +257,7 @@ public final class Geheimnis implements Protocol {
     }
 
     // streiche prefixe aus b mit empfangenem index weg
-    for (int round = 0; round < end; round++) {
+    for (int round = 0; round < (half - 1); round++) {
       for (int i = 0; i < n; i++) {
         for (int j = 0; j < 2; j++) {
           System.out.println("A:");
