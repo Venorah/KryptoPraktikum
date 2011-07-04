@@ -53,9 +53,6 @@ public class Secret {
   }
 
   public boolean containsWord() {
-    System.out.println("isAnyWord: word: " + word.toString(36));
-    System.out.println("isAnyWord: binaries: " + binariesToString(binaries));
-
     boolean isWord = false;
     Iterator<BigInteger> it = binaries.iterator();
     while (it.hasNext()) {
@@ -81,13 +78,13 @@ public class Secret {
     return isPrefix;
   }
 
-  public String binariesToString(ArrayList<BigInteger> myBinaries) {
+  public String binariesToString(ArrayList<BigInteger> myBinaries, int radix) {
     Iterator<BigInteger> it = myBinaries.iterator();
 
     String output = "";
     while (it.hasNext()) {
       BigInteger current = it.next();
-      output += current.toString(36) + ", ";
+      output += current.toString(radix) + ", ";
     }
 
     return output;
@@ -95,7 +92,7 @@ public class Secret {
 
   public void debug() {
     System.out.println("word: " + word.toString(36));
-    System.out.println("binaries: " + binariesToString(binaries));
+    System.out.println("binaries: " + binariesToString(binaries, 36));
 
   }
 
@@ -109,15 +106,20 @@ public class Secret {
     }
 
     System.out.println("removeRandomPrefix: binary removed: " + binaries.get(rndIndex).toString(2));
-    System.out.println("removeRandomPrefix: remaining binaries: " + binariesToString(binaries));
 
     binaries.remove(rndIndex);
+
+    System.out.println("removeRandomPrefix: remaining binaries: " + binariesToString(binaries, 2));
 
     return rndIndex;
   }
 
   public void removeBinary(int index) {
+    System.out.println("removeBinary: binary removed: " + binaries.get(index).toString(2));
+
     binaries.remove(index);
+
+    System.out.println("removeBinary: remaining binaries: " + binariesToString(binaries, 2));
   }
 
   private ArrayList<BigInteger> generateNewBinaries(ArrayList<BigInteger> myBinaries) {

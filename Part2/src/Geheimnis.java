@@ -139,23 +139,11 @@ public final class Geheimnis implements Protocol {
 
     for (int i = 0; i < n; i++) {
       for (int j = 0; j < 2; j++) {
-        b[i][j].debug();
-      }
-    }
-
-    for (int i = 0; i < n; i++) {
-      for (int j = 0; j < 2; j++) {
         if (b[i][j].containsWord()) {
           System.out.println("Word (" + b[i][j].getWord().toString(36) + ") ist drin.");
         } else {
           System.out.println("Word (" + b[i][j].getWord().toString(36) + ") ist NICHT drin.");
         }
-      }
-    }
-
-    for (int i = 0; i < n; i++) {
-      for (int j = 0; j < 2; j++) {
-        b[i][j].debug();
       }
     }
 
