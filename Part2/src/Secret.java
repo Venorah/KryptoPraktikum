@@ -54,14 +54,13 @@ public class Secret {
 
   private boolean isPrefix(BigInteger val) {
     boolean isPrefix = false;
-
-    int shift = m - k + 1;
+    
+    int shift = m - (k + 1);
     BigInteger modifiedWord = word.shiftRight(shift);
 
-    if (val.equals(modifiedWord)) {
+    if (val.compareTo(modifiedWord) == 0) {
       isPrefix = true;
     }
-
     return isPrefix;
   }
 
