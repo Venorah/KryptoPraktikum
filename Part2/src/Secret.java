@@ -60,16 +60,21 @@ public class Secret {
       counter = counter.add(BigInteger.ONE);
     }
   }
-  
-  public boolean isAnyWord() {
+
+  public boolean containsWord() {
+    System.out.println("isAnyWord: word: " + word.toString(36));
+    System.out.println("isAnyWord: binaries: " + binariesToString(binaries));
+
     boolean isWord = false;
     Iterator<BigInteger> it = binaries.iterator();
     while (it.hasNext()) {
       if (it.equals(word)) {
         isWord = true;
       }
+
+      it.next();
     }
-    
+
     return isWord;
   }
 
@@ -91,14 +96,14 @@ public class Secret {
     String output = "";
     while (it.hasNext()) {
       BigInteger current = it.next();
-      output += current.toString(2) + ", ";
+      output += current.toString(36) + ", ";
     }
 
     return output;
   }
 
   public void debug() {
-    System.out.println("word: " + word);
+    System.out.println("word: " + word.toString(36));
     System.out.println("binaries: " + binariesToString(binaries));
 
   }
@@ -120,10 +125,8 @@ public class Secret {
     return rndIndex;
   }
 
-  public int removeBinary(int index) {
+  public void removeBinary(int index) {
     binaries.remove(index);
-
-    return index;
   }
 
   private ArrayList<BigInteger> generateNewBinaries(ArrayList<BigInteger> myBinaries) {

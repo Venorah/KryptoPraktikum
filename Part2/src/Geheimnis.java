@@ -34,7 +34,7 @@ public final class Geheimnis implements Protocol {
 
     int n = 2; // n in {1,...,10}
     int k = 2; // k in {0,...,7}
-    int wordlength = 10; // in {1,...,10}
+    int wordlength = 4; // in {1,...,10}
 
     int m = (int) Math.ceil(wordlength * (Math.log(36) / Math.log(2))); // bits of wordlength
     System.out.println("m: " + m);
@@ -90,6 +90,7 @@ public final class Geheimnis implements Protocol {
         // lösche ein binary das kein prefix is und sende index davon
         for (int i = 0; i < n; i++) {
           for (int j = 0; j < 2; j++) {
+            System.out.println("A:");
             int index = a[i][j].removeRandomBinary();
             Com.sendTo(1, Integer.toHexString(index));
             a[i][j].debug();
@@ -99,6 +100,7 @@ public final class Geheimnis implements Protocol {
         // streiche prefixe aus b mit empfangenem index weg
         for (int i = 0; i < n; i++) {
           for (int j = 0; j < 2; j++) {
+            System.out.println("B:");
             b[i][j].removeBinary(Integer.parseInt(Com.receive(), 16));
             b[i][j].debug();
           }
@@ -115,15 +117,30 @@ public final class Geheimnis implements Protocol {
 
     }
 
+    System.out.println("Ende der Übertragungen!");
+
     for (int i = 0; i < n; i++) {
       for (int j = 0; j < 2; j++) {
-        if (b[i][j].isAnyWord()) {
+        b[i][j].debug();
+      }
+    }
+    
+    for (int i = 0; i < n; i++) {
+      for (int j = 0; j < 2; j++) {
+        if (b[i][j].containsWord()) {
           System.out.println("Word (" + b[i][j].getWord().toString(36) + ") ist drin.");
         } else {
-          System.out.println("Word (" + b[i][j].getWord().toString(36) + ") ist NCIHT drin.");
+          System.out.println("Word (" + b[i][j].getWord().toString(36) + ") ist NICHT drin.");
         }
       }
     }
+    
+    for (int i = 0; i < n; i++) {
+      for (int j = 0; j < 2; j++) {
+        b[i][j].debug();
+      }
+    }
+
   }
 
   /**
@@ -171,7 +188,7 @@ public final class Geheimnis implements Protocol {
       a[i][0] = new Secret(word, k, m);
       a[i][1] = new Secret(word, k, m);
     }
-    
+
     // send
     for (int i = 0; i < n; i++) {
       obliviousSend(0, b[i][0].getWord(), b[i][1].getWord());
@@ -211,15 +228,16 @@ public final class Geheimnis implements Protocol {
           b[i][j].expandBinaries();
         }
       }
-
     }
+
+    System.out.println("Ende der Übertragungen!");
 
     for (int i = 0; i < n; i++) {
       for (int j = 0; j < 2; j++) {
-        if (a[i][j].isAnyWord()) {
+        if (a[i][j].containsWord()) {
           System.out.println("Word (" + a[i][j].getWord().toString(36) + ") ist drin.");
         } else {
-          System.out.println("Word (" + a[i][j].getWord().toString(36) + ") ist NCIHT drin.");
+          System.out.println("Word (" + a[i][j].getWord().toString(36) + ") ist NICHT drin.");
         }
       }
     }
