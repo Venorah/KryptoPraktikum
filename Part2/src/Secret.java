@@ -60,6 +60,18 @@ public class Secret {
       counter = counter.add(BigInteger.ONE);
     }
   }
+  
+  public boolean isAnyWord() {
+    boolean isWord = false;
+    Iterator<BigInteger> it = binaries.iterator();
+    while (it.hasNext()) {
+      if (it.equals(word)) {
+        isWord = true;
+      }
+    }
+    
+    return isWord;
+  }
 
   private boolean isPrefix(BigInteger val) {
     boolean isPrefix = false;

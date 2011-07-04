@@ -57,14 +57,30 @@ public final class Geheimnis implements Protocol {
     }
 
     // fülle b[i][j] mit binaries
+    // for (int i = 0; i < n; i++) {
+    // for (int j = 0; j < 2; j++) {
+    // b[i][j] = new Secret(k, m);
+    // }
+    // }
+
+    // 1-OF-2-OBLIVIOUS
+    // --------------------------------------------------------------------
+    // send
     for (int i = 0; i < n; i++) {
-      for (int j = 0; j < 2; j++) {
-        b[i][j] = new Secret(k, m);
-      }
+      obliviousSend(1, a[i][0].getWord(), a[i][1].getWord());
     }
 
-    // --------------------------------------------------------------------
+    // receive
+    for (int i = 0; i < n; i++) {
+      BigInteger word = obliviousReceive(1);
 
+      // set beide secrets
+      b[i][0] = new Secret(word, k, m);
+      b[i][1] = new Secret(word, k, m);
+    }
+
+    // PROTOKOLL
+    // --------------------------------------------------------------------
     int half = (int) (Math.pow(2, k + 1) / 2);
 
     for (int binaryBits = k + 1; binaryBits <= m; binaryBits++) {
@@ -98,6 +114,16 @@ public final class Geheimnis implements Protocol {
       }
 
     }
+
+    for (int i = 0; i < n; i++) {
+      for (int j = 0; j < 2; j++) {
+        if (b[i][j].isAnyWord()) {
+          System.out.println("Word (" + b[i][j].getWord().toString(36) + ") ist drin.");
+        } else {
+          System.out.println("Word (" + b[i][j].getWord().toString(36) + ") ist NCIHT drin.");
+        }
+      }
+    }
   }
 
   /**
@@ -129,13 +155,30 @@ public final class Geheimnis implements Protocol {
     }
 
     // fülle a[i][j] mit binaries
+    // for (int i = 0; i < n; i++) {
+    // for (int j = 0; j < 2; j++) {
+    // a[i][j] = new Secret(k, m);
+    // }
+    // }
+
+    // 1-OF-2-OBLIVIOUS
+    // --------------------------------------------------------------------
+    // send
     for (int i = 0; i < n; i++) {
-      for (int j = 0; j < 2; j++) {
-        a[i][j] = new Secret(k, m);
-      }
+      obliviousSend(0, b[i][0].getWord(), b[i][1].getWord());
     }
 
-    // ----------------------------------------------------------------------------
+    // receive
+    for (int i = 0; i < n; i++) {
+      BigInteger word = obliviousReceive(0);
+
+      // set beide secrets
+      a[i][0] = new Secret(word, k, m);
+      a[i][1] = new Secret(word, k, m);
+    }
+
+    // PROTOKOLL
+    // --------------------------------------------------------------------
 
     int half = (int) (Math.pow(2, k + 1) / 2);
 
@@ -171,10 +214,20 @@ public final class Geheimnis implements Protocol {
 
     }
 
+    for (int i = 0; i < n; i++) {
+      for (int j = 0; j < 2; j++) {
+        if (a[i][j].isAnyWord()) {
+          System.out.println("Word (" + a[i][j].getWord().toString(36) + ") ist drin.");
+        } else {
+          System.out.println("Word (" + a[i][j].getWord().toString(36) + ") ist NCIHT drin.");
+        }
+      }
+    }
+
   }
 
-  public void obliviousSend(BigInteger M_0, BigInteger M_1) {
-    System.out.println("Oblivios Transfer");
+  public void obliviousSend(int sendTo, BigInteger M_0, BigInteger M_1) {
+    System.out.println("Oblivious Transfer");
 
     // Hard coded messages M_0 and M_1
     BigInteger[] M = new BigInteger[2];
@@ -197,9 +250,9 @@ public final class Geheimnis implements Protocol {
     BigInteger p = elGamal_A.p;
 
     // Alice sendet ElGamal public key an Bob
-    Com.sendTo(1, elGamal_A.p.toString(16)); // S1
-    Com.sendTo(1, elGamal_A.g.toString(16)); // S2
-    Com.sendTo(1, elGamal_A.y.toString(16)); // S3
+    Com.sendTo(sendTo, elGamal_A.p.toString(16)); // S1
+    Com.sendTo(sendTo, elGamal_A.g.toString(16)); // S2
+    Com.sendTo(sendTo, elGamal_A.y.toString(16)); // S3
 
     // Alice wählt zufällig zwei Nachrichten m_0, m_1 in Z_p, 1 <= m < p
     BigInteger[] m = new BigInteger[2];
@@ -209,8 +262,8 @@ public final class Geheimnis implements Protocol {
     // System.out.println("m_1: " + m[1]);
 
     // Alice sendet m_0, m_1 an Bob
-    Com.sendTo(1, m[0].toString(16)); // S4
-    Com.sendTo(1, m[1].toString(16)); // S5
+    Com.sendTo(sendTo, m[0].toString(16)); // S4
+    Com.sendTo(sendTo, m[1].toString(16)); // S5
 
     // Alice empfängt q
     BigInteger q = new BigInteger(Com.receive(), 16); // R6
@@ -257,15 +310,15 @@ public final class Geheimnis implements Protocol {
     // System.out.println("S_1: " + S[1]);
 
     // Alice sendet send_0, send_1, s, S[0], S[1]
-    Com.sendTo(1, send[0].toString(16)); // S7
-    Com.sendTo(1, send[1].toString(16)); // S8
-    Com.sendTo(1, s + ""); // S9
-    Com.sendTo(1, S[0].toString(16)); // S10
-    Com.sendTo(1, S[1].toString(16)); // S11
+    Com.sendTo(sendTo, send[0].toString(16)); // S7
+    Com.sendTo(sendTo, send[1].toString(16)); // S8
+    Com.sendTo(sendTo, s + ""); // S9
+    Com.sendTo(sendTo, S[0].toString(16)); // S10
+    Com.sendTo(sendTo, S[1].toString(16)); // S11
   }
 
-  public BigInteger obliviousReceive() {
-    System.out.println("Oblivios Transfer");
+  public BigInteger obliviousReceive(int sendTo) {
+    System.out.println("Oblivious Transfer");
 
     // Bob empfängt Alice ElGamal pub key
     BigInteger p_A = new BigInteger(Com.receive(), 16); // R1
@@ -292,7 +345,7 @@ public final class Geheimnis implements Protocol {
     q = q.mod(p.multiply(p)); // mod p^2
     // System.out.println("q: " + q);
     // Bob sendet q
-    Com.sendTo(0, q.toString(16)); // S6
+    Com.sendTo(sendTo, q.toString(16)); // S6
 
     // Bob empfängt send_0, send_1, s, S[0], S[1]
     BigInteger[] send = new BigInteger[2];
