@@ -2,7 +2,6 @@ import com.krypto.elGamal.ElGamal;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.LinkedList;
 
 import de.tubs.cs.iti.jcrypt.chiffre.BigIntegerUtil;
 import de.tubs.cs.iti.krypto.protokoll.*;
@@ -35,32 +34,33 @@ public final class Geheimnis implements Protocol {
 
     int n = 2; // n in {1,...,10}
     int k = 2; // k in {0,...,7}
-    int m = 52; // m in {1,...52}
-    
+    int wordlength = 10; // in {1,...,10}
+
+    int m = (int) Math.ceil(10 * (Math.log(36) / Math.log(2))); // bits of wordlength
+    System.out.println("m: " + m);
 
     // n, k, m an Bob
     Com.sendTo(1, Integer.toHexString(n)); // S1
     Com.sendTo(1, Integer.toHexString(k)); // S2
     Com.sendTo(1, Integer.toHexString(m)); // S3
 
-
-    
+    // generiere alle a[i][j]
     Secret[][] a = new Secret[n][2];
-    
-    // fülle mit words
-    for (int i=0; i<n;i++) {
-      a[i][0] = new Secret(new BigInteger("1234abcdefza", 36), k, m);
+    for (int i = 0; i < n; i++) {
+      for (int j = 0; j < 2; j++) {
+        BigInteger randomWord = BigIntegerUtil.randomBetween(ZERO, new BigInteger("36").pow(wordlength));
+        System.out.println("randomWord: " + randomWord.toString(36));
+        a[i][j] = new Secret(randomWord, k, m);
+      }
     }
-    
-//    BigInteger test = new BigInteger("1239abz", 36);
-//    System.out.println(test.toString(36));
-    
+
+    // BigInteger test = new BigInteger("1239abz", 36);
+    // System.out.println(test.toString(36));
+
     ArrayList<BigInteger> prefixe = a[0][0].getBinaries();
-    
+
     a[0][0].expandBinaries();
-    
-    
-    
+
     // beide senden je 1 von 2 geheimnissen eines jeden geheimnispaars gemäß oblivious transfer
 
   }

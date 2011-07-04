@@ -51,16 +51,17 @@ public class Secret {
       counter = counter.add(BigInteger.ONE);
     }
   }
-  
-  private boolean isPrefix(BigInteger val){
+
+  private boolean isPrefix(BigInteger val) {
     boolean isPrefix = false;
-    
-    int shift = m-k+1;
+
+    int shift = m - k + 1;
     BigInteger modifiedWord = word.shiftRight(shift);
 
-    if(val.compareTo(modifiedWord) == 0){
+    if (val.equals(modifiedWord)) {
       isPrefix = true;
     }
+
     return isPrefix;
   }
 
@@ -104,16 +105,16 @@ public class Secret {
       BigInteger new1 = current.shiftLeft(1); // append 0 from right
       BigInteger new2 = current.shiftLeft(1).add(BigInteger.ONE); // append 1 from right
 
-      System.out.println("old: " + current.toString(2));
-      System.out.println("new1: " + new1.toString(2));
-      System.out.println("new2: " + new2.toString(2));
+      // System.out.println("old: " + current.toString(2));
+      // System.out.println("new1: " + new1.toString(2));
+      // System.out.println("new2: " + new2.toString(2));
 
       newBinaries.add(new1);
       newBinaries.add(new2);
     }
 
-    System.out.println("old binaries: " + binariesToString(oldBinaries));
-    System.out.println("new binaries: " + binariesToString(newBinaries));
+    // System.out.println("old binaries: " + binariesToString(oldBinaries));
+    // System.out.println("new binaries: " + binariesToString(newBinaries));
 
     return newBinaries;
   }
