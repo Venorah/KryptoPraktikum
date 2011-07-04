@@ -163,11 +163,6 @@ public final class Geheimnis implements Protocol {
 
     // 1-OF-2-OBLIVIOUS
     // --------------------------------------------------------------------
-    // send
-    for (int i = 0; i < n; i++) {
-      obliviousSend(0, b[i][0].getWord(), b[i][1].getWord());
-    }
-
     // receive
     for (int i = 0; i < n; i++) {
       BigInteger word = obliviousReceive(0);
@@ -175,6 +170,11 @@ public final class Geheimnis implements Protocol {
       // set beide secrets
       a[i][0] = new Secret(word, k, m);
       a[i][1] = new Secret(word, k, m);
+    }
+    
+    // send
+    for (int i = 0; i < n; i++) {
+      obliviousSend(0, b[i][0].getWord(), b[i][1].getWord());
     }
 
     // PROTOKOLL
