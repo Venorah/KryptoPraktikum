@@ -51,23 +51,16 @@ public class Secret {
       counter = counter.add(BigInteger.ONE);
     }
   }
-
-  private boolean isPrefix(BigInteger binary) {
-    System.out.println("isPrefix: word: " + word.toString(2));
-    System.out.println("isPrefix: binary: " + binary.toString(2));
-
-    // shift through all possible words and check if it is equal to the binary
-    BigInteger testWord = word;
+  
+  private boolean isPrefix(BigInteger val){
     boolean isPrefix = false;
-    while (testWord.bitLength() != 0) {
-      if (testWord.equals(binary)) {
-        isPrefix = true;
-      }
+    
+    int shift = m-k+1;
+    BigInteger modifiedWord = word.shiftRight(shift);
 
-      testWord = testWord.shiftRight(1);
+    if(val.compareTo(modifiedWord) == 0){
+      isPrefix = true;
     }
-
-    System.out.println("isPrefix: return: " + isPrefix);
     return isPrefix;
   }
 
