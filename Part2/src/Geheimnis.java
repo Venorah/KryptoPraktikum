@@ -114,8 +114,9 @@ public final class Geheimnis implements Protocol {
           b[i][j].expandBinaries();
         }
       }
-
     }
+
+    System.out.println("------------------------------------ Ende der Hauptschleife!");
 
     // am ende noch alle nicht-prefixe schicken
     int end = (int) (Math.pow(2, k + 1) - 1);
@@ -253,6 +254,8 @@ public final class Geheimnis implements Protocol {
         }
       }
     }
+
+    System.out.println("------------------------------------ Ende der Hauptschleife!");
 
     // am ende noch alle nicht-prefixe schicken
     int end = (int) (Math.pow(2, k + 1) - 1);
