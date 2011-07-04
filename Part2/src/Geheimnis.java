@@ -117,14 +117,38 @@ public final class Geheimnis implements Protocol {
 
     }
 
-    System.out.println("Ende der Übertragungen!");
+    // am ende noch alle nicht-prefixe schicken
+    int end = (int) (Math.pow(2, k + 1) - 1);
+    for (int round = 0; round < end; round++) {
+      for (int i = 0; i < n; i++) {
+        for (int j = 0; j < 2; j++) {
+          System.out.println("A:");
+          int index = a[i][j].removeRandomBinary();
+          Com.sendTo(1, Integer.toHexString(index));
+          a[i][j].debug();
+        }
+      }
+    }
+
+    // streiche prefixe aus b mit empfangenem index weg
+    for (int round = 0; round < end; round++) {
+      for (int i = 0; i < n; i++) {
+        for (int j = 0; j < 2; j++) {
+          System.out.println("B:");
+          b[i][j].removeBinary(Integer.parseInt(Com.receive(), 16));
+          b[i][j].debug();
+        }
+      }
+    }
+
+    System.out.println("------------------------------------ Ende der Übertragungen!");
 
     for (int i = 0; i < n; i++) {
       for (int j = 0; j < 2; j++) {
         b[i][j].debug();
       }
     }
-    
+
     for (int i = 0; i < n; i++) {
       for (int j = 0; j < 2; j++) {
         if (b[i][j].containsWord()) {
@@ -134,7 +158,7 @@ public final class Geheimnis implements Protocol {
         }
       }
     }
-    
+
     for (int i = 0; i < n; i++) {
       for (int j = 0; j < 2; j++) {
         b[i][j].debug();
@@ -230,7 +254,31 @@ public final class Geheimnis implements Protocol {
       }
     }
 
-    System.out.println("Ende der Übertragungen!");
+    // am ende noch alle nicht-prefixe schicken
+    int end = (int) (Math.pow(2, k + 1) - 1);
+    for (int round = 0; round < end; round++) {
+      for (int i = 0; i < n; i++) {
+        for (int j = 0; j < 2; j++) {
+          System.out.println("B:");
+          int index = b[i][j].removeRandomBinary();
+          Com.sendTo(0, Integer.toHexString(index));
+          b[i][j].debug();
+        }
+      }
+    }
+
+    // streiche prefixe aus b mit empfangenem index weg
+    for (int round = 0; round < end; round++) {
+      for (int i = 0; i < n; i++) {
+        for (int j = 0; j < 2; j++) {
+          System.out.println("A:");
+          a[i][j].removeBinary(Integer.parseInt(Com.receive(), 16));
+          a[i][j].debug();
+        }
+      }
+    }
+
+    System.out.println("------------------------------------ Ende der Übertragungen!");
 
     for (int i = 0; i < n; i++) {
       for (int j = 0; j < 2; j++) {
