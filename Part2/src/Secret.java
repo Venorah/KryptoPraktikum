@@ -31,6 +31,11 @@ public class Secret {
     this.k = k;
     this.m = m;
 
+    if (word.bitLength() > m) {
+      System.out.println("Problem: Bitlength of word (" + word.bitLength() + ") is bigger than m (" + m + ")! Exiting...");
+      System.exit(0);
+    }
+
     this.binaries = new ArrayList<BigInteger>();
 
     makeBinaries();
@@ -122,6 +127,6 @@ public class Secret {
 
   public void expandBinaries() {
     binaries = generateNewBinaries(binaries);
-//    k += 1;
+    k += 1;
   }
 }

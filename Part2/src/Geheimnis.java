@@ -35,19 +35,21 @@ public final class Geheimnis implements Protocol {
 
     int n = 2; // n in {1,...,10}
     int k = 2; // k in {0,...,7}
+    int m = 52; // m in {1,...52}
     
-    int m = 52; // m in {1,...10}
 
-    // n und k an Bob
+    // n, k, m an Bob
     Com.sendTo(1, Integer.toHexString(n)); // S1
     Com.sendTo(1, Integer.toHexString(k)); // S2
+    Com.sendTo(1, Integer.toHexString(m)); // S3
+
 
     
     Secret[][] a = new Secret[n][2];
     
     // fülle mit words
     for (int i=0; i<n;i++) {
-      a[i][0] = new Secret(new BigInteger("001000", 2), k, m);
+      a[i][0] = new Secret(new BigInteger("1234abcdefza", 36), k, m);
     }
     
 //    BigInteger test = new BigInteger("1239abz", 36);
