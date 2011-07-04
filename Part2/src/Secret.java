@@ -76,7 +76,7 @@ public class Secret {
     return output;
   }
 
-  public int removeRandomPrefix() {
+  public int removeRandomBinary() {
     Random rnd = new Random();
 
     // remove only those binaries that are no prefix of the word!!!
