@@ -59,7 +59,7 @@ public final class Geheimnis implements Protocol {
     // fülle b[i][j] mit binaries
     for (int i = 0; i < n; i++) {
       for (int j = 0; j < 2; j++) {
-        a[i][j] = new Secret(k, m);
+        b[i][j] = new Secret(k, m);
       }
     }
 
