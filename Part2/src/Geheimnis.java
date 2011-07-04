@@ -36,7 +36,7 @@ public final class Geheimnis implements Protocol {
     int k = 2; // k in {0,...,7}
     int wordlength = 10; // in {1,...,10}
 
-    int m = (int) Math.ceil(10 * (Math.log(36) / Math.log(2))); // bits of wordlength
+    int m = (int) Math.ceil(wordlength * (Math.log(36) / Math.log(2))); // bits of wordlength
     System.out.println("m: " + m);
 
     // n, k, m an Bob

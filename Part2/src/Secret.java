@@ -58,7 +58,7 @@ public class Secret {
     int shift = m - (k + 1);
     BigInteger modifiedWord = word.shiftRight(shift);
 
-    if (val.compareTo(modifiedWord) == 0) {
+    if (val.equals(modifiedWord)) {
       isPrefix = true;
     }
     return isPrefix;
