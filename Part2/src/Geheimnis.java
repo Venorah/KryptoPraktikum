@@ -76,6 +76,7 @@ public final class Geheimnis implements Protocol {
           for (int j = 0; j < 2; j++) {
             int index = a[i][j].removeRandomBinary();
             Com.sendTo(1, Integer.toHexString(index));
+            a[i][j].debug();
           }
         }
 
@@ -83,6 +84,7 @@ public final class Geheimnis implements Protocol {
         for (int i = 0; i < n; i++) {
           for (int j = 0; j < 2; j++) {
             b[i][j].removeBinary(Integer.parseInt(Com.receive(), 16));
+            b[i][j].debug();
           }
         }
       }
@@ -144,14 +146,16 @@ public final class Geheimnis implements Protocol {
         // streiche prefixe aus b mit empfangenem index weg
         for (int i = 0; i < n; i++) {
           for (int j = 0; j < 2; j++) {
-            b[i][j].removeBinary(Integer.parseInt(Com.receive(), 16));
+            a[i][j].removeBinary(Integer.parseInt(Com.receive(), 16));
+            a[i][j].debug();
           }
         }
 
         // lösche ein binary das kein prefix is und sende index davon
         for (int i = 0; i < n; i++) {
           for (int j = 0; j < 2; j++) {
-            int index = a[i][j].removeRandomBinary();
+            int index = b[i][j].removeRandomBinary();
+            b[i][j].debug();
             Com.sendTo(0, Integer.toHexString(index));
           }
         }

@@ -85,6 +85,12 @@ public class Secret {
     return output;
   }
 
+  public void debug() {
+    System.out.println("word: " + word);
+    System.out.println("binaries: " + binariesToString(binaries));
+
+  }
+
   public int removeRandomBinary() {
     Random rnd = new Random();
 
