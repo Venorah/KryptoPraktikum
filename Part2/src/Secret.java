@@ -26,6 +26,15 @@ public class Secret {
     this.word = word;
   }
 
+  public Secret(int k, int m) {
+    this.k = k;
+    this.m = m;
+
+    this.binaries = new ArrayList<BigInteger>();
+
+    makeBinaries();
+  }
+
   public Secret(BigInteger word, int k, int m) {
     this.word = word;
     this.k = k;
@@ -54,7 +63,7 @@ public class Secret {
 
   private boolean isPrefix(BigInteger val) {
     boolean isPrefix = false;
-    
+
     int shift = m - (k + 1);
     BigInteger modifiedWord = word.shiftRight(shift);
 
@@ -91,6 +100,12 @@ public class Secret {
     binaries.remove(rndIndex);
 
     return rndIndex;
+  }
+
+  public int removeBinary(int index) {
+    binaries.remove(index);
+
+    return index;
   }
 
   private ArrayList<BigInteger> generateNewBinaries(ArrayList<BigInteger> myBinaries) {

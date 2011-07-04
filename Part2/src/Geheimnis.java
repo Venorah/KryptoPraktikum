@@ -39,13 +39,15 @@ public final class Geheimnis implements Protocol {
     int m = (int) Math.ceil(wordlength * (Math.log(36) / Math.log(2))); // bits of wordlength
     System.out.println("m: " + m);
 
-    // n, k, m an Bob
+    // n, k, wordlength an Bob
     Com.sendTo(1, Integer.toHexString(n)); // S1
     Com.sendTo(1, Integer.toHexString(k)); // S2
-    Com.sendTo(1, Integer.toHexString(m)); // S3
+    Com.sendTo(1, Integer.toHexString(wordlength)); // S3
+
+    Secret[][] a = new Secret[n][2];
+    Secret[][] b = new Secret[n][2];
 
     // generiere alle a[i][j]
-    Secret[][] a = new Secret[n][2];
     for (int i = 0; i < n; i++) {
       for (int j = 0; j < 2; j++) {
         BigInteger randomWord = BigIntegerUtil.randomBetween(ZERO, new BigInteger("36").pow(wordlength));
@@ -54,12 +56,38 @@ public final class Geheimnis implements Protocol {
       }
     }
 
+    // fülle b[i][j] mit binaries
+    for (int i = 0; i < n; i++) {
+      for (int j = 0; j < 2; j++) {
+        a[i][j] = new Secret(k, m);
+      }
+    }
+
+    // --------------------------------------------------------------------
+
+    while (true) {
+      // lösche ein binary das kein prefix is und sende index davon
+      for (int i = 0; i < n; i++) {
+        for (int j = 0; j < 2; j++) {
+          int index = a[i][j].removeRandomBinary();
+          Com.sendTo(1, Integer.toHexString(index));
+        }
+      }
+
+      // streiche prefixe aus b mit empfangenem index weg
+      for (int i = 0; i < n; i++) {
+        for (int j = 0; j < 2; j++) {
+          b[i][j].removeBinary(Integer.parseInt(Com.receive(), 16));
+        }
+      }
+    }
+
     // BigInteger test = new BigInteger("1239abz", 36);
     // System.out.println(test.toString(36));
 
-    ArrayList<BigInteger> prefixe = a[0][0].getBinaries();
-
-    a[0][0].expandBinaries();
+    // ArrayList<BigInteger> prefixe = a[0][0].getBinaries();
+    //
+    // a[0][0].expandBinaries();
 
     // beide senden je 1 von 2 geheimnissen eines jeden geheimnispaars gemäß oblivious transfer
 
@@ -74,9 +102,50 @@ public final class Geheimnis implements Protocol {
       System.out.println("ACHTUNG: Betrugsmodus aktiv!!!");
     }
 
-    // k und n von Alice
+    // n, k, wordlength von Alice
     int n = Integer.parseInt(Com.receive(), 16);// R1
     int k = Integer.parseInt(Com.receive(), 16); // R2
+    int wordlength = Integer.parseInt(Com.receive(), 16); // R3
+
+    int m = (int) Math.ceil(wordlength * (Math.log(36) / Math.log(2))); // bits of wordlength
+
+    Secret[][] a = new Secret[n][2];
+    Secret[][] b = new Secret[n][2];
+
+    // generiere alle b[i][j]
+    for (int i = 0; i < n; i++) {
+      for (int j = 0; j < 2; j++) {
+        BigInteger randomWord = BigIntegerUtil.randomBetween(ZERO, new BigInteger("36").pow(wordlength));
+        System.out.println("randomWord: " + randomWord.toString(36));
+        b[i][j] = new Secret(randomWord, k, m);
+      }
+    }
+
+    // fülle a[i][j] mit binaries
+    for (int i = 0; i < n; i++) {
+      for (int j = 0; j < 2; j++) {
+        a[i][j] = new Secret(k, m);
+      }
+    }
+
+    // ----------------------------------------------------------------------------
+
+    while (true) {
+      // streiche prefixe aus a mit empfangenem index weg
+      for (int i = 0; i < n; i++) {
+        for (int j = 0; j < 2; j++) {
+          a[i][j].removeBinary(Integer.parseInt(Com.receive(), 16));
+        }
+      }
+
+      // lösche ein binary das kein prefix is und sende index davon
+      for (int i = 0; i < n; i++) {
+        for (int j = 0; j < 2; j++) {
+          int index = b[i][j].removeRandomBinary();
+          Com.sendTo(1, Integer.toHexString(index));
+        }
+      }
+    }
 
   }
 
