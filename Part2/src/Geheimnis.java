@@ -77,7 +77,7 @@ public final class Geheimnis implements Protocol {
 
     for (int binaryBits = k + 1; binaryBits <= m; binaryBits++) {
 
-      // lösche solange round in {0,...,2^(k+1))
+      // lösche solange round in {0,...,(2^(k+1))/2)
       for (int round = 0; round < half; round++) {
         // lösche ein binary das kein prefix is und sende index davon
         for (int i = 0; i < n; i++) {
@@ -140,9 +140,9 @@ public final class Geheimnis implements Protocol {
     for (int i = 0; i < n; i++) {
       for (int j = 0; j < 2; j++) {
         if (b[i][j].containsWord()) {
-          System.out.println("Word (" + b[i][j].getWord().toString(36) + ") ist drin.");
+          System.out.println("Das folgende Wort wurde schon durch 1-of-2-Oblivious Transfer übertragen: " + b[i][j].getWord().toString(36));
         } else {
-          System.out.println("Word (" + b[i][j].getWord().toString(36) + ") ist NICHT drin.");
+          System.out.println("Das folgende Wort wurde NICHT durch 1-of-2-Oblivious Transfer übertragen: " + b[i][j].binariesToString());
         }
       }
     }
@@ -199,7 +199,7 @@ public final class Geheimnis implements Protocol {
     int half = (int) (Math.pow(2, k + 1) / 2);
 
     for (int binaryBits = k + 1; binaryBits <= m; binaryBits++) {
-      // lösche solange round in {0,...,2^(k+1))
+      // lösche solange round in {0,...,(2^(k+1))/2)
       for (int round = 0; round < half; round++) {
         // streiche prefixe aus a mit empfangenem index weg
         for (int i = 0; i < n; i++) {
@@ -260,9 +260,9 @@ public final class Geheimnis implements Protocol {
     for (int i = 0; i < n; i++) {
       for (int j = 0; j < 2; j++) {
         if (a[i][j].containsWord()) {
-          System.out.println("Word (" + a[i][j].getWord().toString(36) + ") ist drin.");
+          System.out.println("Das folgende Wort wurde schon durch 1-of-2-Oblivious Transfer übertragen: " + a[i][j].getWord().toString(36));
         } else {
-          System.out.println("Word (" + a[i][j].getWord().toString(36) + ") ist NICHT drin.");
+          System.out.println("Das folgende Wort wurde NICHT durch 1-of-2-Oblivious Transfer übertragen: " + a[i][j].binariesToString());
         }
       }
     }

@@ -89,6 +89,10 @@ public class Secret {
 
     return output;
   }
+  
+  public String binariesToString() {
+    return binariesToString(binaries, 36);
+  }
 
   public void debug() {
     System.out.println("word: " + word.toString(36));
