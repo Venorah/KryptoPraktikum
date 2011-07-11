@@ -1,6 +1,12 @@
 import com.krypto.elGamal.ElGamal;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.math.BigInteger;
+import java.security.MessageDigest;
 
 import de.tubs.cs.iti.jcrypt.chiffre.BigIntegerUtil;
 import de.tubs.cs.iti.krypto.protokoll.*;
@@ -23,7 +29,8 @@ public final class Vertrag implements Protocol {
   }
 
   /**
-   * Aktionen der beginnenden Partei. Bei den 2-Parteien-Protokollen seien dies die Aktionen von Alice.
+   * Aktionen der beginnenden Partei. Bei den 2-Parteien-Protokollen seien dies die Aktionen von
+   * Alice.
    */
   public void sendFirst() {
     System.out.println("-- Alice --");
@@ -139,7 +146,8 @@ public final class Vertrag implements Protocol {
     // Alice berechnet k_0', k_1', hier k_A[0] und k_A[1] genannt
     BigInteger[] k_strich = new BigInteger[2];
     for (int i = 0; i < 2; i++) {
-      k_strich[i] = elGamal_A.decipher((q.subtract(m[i])).mod(p.multiply(p))); // D_A((q-m_i) mod p^2)
+      k_strich[i] = elGamal_A.decipher((q.subtract(m[i])).mod(p.multiply(p))); // D_A((q-m_i) mod
+                                                                               // p^2)
     }
     // System.out.println("k_strich[0]: " + k_strich[0]);
     // System.out.println("k_strich[1]: " + k_strich[1]);
@@ -268,6 +276,196 @@ public final class Vertrag implements Protocol {
 
   public int maxPlayer() {
     return MaxPlayer;
+  }
+  
+  /**
+   * Tafel: 1.)1.3
+   */
+  private BigInteger computeSHA(String text){
+    MessageDigest sha = null;
+    byte[] digest;
+
+    try {
+      sha = MessageDigest.getInstance("SHA");
+    } catch (Exception e) {
+      System.out.println("Could not create message digest! Exception " + e.toString());
+      System.exit(0);
+    }
+    
+    sha.update(text.getBytes());
+    digest = sha.digest();
+    
+    return new BigInteger(digest); //TODO ka ob das korrekt ist
+  }
+  
+  /**
+   * Tafel: 1.)1.3
+   */
+  private BigInteger sign(ElGamal el, BigInteger message){
+    return el.sign(message);
+  }
+  
+  /**
+   * Tafel: 1.)3.2
+   */
+  private boolean verify(ElGamal el, BigInteger message, BigInteger signature){
+    return el.verify(message, signature);
+  }
+  
+  /**
+   * Tafel: 1.)1.3
+   */
+  private String erklaerungAlice(){
+    String a = "Die Symbole A'_i,j bezeichnen Loesungen der zugehoerigen S-Puzzles ";
+    String b = "C_(A_i,j), i.element{1,...,n}, j.element{1,2}. ";
+    String c = "Der untenstehende Vertrag ist von mir unterzeichnet, ";
+    String d = "wenn Bob fuer ein i.element{1,...,n} die beiden Schluessel ";
+    String e = "A'_i,1 und A'_i,2 nennen kann, d.h., wenn er die Loesung ";
+    String f = "des (i,1)-ten und (i,2)-ten Puzzles kennt.";
+    
+    return a+b+c+d+e+f;
+  }
+  
+  /**
+   * Tafel: 1.)1.3
+   */
+  private String erklaerungBob(){
+    String a = "Die Symbole A'_i,j bezeichnen Loesungen der zugehoerigen S-Puzzles ";
+    String b = "C_(A_i,j), i.element{1,...,n}, j.element{1,2}. ";
+    String c = "Der untenstehende Vertrag ist von mir unterzeichnet, ";
+    String d = "wenn Alice fuer ein i.element{1,...,n} die beiden Schluessel ";
+    String e = "B'_i,1 und B'_i,2 nennen kann, d.h., wenn er die Loesung ";
+    String f = "des (i,1)-ten und (i,2)-ten Puzzles kennt.";
+    
+    return a+b+c+d+e+f;
+  }
+  
+  private String vertragString(File file){
+    
+    String output = "";
+    try {
+      BufferedReader in = new BufferedReader(new FileReader(file));
+      
+      String inputLine;
+      while ((inputLine = in.readLine()) != null) {
+        output += inputLine;
+      }
+    } catch (FileNotFoundException e) {
+      System.out.println("Dude! Vertrag nicht vorhanden!");
+      System.exit(0);
+      e.printStackTrace();
+    } catch (IOException e) {
+      System.out.println("Dude! Vertrag nicht vorhanden!");
+      System.exit(0);
+      e.printStackTrace();
+    }
+    
+    return output;
+  }
+
+  /*
+   * Testet ob gcd(val1, val2) = 1 ist und liefert TRUE falls ja
+   */
+  private boolean checkGGT(BigInteger val1, BigInteger val2) {
+    boolean result = false;
+
+    BigInteger gcd = val1.gcd(val2);
+    
+    if(gcd.compareTo(ONE) == 0){
+      result = true;
+    }
+
+    return result;
+  }
+
+  /**
+   * Tafel: 1.)1.1
+   */
+  private BigInteger[][] getDoubleArray(int n, BigInteger p) { // p_A oder p_B
+    BigInteger[][] array = new BigInteger[n][2];
+
+    for (int i = 0; i < n; i++) {
+      boolean check = false;
+      while (!check) {
+        array[i][0] = computePrime(p);
+        check = checkGGT(array[i][0], p.subtract(ONE));
+      }
+      check = false;
+      while (!check) {
+        array[i][1] = computePrime(p);
+        check = checkGGT(array[i][1], p.subtract(ONE));
+      }
+    }
+
+    return array;
+  }
+  
+  /**
+   * Tafel: 1.)1.1
+   */
+  private BigInteger[] get_C_Array(BigInteger M, BigInteger[][] array){
+    int length1 = array.length;
+    int length2 = array[0].length;
+    BigInteger[] output = new BigInteger[length1*length2];
+    
+    int counter = 0;
+    for(int i=0; i<length1; i++){
+      for(int j=0; j<length2; j++){
+        output[counter++] = M.modPow(array[i][j], M);
+      }
+    }
+    
+    return output;
+  }
+
+  /**
+   * Tafel: 0.)3.1
+   */
+  private BigInteger computeMessage(BigInteger modulus) { // modulus = M
+    BigInteger output = null;
+
+    // TODO output < modulus (kein Primzahltest noetig)
+
+    return output;
+  }
+
+  /**
+   * Tafel: 0.)3.3
+   */
+  private boolean isPrime(BigInteger val) {
+    boolean result = false;
+
+    // TODO check if val is Prime!
+
+    return result;
+  }
+
+  /**
+   * Tafel: 0.)3.1 , 0.)4.1
+   */
+  private BigInteger computePrime(BigInteger modulus) { // p_A , Modulus 2^52
+    BigInteger output = null;
+
+    while (!isPrime(output)) { // Solange keine Primzahl gefunden wurde
+      output = null; // TODO Generate new prime
+    }
+
+    return output;
+  }
+
+  /**
+   * Tafel: 0.)4.2
+   */
+  private BigInteger computePrimeBetween(BigInteger M, BigInteger modulus) { // p_B, Modulus 2^52
+    BigInteger output = computePrime(modulus);
+
+    // Bedingung: M < output < 2^52
+    while ((output.compareTo(M) == 1) || (output.compareTo(M) == 0)) {
+      output = computePrime(modulus);
+    }
+
+    return output;
+
   }
 
 }
