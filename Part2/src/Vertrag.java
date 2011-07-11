@@ -31,7 +31,30 @@ public final class Vertrag implements Protocol {
       System.out.println("ACHTUNG: Betrugsmodus aktiv!!!");
     }
 
-    
+    // ElGamal Austausch ---------------------------------------------------------------
+
+    // Hard coded ElGamal
+    BigInteger p_A = new BigInteger("7789788965135663714690749102453072297748091458564354001035945418057913886819451721947477667556269500246451521462308030406227237346483679855991947569361139");
+    BigInteger g_A = new BigInteger("6064211169633122201619014531987050083527855665630754543345421103270545526304595525644519493777291154802011605984321393354028831270292432551124003674426238");
+    BigInteger y_A = new BigInteger("3437627792030969437324738830672923365331058766427964788898937390314623633227168012908665090706697391878208866573481456022491841700034626290242749535475902");
+    // private:
+    BigInteger x_A = new BigInteger("3396148360179732969395840357777168909721385739804535508222449486018759668590512304433229713789117927644143586092277750293910884717312503836910153525557232");
+    // Objekt initialisieren mit priv key
+    ElGamal elGamal_A = new ElGamal(p_A, g_A, y_A, x_A);
+
+    // Alice sendet ElGamal public key an Bob
+    Com.sendTo(1, elGamal_A.p.toString(16)); // S1
+    Com.sendTo(1, elGamal_A.g.toString(16)); // S2
+    Com.sendTo(1, elGamal_A.y.toString(16)); // S3
+
+    // Alice empfängt Bobs ElGamal pub key
+    BigInteger p_B = new BigInteger(Com.receive(), 16); // R1
+    BigInteger g_B = new BigInteger(Com.receive(), 16); // R2
+    BigInteger y_B = new BigInteger(Com.receive(), 16); // R3
+    // ElGamal Objekt ohne priv key bauen
+    ElGamal elGamal_B = new ElGamal(p_B, g_B, y_B);
+
+    // Vertrag einlesen ---------------------------------------------------------------
 
   }
 
@@ -43,6 +66,31 @@ public final class Vertrag implements Protocol {
     if (betray) {
       System.out.println("ACHTUNG: Betrugsmodus aktiv!!!");
     }
+
+    // ElGamal Austausch ---------------------------------------------------------------
+
+    // Hard coded ElGamal
+    BigInteger p_B = new BigInteger("7789788965135663714690749102453072297748091458564354001035945418057913886819451721947477667556269500246451521462308030406227237346483679855991947569361139");
+    BigInteger g_B = new BigInteger("6064211169633122201619014531987050083527855665630754543345421103270545526304595525644519493777291154802011605984321393354028831270292432551124003674426238");
+    BigInteger y_B = new BigInteger("3437627792030969437324738830672923365331058766427964788898937390314623633227168012908665090706697391878208866573481456022491841700034626290242749535475902");
+    // private:
+    BigInteger x_B = new BigInteger("3396148360179732969395840357777168909721385739804535508222449486018759668590512304433229713789117927644143586092277750293910884717312503836910153525557232");
+    // Objekt initialisieren mit priv key
+    ElGamal elGamal_B = new ElGamal(p_B, g_B, y_B, x_B);
+
+    // Bob empfängt Alice ElGamal pub key
+    BigInteger p_A = new BigInteger(Com.receive(), 16); // R1
+    BigInteger g_A = new BigInteger(Com.receive(), 16); // R2
+    BigInteger y_A = new BigInteger(Com.receive(), 16); // R3
+    // ElGamal Objekt ohne priv key bauen
+    ElGamal elGamal_A = new ElGamal(p_A, g_A, y_A);
+
+    // Bob sendet ElGamal public key an Alice
+    Com.sendTo(0, elGamal_B.p.toString(16)); // S1
+    Com.sendTo(0, elGamal_B.g.toString(16)); // S2
+    Com.sendTo(0, elGamal_B.y.toString(16)); // S3
+
+    // Vertrag einlesen ---------------------------------------------------------------
 
   }
 
