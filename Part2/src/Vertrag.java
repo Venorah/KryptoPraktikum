@@ -103,7 +103,7 @@ public final class Vertrag implements Protocol {
       System.out.println("C_A[i] = " + C_A[i]);
     }
     
-    for(int i=0; i<C_A.length; i++){
+    for(int i=0; i<C_B.length; i++){
       System.out.println("C_B[i] = " + C_B[i]);
     }
 
@@ -227,7 +227,7 @@ public final class Vertrag implements Protocol {
       System.out.println("C_A[i] = " + C_A[i]);
     }
     
-    for(int i=0; i<C_A.length; i++){
+    for(int i=0; i<C_B.length; i++){
       System.out.println("C_B[i] = " + C_B[i]);
     }
 
