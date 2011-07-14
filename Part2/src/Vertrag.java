@@ -735,6 +735,12 @@ public final class Vertrag implements Protocol {
     for (int i = 0; i < C.length; i++) {
       C_String += C[i].toString(16) + ", ";
     }
+    
+    if (betray) {
+      for (int i = 0; i < C.length; i++) {
+        C_String += BigIntegerUtil.randomSmallerThan(C[i]).toString(16) + ", ";
+      }
+    }
 
     String a = "Die Symbole A'_i,j bezeichnen Loesungen der zugehoerigen S-Puzzles ";
     String b = C_String + ", i.element{1,...,n}, j.element{1,2}. ";
