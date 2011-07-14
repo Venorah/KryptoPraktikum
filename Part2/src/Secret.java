@@ -99,8 +99,8 @@ public class Secret {
   }
 
   public void debug() {
-    System.out.println("word: " + word.toString(36));
-    System.out.println("binaries: " + binariesToString(binaries, 36));
+//    System.out.println("word: " + word.toString(36));
+//    System.out.println("binaries: " + binariesToString(binaries, 36));
 
   }
 
@@ -113,21 +113,21 @@ public class Secret {
       rndIndex = rnd.nextInt(binaries.size());
     }
 
-    System.out.println("removeRandomPrefix: binary removed: " + binaries.get(rndIndex).toString(2));
+//    System.out.println("removeRandomPrefix: binary removed: " + binaries.get(rndIndex).toString(2));
 
     binaries.remove(rndIndex);
 
-    System.out.println("removeRandomPrefix: remaining binaries: " + binariesToString(binaries, 2));
+    //System.out.println("removeRandomPrefix: remaining binaries: " + binariesToString(binaries, 2));
 
     return rndIndex;
   }
 
   public void removeBinary(int index) {
-    System.out.println("removeBinary: binary removed: " + binaries.get(index).toString(2));
+    //System.out.println("removeBinary: binary removed: " + binaries.get(index).toString(2));
 
     binaries.remove(index);
 
-    System.out.println("removeBinary: remaining binaries: " + binariesToString(binaries, 2));
+    //System.out.println("removeBinary: remaining binaries: " + binariesToString(binaries, 2));
   }
 
   private ArrayList<BigInteger> generateNewBinaries(ArrayList<BigInteger> myBinaries) {
