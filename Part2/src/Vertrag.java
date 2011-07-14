@@ -92,6 +92,15 @@ public final class Vertrag implements Protocol {
       C_B[i] = new BigInteger(Com.receive(), 16); // Ri
       System.out.println("Receive C_B[i]: " + C_B[i].toString(16));
     }
+    
+    System.out.println("Alice:");
+    for(int i=0; i<C_A.length; i++){
+      System.out.println("C_A[i] = " + C_A[i]);
+    }
+    
+    for(int i=0; i<C_A.length; i++){
+      System.out.println("C_B[i] = " + C_B[i]);
+    }
 
     String erklaerung_A = erklaerungAlice();
     String text_A = erklaerung_A + vertrag_A;
@@ -202,6 +211,15 @@ public final class Vertrag implements Protocol {
       Com.sendTo(0, C_B[i].toString(16)); // Si
       System.out.println("Send C_B[i]: " + C_B[i].toString(16));
     }
+    
+    System.out.println("Bob:");
+    for(int i=0; i<C_A.length; i++){
+      System.out.println("C_A[i] = " + C_A[i]);
+    }
+    
+    for(int i=0; i<C_A.length; i++){
+      System.out.println("C_B[i] = " + C_B[i]);
+    }
 
     // Empfange erklärung, text und signed hash von alice
     String erklaerung_A = Com.receive(); // R5
@@ -259,7 +277,7 @@ public final class Vertrag implements Protocol {
     // int wordlength = 4; // in {1,...,10}
 
     // int m = (int) Math.ceil(wordlength * (Math.log(36) / Math.log(2))); // bits of wordlength
-    System.out.println("m: " + m);
+    //System.out.println("m: " + m);
 
     // n, k, wordlength an Bob
     // Com.sendTo(1, Integer.toHexString(n)); // S1
@@ -307,7 +325,7 @@ public final class Vertrag implements Protocol {
         // lösche ein binary das kein prefix is und sende index davon
         for (int i = 0; i < n; i++) {
           for (int j = 0; j < 2; j++) {
-            System.out.println("A:");
+            //System.out.println("A:");
             int index = a[i][j].removeRandomBinary();
             Com.sendTo(1, Integer.toHexString(index));
             a[i][j].debug();
@@ -317,7 +335,7 @@ public final class Vertrag implements Protocol {
         // streiche prefixe aus b mit empfangenem index weg
         for (int i = 0; i < n; i++) {
           for (int j = 0; j < 2; j++) {
-            System.out.println("B:");
+            //System.out.println("B:");
             b[i][j].removeBinary(Integer.parseInt(Com.receive(), 16));
             b[i][j].debug();
           }
@@ -341,7 +359,7 @@ public final class Vertrag implements Protocol {
     for (int round = 0; round < (half - 1); round++) {
       for (int i = 0; i < n; i++) {
         for (int j = 0; j < 2; j++) {
-          System.out.println("A:");
+          //System.out.println("A:");
           int index = a[i][j].removeRandomBinary();
           Com.sendTo(1, Integer.toHexString(index));
           a[i][j].debug();
@@ -353,7 +371,7 @@ public final class Vertrag implements Protocol {
     for (int round = 0; round < (half - 1); round++) {
       for (int i = 0; i < n; i++) {
         for (int j = 0; j < 2; j++) {
-          System.out.println("B:");
+          //System.out.println("B:");
           b[i][j].removeBinary(Integer.parseInt(Com.receive(), 16));
           b[i][j].debug();
         }
@@ -462,7 +480,7 @@ public final class Vertrag implements Protocol {
     for (int round = 0; round < (half - 1); round++) {
       for (int i = 0; i < n; i++) {
         for (int j = 0; j < 2; j++) {
-          System.out.println("B:");
+          //System.out.println("B:");
           int index = b[i][j].removeRandomBinary();
           Com.sendTo(0, Integer.toHexString(index));
           b[i][j].debug();
@@ -474,7 +492,7 @@ public final class Vertrag implements Protocol {
     for (int round = 0; round < (half - 1); round++) {
       for (int i = 0; i < n; i++) {
         for (int j = 0; j < 2; j++) {
-          System.out.println("A:");
+          //System.out.println("A:");
           a[i][j].removeBinary(Integer.parseInt(Com.receive(), 16));
           a[i][j].debug();
         }
@@ -567,7 +585,7 @@ public final class Vertrag implements Protocol {
     int r = -1;
     if (betray) { // try to find right r :D
       r = BigIntegerUtil.randomBetween(ZERO, TWO).intValue();
-      System.out.println("guessed r: " + r);
+      //System.out.println("guessed r: " + r);
     }
 
     // Signatur berechnen
