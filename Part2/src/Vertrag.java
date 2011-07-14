@@ -87,6 +87,7 @@ public final class Vertrag implements Protocol {
 
     // Arrays bauen
     BigInteger[][] A = getDoubleArray(n, p_A);
+    System.out.println("Alice:");
     BigInteger[] C_A = get_C_Array(M, A, p_A);
 
     BigInteger[] C_B = new BigInteger[2 * n];
@@ -144,9 +145,8 @@ public final class Vertrag implements Protocol {
 
     // Geheimnisprotokoll
     BigInteger[][] B = geheimnisAlice(n, 4, 51, A);
-    BigInteger[] C2_B = get_C_Array(M, B, p_B);
-
     System.out.println("Alice: Checking Arrays !-o-o-o-o-o-!");
+    BigInteger[] C2_B = get_C_Array(M, B, p_B);
     if (check(C_B, C2_B)) {
       System.out.println("Alice: Alles klar!");
     } else {
@@ -211,6 +211,7 @@ public final class Vertrag implements Protocol {
 
     // Arrays bauen
     BigInteger[][] B = getDoubleArray(n, p_B);
+    System.out.println("Bob:");
     BigInteger[] C_B = get_C_Array(M, B, p_B);
 
     BigInteger[] C_A = new BigInteger[2 * n];
@@ -269,8 +270,8 @@ public final class Vertrag implements Protocol {
     // Geheimnisprotokoll
     BigInteger[][] A = geheimnisBob(n, 4, 51, B);
 
-    BigInteger[] C2_A = get_C_Array(M, A, p_A);
     System.out.println("Bob: Checking Arrays !-o-o-o-o-o-!");
+    BigInteger[] C2_A = get_C_Array(M, A, p_A);
     if (check(C_A, C2_A)) {
       System.out.println("Bob: Alles klar!");
     } else {
@@ -828,6 +829,13 @@ public final class Vertrag implements Protocol {
    * Tafel: 1.)1.1
    */
   private BigInteger[] get_C_Array(BigInteger M, BigInteger[][] array, BigInteger p) {
+    
+    System.out.println("M = " + M);
+    System.out.println("p = " + p);
+    for (int i = 0; i < array.length; i++) {
+      System.out.println("A bzw B: " + array[i][0] + " " + array[i][1]);
+    }
+    
     int length1 = array.length;
     int length2 = array[0].length;
     BigInteger[] output = new BigInteger[length1 * length2];
