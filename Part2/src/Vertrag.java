@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
+import java.util.Random;
 
 import de.tubs.cs.iti.jcrypt.chiffre.BigIntegerUtil;
 import de.tubs.cs.iti.krypto.protokoll.*;
@@ -37,6 +38,8 @@ public final class Vertrag implements Protocol {
     if (betray) {
       System.out.println("ACHTUNG: Betrugsmodus aktiv!!!");
     }
+    
+    int n = 2; // n in {1,...,10}
 
     // ElGamal Austausch ---------------------------------------------------------------
 
@@ -62,6 +65,9 @@ public final class Vertrag implements Protocol {
     ElGamal elGamal_B = new ElGamal(p_B, g_B, y_B);
 
     // Vertrag einlesen ---------------------------------------------------------------
+    String C = vertragString(new File("vertrag.txt"));
+    
+    
 
   }
 
@@ -98,7 +104,7 @@ public final class Vertrag implements Protocol {
     Com.sendTo(0, elGamal_B.y.toString(16)); // S3
 
     // Vertrag einlesen ---------------------------------------------------------------
-
+    String C = vertragString(new File("vertrag.txt"));
   }
 
   public void obliviousSend(int sendTo, BigInteger M_0, BigInteger M_1) {
@@ -387,12 +393,12 @@ public final class Vertrag implements Protocol {
     for (int i = 0; i < n; i++) {
       boolean check = false;
       while (!check) {
-        array[i][0] = computePrime(p);
+        array[i][0] = BigIntegerUtil.randomSmallerThan(p);
         check = checkGGT(array[i][0], p.subtract(ONE));
       }
       check = false;
       while (!check) {
-        array[i][1] = computePrime(p);
+        array[i][1] = BigIntegerUtil.randomSmallerThan(p);
         check = checkGGT(array[i][1], p.subtract(ONE));
       }
     }
@@ -433,37 +439,32 @@ public final class Vertrag implements Protocol {
    * Tafel: 0.)3.3
    */
   private boolean isPrime(BigInteger val) {
-    boolean result = false;
 
-    // TODO check if val is Prime!
-
-    return result;
+    return val.isProbablePrime(100);
   }
 
   /**
    * Tafel: 0.)3.1 , 0.)4.1
    */
-  private BigInteger computePrime(BigInteger modulus) { // p_A , Modulus 2^52
-    BigInteger output = null;
+  private BigInteger computePrime() {
+    Random rnd = new Random();
+    
+    int bitlength = rnd.nextInt(51); // random < 52
 
-    while (!isPrime(output)) { // Solange keine Primzahl gefunden wurde
-      output = null; // TODO Generate new prime
-    }
-
-    return output;
+    return new BigInteger(bitlength, 100, rnd);
   }
 
   /**
    * Tafel: 0.)4.2
    */
   private BigInteger computePrimeBetween(BigInteger M, BigInteger modulus) { // p_B, Modulus 2^52
-    BigInteger output = computePrime(modulus);
+    BigInteger output = computePrime();
 
     // Bedingung: M < output < 2^52
-    while ((output.compareTo(M) == 1) || (output.compareTo(M) == 0)) {
-      output = computePrime(modulus);
+    while ((output.compareTo(M) == -1) || (output.compareTo(M) == 0)) {
+      output = computePrime();
     }
-
+        
     return output;
 
   }
