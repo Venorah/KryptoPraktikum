@@ -97,13 +97,13 @@ public final class Vertrag implements Protocol {
     BigInteger H_A_signed = elGamal_A.sign(text_A_BI);
 
     // Sende erklärung, text, signed hash
-    Com.sendTo(0, new BigInteger(erklaerung_A.getBytes()).toString(16)); // S5
-    Com.sendTo(0, text_A_BI.toString(16)); // S6
+    Com.sendTo(0, erklaerung_A); // S5
+    Com.sendTo(0, text_A); // S6
     Com.sendTo(0, H_A_signed.toString(16)); // S7
 
     // Empfange erklärung, text und signed hash von bob
-    String erklaerung_B = new String(new BigInteger(Com.receive(), 16).toByteArray()); // R5
-    String vertrag_B = new String(new BigInteger(Com.receive(), 16).toByteArray()); // R6
+    String erklaerung_B = Com.receive(); // R5
+    String vertrag_B = Com.receive(); // R6
     BigInteger H_B = new BigInteger(Com.receive(), 16);
 
     System.out.println("Erklaerung_B: " + erklaerung_B);
@@ -171,8 +171,8 @@ public final class Vertrag implements Protocol {
     }
 
     // Empfange erklärung, text und signed hash von alice
-    String erklaerung_A = new String(new BigInteger(Com.receive(), 16).toByteArray()); // R5
-    String vertrag_A = new String(new BigInteger(Com.receive(), 16).toByteArray()); // R6
+    String erklaerung_A = Com.receive(); // R5
+    String vertrag_A = Com.receive(); // R6
     BigInteger H_A = new BigInteger(Com.receive(), 16); // R7
 
     System.out.println("Erklaerung_A: " + erklaerung_A);
@@ -186,8 +186,8 @@ public final class Vertrag implements Protocol {
     BigInteger H_B_signed = elGamal_A.sign(text_B_BI);
 
     // Sende erklärung, text, signed hash
-    Com.sendTo(0, new BigInteger(erklaerung_B.getBytes()).toString(16)); // S5
-    Com.sendTo(0, text_B_BI.toString(16)); // S6
+    Com.sendTo(0, erklaerung_B); // S5
+    Com.sendTo(0, text_B); // S6
     Com.sendTo(0, H_B_signed.toString(16)); // S7
 
   }
