@@ -130,6 +130,14 @@ public final class Vertrag implements Protocol {
 
     // Geheimnisprotokoll
     BigInteger[][] B = geheimnisAlice(n, 4, 51, A);
+    
+    BigInteger[] C2_B = get_C_Array(M, B, p_B);
+    if(check(C_B, C2_B)){
+      System.out.println("Alice: Alles klar!");
+    }else{
+      System.out.println("Alice: FUUUUUUUUU");
+      System.exit(0);
+    }
 
   }
 
@@ -231,6 +239,14 @@ public final class Vertrag implements Protocol {
 
     // Geheimnisprotokoll
     BigInteger[][] A = geheimnisBob(n, 4, 51, B);
+    
+    BigInteger[] C2_A = get_C_Array(M, A, p_A);
+    if(check(C_A, C2_A)){
+      System.out.println("Bob: Alles klar!");
+    }else{
+      System.out.println("Bob: FUUUUUUUUU");
+      System.exit(0);
+    }
 
   }
 
@@ -830,6 +846,21 @@ public final class Vertrag implements Protocol {
 
     return output;
 
+  }
+  
+  private boolean check(BigInteger[] ar1, BigInteger[] ar2){
+   
+    for (int i = 0; i < ar1.length; i++) {
+        BigInteger val1 = ar1[i];
+        BigInteger val2 = ar2[i];
+        
+        if( (val1.compareTo(val2)) == 0){
+          // yay!
+        }else{
+          return false;
+        }
+    }    
+    return true;
   }
 
 }
