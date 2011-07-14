@@ -706,7 +706,7 @@ public final class Vertrag implements Protocol {
     sha.update(text.getBytes());
     digest = sha.digest();
 
-    return new BigInteger(digest); // TODO ka ob das korrekt ist
+    return new BigInteger(digest);
   }
 
   /**
@@ -837,14 +837,6 @@ public final class Vertrag implements Protocol {
     }
 
     return BigIntegerUtil.randomSmallerThan(p_A.shiftRight(shift));
-  }
-
-  /**
-   * Tafel: 0.)3.3
-   */
-  private boolean isPrime(BigInteger val) {
-
-    return val.isProbablePrime(100);
   }
 
   /**
