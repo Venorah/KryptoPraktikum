@@ -78,6 +78,11 @@ public final class Vertrag implements Protocol {
 
     // Alice empfängt p_B
     BigInteger p_B = new BigInteger(Com.receive(), 16); // R4
+    
+    if (!p_B.isProbablePrime(100)) {
+      System.out.println("Bobs p_B is keine Primzahl!");
+      System.exit(1);
+    }
 
     // Part 1 ---------------------------------------------------------------
 
@@ -102,7 +107,7 @@ public final class Vertrag implements Protocol {
       System.out.println("C_B[i] = " + C_B[i]);
     }
 
-    String erklaerung_A = erklaerungAlice();
+    String erklaerung_A = erklaerungAlice(C_A);
     String text_A = erklaerung_A + vertrag_A;
     BigInteger H_A = computeSHA(text_A);
     BigInteger H_A_signed = elGamal_A.sign(H_A);
@@ -191,6 +196,11 @@ public final class Vertrag implements Protocol {
     int n = Integer.parseInt(Com.receive(), 16); // R4
     BigInteger p_A = new BigInteger(Com.receive(), 16); // R5
     BigInteger M = new BigInteger(Com.receive(), 16); // R6
+    
+    if (!p_A.isProbablePrime(100)) {
+      System.out.println("Bobs p_B is keine Primzahl!");
+      System.exit(1);
+    }
 
     // eigene Primzahl M < p_B < 2^52
     BigInteger p_B = computePrimeBetween(M);
@@ -230,7 +240,7 @@ public final class Vertrag implements Protocol {
     System.out.println("vertrag_A: " + vertrag_A);
     System.out.println("H_A_signed: " + H_A_signed);
 
-    String erklaerung_B = erklaerungBob();
+    String erklaerung_B = erklaerungBob(C_B);
     String text_B = erklaerung_B + vertrag_B;
     BigInteger H_B = computeSHA(text_B);
     BigInteger H_B_signed = elGamal_B.sign(H_B);
@@ -720,9 +730,14 @@ public final class Vertrag implements Protocol {
   /**
    * Tafel: 1.)1.3
    */
-  private String erklaerungAlice() {
+  private String erklaerungAlice(BigInteger C[]) {
+    String C_String = "";
+    for (int i = 0; i < C.length; i++) {
+      C_String += C[i].toString(16);
+    }
+
     String a = "Die Symbole A'_i,j bezeichnen Loesungen der zugehoerigen S-Puzzles ";
-    String b = "C_(A_i,j), i.element{1,...,n}, j.element{1,2}. ";
+    String b = C_String + ", i.element{1,...,n}, j.element{1,2}. ";
     String c = "Der untenstehende Vertrag ist von mir unterzeichnet, ";
     String d = "wenn Bob fuer ein i.element{1,...,n} die beiden Schluessel ";
     String e = "A'_i,1 und A'_i,2 nennen kann, d.h., wenn er die Loesung ";
@@ -734,9 +749,14 @@ public final class Vertrag implements Protocol {
   /**
    * Tafel: 1.)1.3
    */
-  private String erklaerungBob() {
+  private String erklaerungBob(BigInteger[] C) {
+    String C_String = "";
+    for (int i = 0; i < C.length; i++) {
+      C_String += C[i].toString(16);
+    }
+
     String a = "Die Symbole A'_i,j bezeichnen Loesungen der zugehoerigen S-Puzzles ";
-    String b = "C_(A_i,j), i.element{1,...,n}, j.element{1,2}. ";
+    String b = C_String + ", i.element{1,...,n}, j.element{1,2}. ";
     String c = "Der untenstehende Vertrag ist von mir unterzeichnet, ";
     String d = "wenn Alice fuer ein i.element{1,...,n} die beiden Schluessel ";
     String e = "B'_i,1 und B'_i,2 nennen kann, d.h., wenn er die Loesung ";
