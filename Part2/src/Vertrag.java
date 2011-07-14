@@ -515,7 +515,7 @@ public final class Vertrag implements Protocol {
 
     for (int i = 0; i < n; i++) {
       for (int j = 0; j < 2; j++) {
-        output[i][j] = b[i][j].getLastBinary();
+        output[i][j] = a[i][j].getLastBinary();
 
         if (a[i][j].containsWord()) {
           System.out.println("Das folgende Wort wurde schon durch 1-of-2-Oblivious Transfer übertragen: " + a[i][j].getWord().toString(36));
