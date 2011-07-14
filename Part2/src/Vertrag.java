@@ -118,7 +118,7 @@ public final class Vertrag implements Protocol {
     BigInteger M = new BigInteger(Com.receive(), 16); // R6
     
     // eigene Primzahl M < p_B < 2^52
-    computePrimeBetween(M, 52);
+    computePrimeBetween(M);
 
   }
 
