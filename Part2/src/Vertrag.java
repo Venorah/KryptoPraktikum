@@ -129,7 +129,7 @@ public final class Vertrag implements Protocol {
     }
 
     // Geheimnisprotokoll
-    BigInteger[][] B = geheimnisAlice(n, 4, A);
+    BigInteger[][] B = geheimnisAlice(n, 4, 51, A);
 
   }
 
@@ -228,25 +228,24 @@ public final class Vertrag implements Protocol {
       Com.sendTo(0, "1");
       System.exit(1);
     }
-    
 
     // Geheimnisprotokoll
-    BigInteger[][] A = geheimnisBob(n, 4, B);
+    BigInteger[][] A = geheimnisBob(n, 4, 51, B);
 
   }
 
-  public BigInteger[][] geheimnisAlice(int n, int k, BigInteger[][] geheimnisse) {
+  public BigInteger[][] geheimnisAlice(int n, int k, int m, BigInteger[][] geheimnisse) {
     // int n = 2; // n in {1,...,10}
     // int k = 2; // k in {0,...,7}
-    int wordlength = 4; // in {1,...,10}
+    // int wordlength = 4; // in {1,...,10}
 
-    int m = (int) Math.ceil(wordlength * (Math.log(36) / Math.log(2))); // bits of wordlength
+    // int m = (int) Math.ceil(wordlength * (Math.log(36) / Math.log(2))); // bits of wordlength
     System.out.println("m: " + m);
 
     // n, k, wordlength an Bob
-    Com.sendTo(1, Integer.toHexString(n)); // S1
-    Com.sendTo(1, Integer.toHexString(k)); // S2
-    Com.sendTo(1, Integer.toHexString(wordlength)); // S3
+    // Com.sendTo(1, Integer.toHexString(n)); // S1
+    // Com.sendTo(1, Integer.toHexString(k)); // S2
+    // Com.sendTo(1, Integer.toHexString(wordlength)); // S3
 
     Secret[][] a = new Secret[n][2];
     Secret[][] b = new Secret[n][2];
@@ -362,13 +361,13 @@ public final class Vertrag implements Protocol {
 
   }
 
-  public BigInteger[][] geheimnisBob(int n, int k, BigInteger[][] geheimnisse) {
+  public BigInteger[][] geheimnisBob(int n, int k, int m, BigInteger[][] geheimnisse) {
     // n, k, wordlength von Alice
     // int n = Integer.parseInt(Com.receive(), 16);// R1
     // int k = Integer.parseInt(Com.receive(), 16); // R2
-    int wordlength = Integer.parseInt(Com.receive(), 16); // R3
+    // int wordlength = Integer.parseInt(Com.receive(), 16); // R3
 
-    int m = (int) Math.ceil(wordlength * (Math.log(36) / Math.log(2))); // bits of wordlength
+    // int m = (int) Math.ceil(wordlength * (Math.log(36) / Math.log(2))); // bits of wordlength
 
     Secret[][] a = new Secret[n][2];
     Secret[][] b = new Secret[n][2];
@@ -376,9 +375,10 @@ public final class Vertrag implements Protocol {
     // generiere alle b[i][j]
     for (int i = 0; i < n; i++) {
       for (int j = 0; j < 2; j++) {
-        BigInteger randomWord = BigIntegerUtil.randomBetween(ZERO, new BigInteger("36").pow(wordlength));
-        System.out.println("randomWord: " + randomWord.toString(36));
-        b[i][j] = new Secret(randomWord, k, m);
+        // BigInteger randomWord = BigIntegerUtil.randomBetween(ZERO, new BigInteger("36").pow(wordlength));
+        // System.out.println("randomWord: " + randomWord.toString(36));
+        // b[i][j] = new Secret(randomWord, k, m);
+        b[i][j] = new Secret(geheimnisse[i][j], k, m);
       }
     }
 
