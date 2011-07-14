@@ -94,13 +94,12 @@ public final class Vertrag implements Protocol {
 
     String erklaerung_A = erklaerungAlice();
     String text_A = erklaerung_A + vertrag_A;
-    BigInteger text_A_BI = new BigInteger(text_A.getBytes());
     BigInteger H_A = computeSHA(text_A);
-    BigInteger H_A_signed = elGamal_A.sign(text_A_BI);
+    BigInteger H_A_signed = elGamal_A.sign(H_A);
 
     // Sende erklärung, text, signed hash
     Com.sendTo(1, erklaerung_A); // S5
-    Com.sendTo(1, text_A); // S6
+    Com.sendTo(1, vertrag_A); // S6
     Com.sendTo(1, H_A_signed.toString(16)); // S7
 
     // Empfange erklärung, text und signed hash von bob
@@ -201,14 +200,13 @@ public final class Vertrag implements Protocol {
     System.out.println("H_A_signed: " + H_A_signed);
 
     String erklaerung_B = erklaerungBob();
-    String text_B = erklaerungAlice() + vertrag_B;
-    BigInteger text_B_BI = new BigInteger(text_B.getBytes());
+    String text_B = erklaerung_B + vertrag_B;
     BigInteger H_B = computeSHA(text_B);
-    BigInteger H_B_signed = elGamal_B.sign(text_B_BI);
+    BigInteger H_B_signed = elGamal_B.sign(H_B);
 
     // Sende erklärung, text, signed hash
     Com.sendTo(0, erklaerung_B); // S5
-    Com.sendTo(0, text_B); // S6
+    Com.sendTo(0, vertrag_B); // S6
     Com.sendTo(0, H_B_signed.toString(16)); // S7
 
     // check sig
@@ -221,10 +219,10 @@ public final class Vertrag implements Protocol {
 
     if (elGamal_A.verify(H_A, H_A_signed)) {
       System.out.println("Jo is signed!");
-      Com.sendTo(1, "0");
+      Com.sendTo(0, "0");
     } else {
       System.out.println("Is nich signed, Exit!");
-      Com.sendTo(1, "1");
+      Com.sendTo(0, "1");
       System.exit(1);
     }
 
