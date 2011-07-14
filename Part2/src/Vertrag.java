@@ -40,7 +40,7 @@ public final class Vertrag implements Protocol {
 
     int n = 2; // n in {1,...,10}
 
-    // ElGamal Austausch ---------------------------------------------------------------
+    // Part 0 ---------------------------------------------------------------
 
     // Hard coded ElGamal
     BigInteger El_p_A = new BigInteger("7789788965135663714690749102453072297748091458564354001035945418057913886819451721947477667556269500246451521462308030406227237346483679855991947569361139");
@@ -63,7 +63,7 @@ public final class Vertrag implements Protocol {
     // ElGamal Objekt ohne priv key bauen
     ElGamal elGamal_B = new ElGamal(El_p_B, El_g_B, El_y_B);
 
-    // Vertrag einlesen ---------------------------------------------------------------
+    // Vertrag einlesen
     String C = vertragString(new File("vertrag.txt"));
 
     BigInteger p_A = computePrime();
@@ -74,7 +74,13 @@ public final class Vertrag implements Protocol {
     Com.sendTo(1, Integer.toHexString(n)); // S4
     Com.sendTo(1, p_A.toString(16)); // S5
     Com.sendTo(1, M.toString(16)); // S6
+    
+    // Alice empfängt p_B
+    BigInteger p_B = new BigInteger(Com.receive(), 16); // R4
 
+    // Part 1 ---------------------------------------------------------------
+
+    
   }
 
   /**
@@ -86,7 +92,7 @@ public final class Vertrag implements Protocol {
       System.out.println("ACHTUNG: Betrugsmodus aktiv!!!");
     }
 
-    // ElGamal Austausch ---------------------------------------------------------------
+    // Part 0 ---------------------------------------------------------------
 
     // Hard coded ElGamal
     BigInteger El_p_B = new BigInteger("7789788965135663714690749102453072297748091458564354001035945418057913886819451721947477667556269500246451521462308030406227237346483679855991947569361139");
@@ -109,7 +115,7 @@ public final class Vertrag implements Protocol {
     Com.sendTo(0, elGamal_B.g.toString(16)); // S2
     Com.sendTo(0, elGamal_B.y.toString(16)); // S3
 
-    // Vertrag einlesen ---------------------------------------------------------------
+    // Vertrag einlesen
     String C = vertragString(new File("vertrag.txt"));
 
     // Bob empfängt n, p_A und M
@@ -118,7 +124,12 @@ public final class Vertrag implements Protocol {
     BigInteger M = new BigInteger(Com.receive(), 16); // R6
     
     // eigene Primzahl M < p_B < 2^52
-    computePrimeBetween(M);
+    BigInteger p_B = computePrimeBetween(M);
+    
+    // Bob sendet p_B an Alice
+    Com.sendTo(0, p_B.toString(16)); // S4
+
+    // Part 1 ---------------------------------------------------------------
 
   }
 
