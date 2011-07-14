@@ -91,7 +91,7 @@ public final class Vertrag implements Protocol {
     BigInteger[] C_A = get_C_Array(M, A, p_A);
 
     BigInteger[] C_B = new BigInteger[n];
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < C_A.length; i++) {
       Com.sendTo(1, C_A[i].toString(16)); // Si
       System.out.println("Send C_A[i]: " + C_A[i].toString(16));
       C_B[i] = new BigInteger(Com.receive(), 16); // Ri
@@ -215,7 +215,7 @@ public final class Vertrag implements Protocol {
     BigInteger[] C_B = get_C_Array(M, B, p_B);
 
     BigInteger[] C_A = new BigInteger[n];
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < C_B.length; i++) {
       C_A[i] = new BigInteger(Com.receive(), 16); // Ri
       System.out.println("Receive C_A[i]: " + C_A[i].toString(16));
       Com.sendTo(0, C_B[i].toString(16)); // Si
@@ -733,7 +733,7 @@ public final class Vertrag implements Protocol {
   private String erklaerungAlice(BigInteger C[]) {
     String C_String = "";
     for (int i = 0; i < C.length; i++) {
-      C_String += C[i].toString(16);
+      C_String += C[i].toString()+", ";
     }
 
     String a = "Die Symbole A'_i,j bezeichnen Loesungen der zugehoerigen S-Puzzles ";
@@ -752,7 +752,7 @@ public final class Vertrag implements Protocol {
   private String erklaerungBob(BigInteger[] C) {
     String C_String = "";
     for (int i = 0; i < C.length; i++) {
-      C_String += C[i].toString(16);
+      C_String += C[i].toString()+", ";
     }
 
     String a = "Die Symbole A'_i,j bezeichnen Loesungen der zugehoerigen S-Puzzles ";
