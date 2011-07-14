@@ -90,6 +90,10 @@ public class Secret {
     return output;
   }
   
+  public BigInteger getLastBinary() {
+    return binaries.get(0);
+  }
+  
   public String binariesToString() {
     return binariesToString(binaries, 36);
   }

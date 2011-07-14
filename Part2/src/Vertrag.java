@@ -128,6 +128,9 @@ public final class Vertrag implements Protocol {
       System.exit(1);
     }
 
+    // Geheimnisprotokoll
+    BigInteger[][] B = geheimnisAlice(n, 4, A);
+
   }
 
   /**
@@ -225,6 +228,256 @@ public final class Vertrag implements Protocol {
       Com.sendTo(0, "1");
       System.exit(1);
     }
+    
+
+    // Geheimnisprotokoll
+    BigInteger[][] A = geheimnisBob(n, 4, B);
+
+  }
+
+  public BigInteger[][] geheimnisAlice(int n, int k, BigInteger[][] geheimnisse) {
+    // int n = 2; // n in {1,...,10}
+    // int k = 2; // k in {0,...,7}
+    int wordlength = 4; // in {1,...,10}
+
+    int m = (int) Math.ceil(wordlength * (Math.log(36) / Math.log(2))); // bits of wordlength
+    System.out.println("m: " + m);
+
+    // n, k, wordlength an Bob
+    Com.sendTo(1, Integer.toHexString(n)); // S1
+    Com.sendTo(1, Integer.toHexString(k)); // S2
+    Com.sendTo(1, Integer.toHexString(wordlength)); // S3
+
+    Secret[][] a = new Secret[n][2];
+    Secret[][] b = new Secret[n][2];
+
+    // generiere alle a[i][j]
+    for (int i = 0; i < n; i++) {
+      for (int j = 0; j < 2; j++) {
+        // BigInteger randomWord = BigIntegerUtil.randomBetween(ZERO, new BigInteger("36").pow(wordlength));
+        // System.out.println("randomWord: " + randomWord.toString(36));
+        // a[i][j] = new Secret(randomWord, k, m);
+        a[i][j] = new Secret(geheimnisse[i][j], k, m);
+      }
+    }
+
+    // 1-OF-2-OBLIVIOUS
+    // --------------------------------------------------------------------
+    // send
+    for (int i = 0; i < n; i++) {
+      obliviousSend(1, a[i][0].getWord(), a[i][1].getWord());
+    }
+
+    // receive
+    for (int i = 0; i < n; i++) {
+      BigInteger word = obliviousReceive(1);
+
+      // set beide secrets
+      b[i][0] = new Secret(word, k, m);
+      b[i][1] = new Secret(word, k, m);
+    }
+
+    // PROTOKOLL
+    // --------------------------------------------------------------------
+    int half = (int) (Math.pow(2, k + 1) / 2);
+
+    for (int binaryBits = k + 1; binaryBits <= m; binaryBits++) {
+
+      // lösche solange round in {0,...,(2^(k+1))/2)
+      for (int round = 0; round < half; round++) {
+        // lösche ein binary das kein prefix is und sende index davon
+        for (int i = 0; i < n; i++) {
+          for (int j = 0; j < 2; j++) {
+            System.out.println("A:");
+            int index = a[i][j].removeRandomBinary();
+            Com.sendTo(1, Integer.toHexString(index));
+            a[i][j].debug();
+          }
+        }
+
+        // streiche prefixe aus b mit empfangenem index weg
+        for (int i = 0; i < n; i++) {
+          for (int j = 0; j < 2; j++) {
+            System.out.println("B:");
+            b[i][j].removeBinary(Integer.parseInt(Com.receive(), 16));
+            b[i][j].debug();
+          }
+        }
+      }
+
+      // expandiere alle
+      if (binaryBits < m) {
+        for (int i = 0; i < n; i++) {
+          for (int j = 0; j < 2; j++) {
+            a[i][j].expandBinaries();
+            b[i][j].expandBinaries();
+          }
+        }
+      }
+    }
+
+    System.out.println("------------------------------------ Ende der Hauptschleife!");
+
+    // am ende noch alle nicht-prefixe schicken
+    for (int round = 0; round < (half - 1); round++) {
+      for (int i = 0; i < n; i++) {
+        for (int j = 0; j < 2; j++) {
+          System.out.println("A:");
+          int index = a[i][j].removeRandomBinary();
+          Com.sendTo(1, Integer.toHexString(index));
+          a[i][j].debug();
+        }
+      }
+    }
+
+    // streiche prefixe aus b mit empfangenem index weg
+    for (int round = 0; round < (half - 1); round++) {
+      for (int i = 0; i < n; i++) {
+        for (int j = 0; j < 2; j++) {
+          System.out.println("B:");
+          b[i][j].removeBinary(Integer.parseInt(Com.receive(), 16));
+          b[i][j].debug();
+        }
+      }
+    }
+
+    System.out.println("------------------------------------ Ende der Übertragungen!");
+
+    // build array
+    BigInteger[][] output = new BigInteger[n][2];
+
+    for (int i = 0; i < n; i++) {
+      for (int j = 0; j < 2; j++) {
+        output[i][j] = b[i][j].getLastBinary();
+
+        if (b[i][j].containsWord()) {
+          System.out.println("Das folgende Wort wurde schon durch 1-of-2-Oblivious Transfer übertragen: " + b[i][j].getWord().toString(36));
+        } else {
+          System.out.println("Das folgende Wort wurde NICHT durch 1-of-2-Oblivious Transfer übertragen: " + b[i][j].binariesToString());
+        }
+      }
+    }
+
+    return output;
+
+  }
+
+  public BigInteger[][] geheimnisBob(int n, int k, BigInteger[][] geheimnisse) {
+    // n, k, wordlength von Alice
+    // int n = Integer.parseInt(Com.receive(), 16);// R1
+    // int k = Integer.parseInt(Com.receive(), 16); // R2
+    int wordlength = Integer.parseInt(Com.receive(), 16); // R3
+
+    int m = (int) Math.ceil(wordlength * (Math.log(36) / Math.log(2))); // bits of wordlength
+
+    Secret[][] a = new Secret[n][2];
+    Secret[][] b = new Secret[n][2];
+
+    // generiere alle b[i][j]
+    for (int i = 0; i < n; i++) {
+      for (int j = 0; j < 2; j++) {
+        BigInteger randomWord = BigIntegerUtil.randomBetween(ZERO, new BigInteger("36").pow(wordlength));
+        System.out.println("randomWord: " + randomWord.toString(36));
+        b[i][j] = new Secret(randomWord, k, m);
+      }
+    }
+
+    // 1-OF-2-OBLIVIOUS
+    // --------------------------------------------------------------------
+    // receive
+    for (int i = 0; i < n; i++) {
+      BigInteger word = obliviousReceive(0);
+
+      // set beide secrets
+      a[i][0] = new Secret(word, k, m);
+      a[i][1] = new Secret(word, k, m);
+    }
+
+    // send
+    for (int i = 0; i < n; i++) {
+      obliviousSend(0, b[i][0].getWord(), b[i][1].getWord());
+    }
+
+    // PROTOKOLL
+    // --------------------------------------------------------------------
+
+    int half = (int) (Math.pow(2, k + 1) / 2);
+
+    for (int binaryBits = k + 1; binaryBits <= m; binaryBits++) {
+      // lösche solange round in {0,...,(2^(k+1))/2)
+      for (int round = 0; round < half; round++) {
+        // streiche prefixe aus a mit empfangenem index weg
+        for (int i = 0; i < n; i++) {
+          for (int j = 0; j < 2; j++) {
+            a[i][j].removeBinary(Integer.parseInt(Com.receive(), 16));
+            a[i][j].debug();
+          }
+        }
+
+        // lösche ein binary das kein prefix is und sende index davon
+        for (int i = 0; i < n; i++) {
+          for (int j = 0; j < 2; j++) {
+            int index = b[i][j].removeRandomBinary();
+            Com.sendTo(0, Integer.toHexString(index));
+            b[i][j].debug();
+          }
+        }
+      }
+
+      // expandiere alle
+      if (binaryBits < m) {
+        for (int i = 0; i < n; i++) {
+          for (int j = 0; j < 2; j++) {
+            a[i][j].expandBinaries();
+            b[i][j].expandBinaries();
+          }
+        }
+      }
+    }
+
+    System.out.println("------------------------------------ Ende der Hauptschleife!");
+
+    // am ende noch alle nicht-prefixe schicken
+    for (int round = 0; round < (half - 1); round++) {
+      for (int i = 0; i < n; i++) {
+        for (int j = 0; j < 2; j++) {
+          System.out.println("B:");
+          int index = b[i][j].removeRandomBinary();
+          Com.sendTo(0, Integer.toHexString(index));
+          b[i][j].debug();
+        }
+      }
+    }
+
+    // streiche prefixe aus b mit empfangenem index weg
+    for (int round = 0; round < (half - 1); round++) {
+      for (int i = 0; i < n; i++) {
+        for (int j = 0; j < 2; j++) {
+          System.out.println("A:");
+          a[i][j].removeBinary(Integer.parseInt(Com.receive(), 16));
+          a[i][j].debug();
+        }
+      }
+    }
+
+    System.out.println("------------------------------------ Ende der Übertragungen!");
+
+    // build array
+    BigInteger[][] output = new BigInteger[n][2];
+
+    for (int i = 0; i < n; i++) {
+      for (int j = 0; j < 2; j++) {
+        output[i][j] = b[i][j].getLastBinary();
+
+        if (a[i][j].containsWord()) {
+          System.out.println("Das folgende Wort wurde schon durch 1-of-2-Oblivious Transfer übertragen: " + a[i][j].getWord().toString(36));
+        } else {
+          System.out.println("Das folgende Wort wurde NICHT durch 1-of-2-Oblivious Transfer übertragen: " + a[i][j].binariesToString());
+        }
+      }
+    }
+
+    return output;
 
   }
 
