@@ -30,8 +30,7 @@ public final class Vertrag implements Protocol {
   }
 
   /**
-   * Aktionen der beginnenden Partei. Bei den 2-Parteien-Protokollen seien dies die Aktionen von
-   * Alice.
+   * Aktionen der beginnenden Partei. Bei den 2-Parteien-Protokollen seien dies die Aktionen von Alice.
    */
   public void sendFirst() {
     System.out.println("-- Alice --");
@@ -78,7 +77,7 @@ public final class Vertrag implements Protocol {
 
     // Alice empfängt p_B
     BigInteger p_B = new BigInteger(Com.receive(), 16); // R4
-    
+
     if (!p_B.isProbablePrime(100)) {
       System.out.println("Bobs p_B is keine Primzahl!");
       System.exit(1);
@@ -90,20 +89,20 @@ public final class Vertrag implements Protocol {
     BigInteger[][] A = getDoubleArray(n, p_A);
     BigInteger[] C_A = get_C_Array(M, A, p_A);
 
-    BigInteger[] C_B = new BigInteger[n];
+    BigInteger[] C_B = new BigInteger[2 * n];
     for (int i = 0; i < C_A.length; i++) {
       Com.sendTo(1, C_A[i].toString(16)); // Si
       System.out.println("Send C_A[i]: " + C_A[i].toString(16));
       C_B[i] = new BigInteger(Com.receive(), 16); // Ri
       System.out.println("Receive C_B[i]: " + C_B[i].toString(16));
     }
-    
+
     System.out.println("Alice:");
-    for(int i=0; i<C_A.length; i++){
+    for (int i = 0; i < C_A.length; i++) {
       System.out.println("C_A[i] = " + C_A[i]);
     }
-    
-    for(int i=0; i<C_B.length; i++){
+
+    for (int i = 0; i < C_B.length; i++) {
       System.out.println("C_B[i] = " + C_B[i]);
     }
 
@@ -146,7 +145,7 @@ public final class Vertrag implements Protocol {
     // Geheimnisprotokoll
     BigInteger[][] B = geheimnisAlice(n, 4, 51, A);
     BigInteger[] C2_B = get_C_Array(M, B, p_B);
-    
+
     System.out.println("Alice: Checking Arrays !-o-o-o-o-o-!");
     if (check(C_B, C2_B)) {
       System.out.println("Alice: Alles klar!");
@@ -196,7 +195,7 @@ public final class Vertrag implements Protocol {
     int n = Integer.parseInt(Com.receive(), 16); // R4
     BigInteger p_A = new BigInteger(Com.receive(), 16); // R5
     BigInteger M = new BigInteger(Com.receive(), 16); // R6
-    
+
     if (!p_A.isProbablePrime(100)) {
       System.out.println("Bobs p_B is keine Primzahl!");
       System.exit(1);
@@ -214,20 +213,20 @@ public final class Vertrag implements Protocol {
     BigInteger[][] B = getDoubleArray(n, p_B);
     BigInteger[] C_B = get_C_Array(M, B, p_B);
 
-    BigInteger[] C_A = new BigInteger[n];
+    BigInteger[] C_A = new BigInteger[2 * n];
     for (int i = 0; i < C_B.length; i++) {
       C_A[i] = new BigInteger(Com.receive(), 16); // Ri
       System.out.println("Receive C_A[i]: " + C_A[i].toString(16));
       Com.sendTo(0, C_B[i].toString(16)); // Si
       System.out.println("Send C_B[i]: " + C_B[i].toString(16));
     }
-    
+
     System.out.println("Bob:");
-    for(int i=0; i<C_A.length; i++){
+    for (int i = 0; i < C_A.length; i++) {
       System.out.println("C_A[i] = " + C_A[i]);
     }
-    
-    for(int i=0; i<C_B.length; i++){
+
+    for (int i = 0; i < C_B.length; i++) {
       System.out.println("C_B[i] = " + C_B[i]);
     }
 
@@ -287,7 +286,7 @@ public final class Vertrag implements Protocol {
     // int wordlength = 4; // in {1,...,10}
 
     // int m = (int) Math.ceil(wordlength * (Math.log(36) / Math.log(2))); // bits of wordlength
-    //System.out.println("m: " + m);
+    // System.out.println("m: " + m);
 
     // n, k, wordlength an Bob
     // Com.sendTo(1, Integer.toHexString(n)); // S1
@@ -335,7 +334,7 @@ public final class Vertrag implements Protocol {
         // lösche ein binary das kein prefix is und sende index davon
         for (int i = 0; i < n; i++) {
           for (int j = 0; j < 2; j++) {
-            //System.out.println("A:");
+            // System.out.println("A:");
             int index = a[i][j].removeRandomBinary();
             Com.sendTo(1, Integer.toHexString(index));
             a[i][j].debug();
@@ -345,7 +344,7 @@ public final class Vertrag implements Protocol {
         // streiche prefixe aus b mit empfangenem index weg
         for (int i = 0; i < n; i++) {
           for (int j = 0; j < 2; j++) {
-            //System.out.println("B:");
+            // System.out.println("B:");
             b[i][j].removeBinary(Integer.parseInt(Com.receive(), 16));
             b[i][j].debug();
           }
@@ -369,7 +368,7 @@ public final class Vertrag implements Protocol {
     for (int round = 0; round < (half - 1); round++) {
       for (int i = 0; i < n; i++) {
         for (int j = 0; j < 2; j++) {
-          //System.out.println("A:");
+          // System.out.println("A:");
           int index = a[i][j].removeRandomBinary();
           Com.sendTo(1, Integer.toHexString(index));
           a[i][j].debug();
@@ -381,7 +380,7 @@ public final class Vertrag implements Protocol {
     for (int round = 0; round < (half - 1); round++) {
       for (int i = 0; i < n; i++) {
         for (int j = 0; j < 2; j++) {
-          //System.out.println("B:");
+          // System.out.println("B:");
           b[i][j].removeBinary(Integer.parseInt(Com.receive(), 16));
           b[i][j].debug();
         }
@@ -490,7 +489,7 @@ public final class Vertrag implements Protocol {
     for (int round = 0; round < (half - 1); round++) {
       for (int i = 0; i < n; i++) {
         for (int j = 0; j < 2; j++) {
-          //System.out.println("B:");
+          // System.out.println("B:");
           int index = b[i][j].removeRandomBinary();
           Com.sendTo(0, Integer.toHexString(index));
           b[i][j].debug();
@@ -502,7 +501,7 @@ public final class Vertrag implements Protocol {
     for (int round = 0; round < (half - 1); round++) {
       for (int i = 0; i < n; i++) {
         for (int j = 0; j < 2; j++) {
-          //System.out.println("A:");
+          // System.out.println("A:");
           a[i][j].removeBinary(Integer.parseInt(Com.receive(), 16));
           a[i][j].debug();
         }
@@ -595,7 +594,7 @@ public final class Vertrag implements Protocol {
     int r = -1;
     if (betray) { // try to find right r :D
       r = BigIntegerUtil.randomBetween(ZERO, TWO).intValue();
-      //System.out.println("guessed r: " + r);
+      // System.out.println("guessed r: " + r);
     }
 
     // Signatur berechnen
@@ -733,7 +732,7 @@ public final class Vertrag implements Protocol {
   private String erklaerungAlice(BigInteger C[]) {
     String C_String = "";
     for (int i = 0; i < C.length; i++) {
-      C_String += C[i].toString()+", ";
+      C_String += C[i].toString(16) + ", ";
     }
 
     String a = "Die Symbole A'_i,j bezeichnen Loesungen der zugehoerigen S-Puzzles ";
@@ -752,7 +751,7 @@ public final class Vertrag implements Protocol {
   private String erklaerungBob(BigInteger[] C) {
     String C_String = "";
     for (int i = 0; i < C.length; i++) {
-      C_String += C[i].toString()+", ";
+      C_String += C[i].toString(16) + ", ";
     }
 
     String a = "Die Symbole A'_i,j bezeichnen Loesungen der zugehoerigen S-Puzzles ";
