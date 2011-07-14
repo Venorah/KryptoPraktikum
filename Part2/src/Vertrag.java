@@ -64,7 +64,7 @@ public final class Vertrag implements Protocol {
     ElGamal elGamal_B = new ElGamal(El_p_B, El_g_B, El_y_B);
 
     // Vertrag einlesen
-    String C = vertragString(new File("vertrag.txt"));
+    String vertrag_A = vertragString(new File("vertrag.txt"));
 
     BigInteger p_A = computePrime();
 
@@ -74,13 +74,42 @@ public final class Vertrag implements Protocol {
     Com.sendTo(1, Integer.toHexString(n)); // S4
     Com.sendTo(1, p_A.toString(16)); // S5
     Com.sendTo(1, M.toString(16)); // S6
-    
+
     // Alice empfängt p_B
     BigInteger p_B = new BigInteger(Com.receive(), 16); // R4
 
     // Part 1 ---------------------------------------------------------------
 
-    
+    // Arrays bauen
+    BigInteger[][] A = getDoubleArray(n, p_A);
+    BigInteger[] C_A = get_C_Array(M, A, p_A);
+
+    BigInteger[] C_B = new BigInteger[n];
+    for (int i = 0; i < n; i++) {
+      Com.sendTo(1, C_A[i].toString(16)); // Si
+      C_B[i] = new BigInteger(Com.receive(), 16); // Ri
+    }
+
+    String erklaerung_A = erklaerungAlice();
+    String text_A = erklaerungAlice() + vertrag_A;
+    BigInteger text_A_BI = new BigInteger(text_A.getBytes());
+    BigInteger H_A = computeSHA(text_A);
+    BigInteger H_A_signed = elGamal_A.sign(text_A_BI);
+
+    // Sende erklärung, text, signed hash
+    Com.sendTo(0, new BigInteger(erklaerung_A.getBytes()).toString(16)); // S5
+    Com.sendTo(0, text_A_BI.toString(16)); // S6
+    Com.sendTo(0, H_A_signed.toString(16)); // S7
+
+    // Empfange erklärung, text und signed hash von bob
+    String erklaerung_B = new String(new BigInteger(Com.receive(), 16).toByteArray()); // R5
+    String vertrag_B = new String(new BigInteger(Com.receive(), 16).toByteArray()); // R6
+    BigInteger H_B = new BigInteger(Com.receive(), 16);
+
+    System.out.println("Erklaerung_B: " + erklaerung_B);
+    System.out.println("vertrag_B: " + vertrag_B);
+    System.out.println("H_B: " + H_B);
+
   }
 
   /**
@@ -116,20 +145,50 @@ public final class Vertrag implements Protocol {
     Com.sendTo(0, elGamal_B.y.toString(16)); // S3
 
     // Vertrag einlesen
-    String C = vertragString(new File("vertrag.txt"));
+    String vertrag_B = vertragString(new File("vertrag.txt"));
 
     // Bob empfängt n, p_A und M
     int n = Integer.parseInt(Com.receive(), 16); // R4
     BigInteger p_A = new BigInteger(Com.receive(), 16); // R5
     BigInteger M = new BigInteger(Com.receive(), 16); // R6
-    
+
     // eigene Primzahl M < p_B < 2^52
     BigInteger p_B = computePrimeBetween(M);
-    
+
     // Bob sendet p_B an Alice
     Com.sendTo(0, p_B.toString(16)); // S4
 
     // Part 1 ---------------------------------------------------------------
+
+    // Arrays bauen
+    BigInteger[][] B = getDoubleArray(n, p_B);
+    BigInteger[] C_B = get_C_Array(M, B, p_B);
+
+    BigInteger[] C_A = new BigInteger[n];
+    for (int i = 0; i < n; i++) {
+      C_A[i] = new BigInteger(Com.receive(), 16); // Ri
+      Com.sendTo(0, C_B[i].toString(16)); // Si
+    }
+
+    // Empfange erklärung, text und signed hash von alice
+    String erklaerung_A = new String(new BigInteger(Com.receive(), 16).toByteArray()); // R5
+    String vertrag_A = new String(new BigInteger(Com.receive(), 16).toByteArray()); // R6
+    BigInteger H_A = new BigInteger(Com.receive(), 16); // R7
+
+    System.out.println("Erklaerung_A: " + erklaerung_A);
+    System.out.println("vertrag_A: " + vertrag_A);
+    System.out.println("H_A: " + H_A);
+
+    String erklaerung_B = erklaerungBob();
+    String text_B = erklaerungAlice() + vertrag_B;
+    BigInteger text_B_BI = new BigInteger(text_B.getBytes());
+    BigInteger H_B = computeSHA(text_B);
+    BigInteger H_B_signed = elGamal_A.sign(text_B_BI);
+
+    // Sende erklärung, text, signed hash
+    Com.sendTo(0, new BigInteger(erklaerung_B.getBytes()).toString(16)); // S5
+    Com.sendTo(0, text_B_BI.toString(16)); // S6
+    Com.sendTo(0, H_B_signed.toString(16)); // S7
 
   }
 
@@ -328,20 +387,6 @@ public final class Vertrag implements Protocol {
     digest = sha.digest();
 
     return new BigInteger(digest); // TODO ka ob das korrekt ist
-  }
-
-  /**
-   * Tafel: 1.)1.3
-   */
-  private BigInteger sign(ElGamal el, BigInteger message) {
-    return el.sign(message);
-  }
-
-  /**
-   * Tafel: 1.)3.2
-   */
-  private boolean verify(ElGamal el, BigInteger message, BigInteger signature) {
-    return el.verify(message, signature);
   }
 
   /**
