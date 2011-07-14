@@ -87,7 +87,9 @@ public final class Vertrag implements Protocol {
     BigInteger[] C_B = new BigInteger[n];
     for (int i = 0; i < n; i++) {
       Com.sendTo(1, C_A[i].toString(16)); // Si
+      System.out.println("Send C_A[i]: " + C_A[i].toString(16));
       C_B[i] = new BigInteger(Com.receive(), 16); // Ri
+      System.out.println("Receive C_B[i]: " + C_B[i].toString(16));
     }
 
     String erklaerung_A = erklaerungAlice();
@@ -97,9 +99,9 @@ public final class Vertrag implements Protocol {
     BigInteger H_A_signed = elGamal_A.sign(text_A_BI);
 
     // Sende erklärung, text, signed hash
-    Com.sendTo(0, erklaerung_A); // S5
-    Com.sendTo(0, text_A); // S6
-    Com.sendTo(0, H_A_signed.toString(16)); // S7
+    Com.sendTo(1, erklaerung_A); // S5
+    Com.sendTo(1, text_A); // S6
+    Com.sendTo(1, H_A_signed.toString(16)); // S7
 
     // Empfange erklärung, text und signed hash von bob
     String erklaerung_B = Com.receive(); // R5
@@ -167,7 +169,9 @@ public final class Vertrag implements Protocol {
     BigInteger[] C_A = new BigInteger[n];
     for (int i = 0; i < n; i++) {
       C_A[i] = new BigInteger(Com.receive(), 16); // Ri
+      System.out.println("Receive C_A[i]: " + C_A[i].toString(16));
       Com.sendTo(0, C_B[i].toString(16)); // Si
+      System.out.println("Send C_B[i]: " + C_B[i].toString(16));
     }
 
     // Empfange erklärung, text und signed hash von alice
@@ -183,7 +187,7 @@ public final class Vertrag implements Protocol {
     String text_B = erklaerungAlice() + vertrag_B;
     BigInteger text_B_BI = new BigInteger(text_B.getBytes());
     BigInteger H_B = computeSHA(text_B);
-    BigInteger H_B_signed = elGamal_A.sign(text_B_BI);
+    BigInteger H_B_signed = elGamal_B.sign(text_B_BI);
 
     // Sende erklärung, text, signed hash
     Com.sendTo(0, erklaerung_B); // S5
