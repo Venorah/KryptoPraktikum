@@ -409,7 +409,7 @@ public final class Vertrag implements Protocol {
   /**
    * Tafel: 1.)1.1
    */
-  private BigInteger[] get_C_Array(BigInteger M, BigInteger[][] array){
+  private BigInteger[] get_C_Array(BigInteger M, BigInteger[][] array, BigInteger p){
     int length1 = array.length;
     int length2 = array[0].length;
     BigInteger[] output = new BigInteger[length1*length2];
@@ -417,7 +417,7 @@ public final class Vertrag implements Protocol {
     int counter = 0;
     for(int i=0; i<length1; i++){
       for(int j=0; j<length2; j++){
-        output[counter++] = M.modPow(array[i][j], M);
+        output[counter++] = M.modPow(array[i][j], p);
       }
     }
     
