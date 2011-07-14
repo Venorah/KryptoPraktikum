@@ -475,7 +475,7 @@ public final class Vertrag implements Protocol {
   /**
    * Tafel: 0.)4.2
    */
-  private BigInteger computePrimeBetween(BigInteger M, BigInteger modulus) { // p_B, Modulus 2^52
+  private BigInteger computePrimeBetween(BigInteger M) { // p_B, Modulus 2^52
     BigInteger output = computePrime();
 
     // Bedingung: M < output < 2^52
