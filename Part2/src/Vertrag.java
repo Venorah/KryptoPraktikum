@@ -30,7 +30,8 @@ public final class Vertrag implements Protocol {
   }
 
   /**
-   * Aktionen der beginnenden Partei. Bei den 2-Parteien-Protokollen seien dies die Aktionen von Alice.
+   * Aktionen der beginnenden Partei. Bei den 2-Parteien-Protokollen seien dies die Aktionen von
+   * Alice.
    */
   public void sendFirst() {
     System.out.println("-- Alice --");
@@ -135,6 +136,15 @@ public final class Vertrag implements Protocol {
 
     // Geheimnisprotokoll
     BigInteger[][] B = geheimnisAlice(n, 4, 51, A);
+    BigInteger[] C2_B = get_C_Array(M, B, p_B);
+    
+    System.out.println("Alice: Checking Arrays !-o-o-o-o-o-!");
+    if (check(C_B, C2_B)) {
+      System.out.println("Alice: Alles klar!");
+    } else {
+      System.out.println("Alice: FUUUUUUUUU");
+      System.exit(0);
+    }
 
   }
 
@@ -242,6 +252,15 @@ public final class Vertrag implements Protocol {
     // Geheimnisprotokoll
     BigInteger[][] A = geheimnisBob(n, 4, 51, B);
 
+    BigInteger[] C2_A = get_C_Array(M, A, p_A);
+    System.out.println("Bob: Checking Arrays !-o-o-o-o-o-!");
+    if (check(C_A, C2_A)) {
+      System.out.println("Bob: Alles klar!");
+    } else {
+      System.out.println("Bob: FUUUUUUUUU");
+      System.exit(0);
+    }
+
   }
 
   public BigInteger[][] geheimnisAlice(int n, int k, int m, BigInteger[][] geheimnisse) {
@@ -263,7 +282,8 @@ public final class Vertrag implements Protocol {
     // generiere alle a[i][j]
     for (int i = 0; i < n; i++) {
       for (int j = 0; j < 2; j++) {
-        // BigInteger randomWord = BigIntegerUtil.randomBetween(ZERO, new BigInteger("36").pow(wordlength));
+        // BigInteger randomWord = BigIntegerUtil.randomBetween(ZERO, new
+        // BigInteger("36").pow(wordlength));
         // System.out.println("randomWord: " + randomWord.toString(36));
         // a[i][j] = new Secret(randomWord, k, m);
         a[i][j] = new Secret(geheimnisse[i][j], k, m);
@@ -385,7 +405,8 @@ public final class Vertrag implements Protocol {
     // generiere alle b[i][j]
     for (int i = 0; i < n; i++) {
       for (int j = 0; j < 2; j++) {
-        // BigInteger randomWord = BigIntegerUtil.randomBetween(ZERO, new BigInteger("36").pow(wordlength));
+        // BigInteger randomWord = BigIntegerUtil.randomBetween(ZERO, new
+        // BigInteger("36").pow(wordlength));
         // System.out.println("randomWord: " + randomWord.toString(36));
         // b[i][j] = new Secret(randomWord, k, m);
         b[i][j] = new Secret(geheimnisse[i][j], k, m);
@@ -850,6 +871,22 @@ public final class Vertrag implements Protocol {
 
     return output;
 
+  }
+
+  private boolean check(BigInteger[] ar1, BigInteger[] ar2) {
+
+    for (int i = 0; i < ar1.length; i++) {
+      BigInteger val1 = ar1[i];
+      BigInteger val2 = ar2[i];
+
+      System.out.println(val1 + " 0^~^0 " + val2);
+      if ((val1.compareTo(val2)) == 0) {
+        // yay!
+      } else {
+        return false;
+      }
+    }
+    return true;
   }
 
 }
