@@ -30,27 +30,26 @@ public final class Vertrag implements Protocol {
   }
 
   /**
-   * Aktionen der beginnenden Partei. Bei den 2-Parteien-Protokollen seien dies die Aktionen von
-   * Alice.
+   * Aktionen der beginnenden Partei. Bei den 2-Parteien-Protokollen seien dies die Aktionen von Alice.
    */
   public void sendFirst() {
     System.out.println("-- Alice --");
     if (betray) {
       System.out.println("ACHTUNG: Betrugsmodus aktiv!!!");
     }
-    
+
     int n = 2; // n in {1,...,10}
 
     // ElGamal Austausch ---------------------------------------------------------------
 
     // Hard coded ElGamal
-    BigInteger p_A = new BigInteger("7789788965135663714690749102453072297748091458564354001035945418057913886819451721947477667556269500246451521462308030406227237346483679855991947569361139");
-    BigInteger g_A = new BigInteger("6064211169633122201619014531987050083527855665630754543345421103270545526304595525644519493777291154802011605984321393354028831270292432551124003674426238");
-    BigInteger y_A = new BigInteger("3437627792030969437324738830672923365331058766427964788898937390314623633227168012908665090706697391878208866573481456022491841700034626290242749535475902");
+    BigInteger El_p_A = new BigInteger("7789788965135663714690749102453072297748091458564354001035945418057913886819451721947477667556269500246451521462308030406227237346483679855991947569361139");
+    BigInteger El_g_A = new BigInteger("6064211169633122201619014531987050083527855665630754543345421103270545526304595525644519493777291154802011605984321393354028831270292432551124003674426238");
+    BigInteger El_y_A = new BigInteger("3437627792030969437324738830672923365331058766427964788898937390314623633227168012908665090706697391878208866573481456022491841700034626290242749535475902");
     // private:
-    BigInteger x_A = new BigInteger("3396148360179732969395840357777168909721385739804535508222449486018759668590512304433229713789117927644143586092277750293910884717312503836910153525557232");
+    BigInteger El_x_A = new BigInteger("3396148360179732969395840357777168909721385739804535508222449486018759668590512304433229713789117927644143586092277750293910884717312503836910153525557232");
     // Objekt initialisieren mit priv key
-    ElGamal elGamal_A = new ElGamal(p_A, g_A, y_A, x_A);
+    ElGamal elGamal_A = new ElGamal(El_p_A, El_g_A, El_y_A, El_x_A);
 
     // Alice sendet ElGamal public key an Bob
     Com.sendTo(1, elGamal_A.p.toString(16)); // S1
@@ -58,16 +57,23 @@ public final class Vertrag implements Protocol {
     Com.sendTo(1, elGamal_A.y.toString(16)); // S3
 
     // Alice empfängt Bobs ElGamal pub key
-    BigInteger p_B = new BigInteger(Com.receive(), 16); // R1
-    BigInteger g_B = new BigInteger(Com.receive(), 16); // R2
-    BigInteger y_B = new BigInteger(Com.receive(), 16); // R3
+    BigInteger El_p_B = new BigInteger(Com.receive(), 16); // R1
+    BigInteger El_g_B = new BigInteger(Com.receive(), 16); // R2
+    BigInteger El_y_B = new BigInteger(Com.receive(), 16); // R3
     // ElGamal Objekt ohne priv key bauen
-    ElGamal elGamal_B = new ElGamal(p_B, g_B, y_B);
+    ElGamal elGamal_B = new ElGamal(El_p_B, El_g_B, El_y_B);
 
     // Vertrag einlesen ---------------------------------------------------------------
     String C = vertragString(new File("vertrag.txt"));
-    
-    
+
+    BigInteger p_A = computePrime();
+
+    BigInteger M = computeMessage(p_A);
+
+    // Sende n, p_A, M an Bob
+    Com.sendTo(1, Integer.toHexString(n)); // S4
+    Com.sendTo(1, p_A.toString(16)); // S5
+    Com.sendTo(1, M.toString(16)); // S6
 
   }
 
@@ -83,20 +89,20 @@ public final class Vertrag implements Protocol {
     // ElGamal Austausch ---------------------------------------------------------------
 
     // Hard coded ElGamal
-    BigInteger p_B = new BigInteger("7789788965135663714690749102453072297748091458564354001035945418057913886819451721947477667556269500246451521462308030406227237346483679855991947569361139");
-    BigInteger g_B = new BigInteger("6064211169633122201619014531987050083527855665630754543345421103270545526304595525644519493777291154802011605984321393354028831270292432551124003674426238");
-    BigInteger y_B = new BigInteger("3437627792030969437324738830672923365331058766427964788898937390314623633227168012908665090706697391878208866573481456022491841700034626290242749535475902");
+    BigInteger El_p_B = new BigInteger("7789788965135663714690749102453072297748091458564354001035945418057913886819451721947477667556269500246451521462308030406227237346483679855991947569361139");
+    BigInteger El_g_B = new BigInteger("6064211169633122201619014531987050083527855665630754543345421103270545526304595525644519493777291154802011605984321393354028831270292432551124003674426238");
+    BigInteger El_y_B = new BigInteger("3437627792030969437324738830672923365331058766427964788898937390314623633227168012908665090706697391878208866573481456022491841700034626290242749535475902");
     // private:
-    BigInteger x_B = new BigInteger("3396148360179732969395840357777168909721385739804535508222449486018759668590512304433229713789117927644143586092277750293910884717312503836910153525557232");
+    BigInteger El_x_B = new BigInteger("3396148360179732969395840357777168909721385739804535508222449486018759668590512304433229713789117927644143586092277750293910884717312503836910153525557232");
     // Objekt initialisieren mit priv key
-    ElGamal elGamal_B = new ElGamal(p_B, g_B, y_B, x_B);
+    ElGamal elGamal_B = new ElGamal(El_p_B, El_g_B, El_y_B, El_x_B);
 
     // Bob empfängt Alice ElGamal pub key
-    BigInteger p_A = new BigInteger(Com.receive(), 16); // R1
-    BigInteger g_A = new BigInteger(Com.receive(), 16); // R2
-    BigInteger y_A = new BigInteger(Com.receive(), 16); // R3
+    BigInteger El_p_A = new BigInteger(Com.receive(), 16); // R1
+    BigInteger El_g_A = new BigInteger(Com.receive(), 16); // R2
+    BigInteger El_y_A = new BigInteger(Com.receive(), 16); // R3
     // ElGamal Objekt ohne priv key bauen
-    ElGamal elGamal_A = new ElGamal(p_A, g_A, y_A);
+    ElGamal elGamal_A = new ElGamal(El_p_A, El_g_A, El_y_A);
 
     // Bob sendet ElGamal public key an Alice
     Com.sendTo(0, elGamal_B.p.toString(16)); // S1
@@ -105,6 +111,15 @@ public final class Vertrag implements Protocol {
 
     // Vertrag einlesen ---------------------------------------------------------------
     String C = vertragString(new File("vertrag.txt"));
+
+    // Bob empfängt n, p_A und M
+    int n = Integer.parseInt(Com.receive(), 16); // R4
+    BigInteger p_A = new BigInteger(Com.receive(), 16); // R5
+    BigInteger M = new BigInteger(Com.receive(), 16); // R6
+    
+    // eigene Primzahl M < p_B < 2^52
+    computePrimeBetween(M, 52);
+
   }
 
   public void obliviousSend(int sendTo, BigInteger M_0, BigInteger M_1) {
@@ -283,11 +298,11 @@ public final class Vertrag implements Protocol {
   public int maxPlayer() {
     return MaxPlayer;
   }
-  
+
   /**
    * Tafel: 1.)1.3
    */
-  private BigInteger computeSHA(String text){
+  private BigInteger computeSHA(String text) {
     MessageDigest sha = null;
     byte[] digest;
 
@@ -297,61 +312,61 @@ public final class Vertrag implements Protocol {
       System.out.println("Could not create message digest! Exception " + e.toString());
       System.exit(0);
     }
-    
+
     sha.update(text.getBytes());
     digest = sha.digest();
-    
-    return new BigInteger(digest); //TODO ka ob das korrekt ist
+
+    return new BigInteger(digest); // TODO ka ob das korrekt ist
   }
-  
+
   /**
    * Tafel: 1.)1.3
    */
-  private BigInteger sign(ElGamal el, BigInteger message){
+  private BigInteger sign(ElGamal el, BigInteger message) {
     return el.sign(message);
   }
-  
+
   /**
    * Tafel: 1.)3.2
    */
-  private boolean verify(ElGamal el, BigInteger message, BigInteger signature){
+  private boolean verify(ElGamal el, BigInteger message, BigInteger signature) {
     return el.verify(message, signature);
   }
-  
+
   /**
    * Tafel: 1.)1.3
    */
-  private String erklaerungAlice(){
+  private String erklaerungAlice() {
     String a = "Die Symbole A'_i,j bezeichnen Loesungen der zugehoerigen S-Puzzles ";
     String b = "C_(A_i,j), i.element{1,...,n}, j.element{1,2}. ";
     String c = "Der untenstehende Vertrag ist von mir unterzeichnet, ";
     String d = "wenn Bob fuer ein i.element{1,...,n} die beiden Schluessel ";
     String e = "A'_i,1 und A'_i,2 nennen kann, d.h., wenn er die Loesung ";
     String f = "des (i,1)-ten und (i,2)-ten Puzzles kennt.";
-    
-    return a+b+c+d+e+f;
+
+    return a + b + c + d + e + f;
   }
-  
+
   /**
    * Tafel: 1.)1.3
    */
-  private String erklaerungBob(){
+  private String erklaerungBob() {
     String a = "Die Symbole A'_i,j bezeichnen Loesungen der zugehoerigen S-Puzzles ";
     String b = "C_(A_i,j), i.element{1,...,n}, j.element{1,2}. ";
     String c = "Der untenstehende Vertrag ist von mir unterzeichnet, ";
     String d = "wenn Alice fuer ein i.element{1,...,n} die beiden Schluessel ";
     String e = "B'_i,1 und B'_i,2 nennen kann, d.h., wenn er die Loesung ";
     String f = "des (i,1)-ten und (i,2)-ten Puzzles kennt.";
-    
-    return a+b+c+d+e+f;
+
+    return a + b + c + d + e + f;
   }
-  
-  private String vertragString(File file){
-    
+
+  private String vertragString(File file) {
+
     String output = "";
     try {
       BufferedReader in = new BufferedReader(new FileReader(file));
-      
+
       String inputLine;
       while ((inputLine = in.readLine()) != null) {
         output += inputLine;
@@ -365,7 +380,7 @@ public final class Vertrag implements Protocol {
       System.exit(0);
       e.printStackTrace();
     }
-    
+
     return output;
   }
 
@@ -376,8 +391,8 @@ public final class Vertrag implements Protocol {
     boolean result = false;
 
     BigInteger gcd = val1.gcd(val2);
-    
-    if(gcd.compareTo(ONE) == 0){
+
+    if (gcd.compareTo(ONE) == 0) {
       result = true;
     }
 
@@ -405,34 +420,37 @@ public final class Vertrag implements Protocol {
 
     return array;
   }
-  
+
   /**
    * Tafel: 1.)1.1
    */
-  private BigInteger[] get_C_Array(BigInteger M, BigInteger[][] array, BigInteger p){
+  private BigInteger[] get_C_Array(BigInteger M, BigInteger[][] array, BigInteger p) {
     int length1 = array.length;
     int length2 = array[0].length;
-    BigInteger[] output = new BigInteger[length1*length2];
-    
+    BigInteger[] output = new BigInteger[length1 * length2];
+
     int counter = 0;
-    for(int i=0; i<length1; i++){
-      for(int j=0; j<length2; j++){
+    for (int i = 0; i < length1; i++) {
+      for (int j = 0; j < length2; j++) {
         output[counter++] = M.modPow(array[i][j], p);
       }
     }
-    
+
     return output;
   }
 
   /**
    * Tafel: 0.)3.1
    */
-  private BigInteger computeMessage(BigInteger modulus) { // modulus = M
-    BigInteger output = null;
+  private BigInteger computeMessage(BigInteger p_A) {
+    int bl = p_A.bitLength();
+    int shift = 0;
 
-    // TODO output < modulus (kein Primzahltest noetig)
+    if (bl > 10) { // for wesentlich kleiner
+      shift = bl - 10;
+    }
 
-    return output;
+    return BigIntegerUtil.randomSmallerThan(p_A.shiftRight(shift));
   }
 
   /**
@@ -448,7 +466,7 @@ public final class Vertrag implements Protocol {
    */
   private BigInteger computePrime() {
     Random rnd = new Random();
-    
+
     int bitlength = rnd.nextInt(51); // random < 52
 
     return new BigInteger(bitlength, 100, rnd);
@@ -464,7 +482,7 @@ public final class Vertrag implements Protocol {
     while ((output.compareTo(M) == -1) || (output.compareTo(M) == 0)) {
       output = computePrime();
     }
-        
+
     return output;
 
   }
